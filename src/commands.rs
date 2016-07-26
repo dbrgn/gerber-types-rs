@@ -44,7 +44,7 @@ enum InterpolationMode {
 #[derive(Debug)]
 enum GCode {
     InterpolationMode(InterpolationMode),
-    RegionMode,
+    RegionMode(bool),
     QuadrantMode,
     Comment(String),
 }
@@ -64,7 +64,12 @@ impl GerberCode for GCode {
                     InterpolationMode::CounterclockwiseCircular => "G03*".to_string(),
                 }
             },
-            &GCode::RegionMode => format!("TODO RegionMode"),
+            &GCode::RegionMode(enabled) => {
+                match enabled {
+                    true => "G36*",
+                    false => "G37*",
+                }.to_string()
+            },
             &GCode::QuadrantMode => format!("TODO QuadrantMode"),
             &GCode::Comment(ref comment) => format!("G04 {} *", comment),
         }
@@ -116,6 +121,14 @@ mod test {
         commands.push(c2);
         commands.push(c3);
         assert_eq!(commands.to_code(), "G01*\nG02*\nG03*".to_string());
+    }
+
+    #[test]
+    fn test_region_mode() {
+        let mut commands = Vec::new();
+        commands.push(GCode::RegionMode(true));
+        commands.push(GCode::RegionMode(false));
+        assert_eq!(commands.to_code(), "G36*\nG37*".to_string());
     }
 
 }
