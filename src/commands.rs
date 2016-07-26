@@ -55,11 +55,6 @@ pub enum GCode {
     Comment(String),
 }
 
-#[derive(Debug)]
-pub enum MCode {
-    EndOfFile,
-}
-
 impl GerberCode for GCode {
     fn to_code(&self) -> String {
         match self {
@@ -87,6 +82,20 @@ impl GerberCode for GCode {
     }
 }
 
+#[derive(Debug)]
+pub enum MCode {
+    EndOfFile,
+}
+
+impl GerberCode for MCode {
+    fn to_code(&self) -> String {
+        match *self {
+            MCode::EndOfFile => "M02*",
+        }.to_string()
+    }
+}
+
+/// Implement GerberCode for Vectors of types that implement GerberCode.
 impl<T: GerberCode> GerberCode for Vec<T> {
     fn to_code(&self) -> String {
         self.iter()
@@ -100,10 +109,12 @@ impl<T: GerberCode> GerberCode for Vec<T> {
 mod test {
     use super::{Command, FunctionCode, DCode};
     use super::{GCode, InterpolationMode, QuadrantMode};
+    use super::{MCode};
     use super::GerberCode;
 
     #[test]
-    fn test_gcode_debug() {
+    fn test_debug() {
+        //! The debug representation should work properly.
         let c = Command::FunctionCode(FunctionCode::GCode(GCode::Comment("test".to_string())));
         let debug = format!("{:?}", c);
         assert_eq!(debug, "FunctionCode(GCode(Comment(\"test\")))");
@@ -111,12 +122,14 @@ mod test {
 
     #[test]
     fn test_to_code() {
+        //! The to_code method of the GerberCode trait should generate strings.
         let comment = GCode::Comment("testcomment".to_string());
         assert_eq!(comment.to_code(), "G04 testcomment *".to_string());
     }
 
     #[test]
     fn test_vec_to_code() {
+        //! A `Vec<T: GerberCode>` should also implement `GerberCode`.
         let mut v = Vec::new();
         v.push(GCode::Comment("comment 1".to_string()));
         v.push(GCode::Comment("another one".to_string()));
@@ -149,6 +162,12 @@ mod test {
         commands.push(GCode::QuadrantMode(QuadrantMode::Single));
         commands.push(GCode::QuadrantMode(QuadrantMode::Multi));
         assert_eq!(commands.to_code(), "G74*\nG75*".to_string());
+    }
+
+    #[test]
+    fn test_end_of_file() {
+        let c = MCode::EndOfFile;
+        assert_eq!(c.to_code(), "M02*".to_string());
     }
 
 }
