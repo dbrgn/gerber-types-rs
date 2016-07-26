@@ -53,8 +53,17 @@ impl GerberCode for GCode {
             &GCode::InterpolationMode => format!("TODO InterpolationMode"),
             &GCode::RegionMode => format!("TODO RegionMode"),
             &GCode::QuadrantMode => format!("TODO QuadrantMode"),
-            &GCode::Comment(ref comment) => format!("G04 {} *\n", comment),
+            &GCode::Comment(ref comment) => format!("G04 {} *", comment),
         }
+    }
+}
+
+impl<T: GerberCode> GerberCode for Vec<T> {
+    fn to_code(&self) -> String {
+        self.iter()
+            .map(|g| g.to_code())
+            .collect::<Vec<String>>()
+            .join("\n")
     }
 }
 
@@ -73,7 +82,15 @@ mod test {
     #[test]
     fn test_to_code() {
         let comment = GCode::Comment("testcomment".to_string());
-        assert_eq!(comment.to_code(), "G04 testcomment *\n".to_string());
+        assert_eq!(comment.to_code(), "G04 testcomment *".to_string());
+    }
+
+    #[test]
+    fn test_vec_to_code() {
+        let mut v = Vec::new();
+        v.push(GCode::Comment("comment 1".to_string()));
+        v.push(GCode::Comment("another one".to_string()));
+        assert_eq!(v.to_code(), "G04 comment 1 *\nG04 another one *".to_string());
     }
 
 }
