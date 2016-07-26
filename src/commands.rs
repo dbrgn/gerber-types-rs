@@ -35,8 +35,15 @@ enum DCode {
 }
 
 #[derive(Debug)]
+enum InterpolationMode {
+    Linear,
+    ClockwiseCircular,
+    CounterclockwiseCircular,
+}
+
+#[derive(Debug)]
 enum GCode {
-    InterpolationMode,
+    InterpolationMode(InterpolationMode),
     RegionMode,
     QuadrantMode,
     Comment(String),
@@ -50,7 +57,13 @@ enum MCode {
 impl GerberCode for GCode {
     fn to_code(&self) -> String {
         match self {
-            &GCode::InterpolationMode => format!("TODO InterpolationMode"),
+            &GCode::InterpolationMode(ref mode) => {
+                match *mode {
+                    InterpolationMode::Linear => "G01*".to_string(),
+                    InterpolationMode::ClockwiseCircular => "G02*".to_string(),
+                    InterpolationMode::CounterclockwiseCircular => "G03*".to_string(),
+                }
+            },
             &GCode::RegionMode => format!("TODO RegionMode"),
             &GCode::QuadrantMode => format!("TODO QuadrantMode"),
             &GCode::Comment(ref comment) => format!("G04 {} *", comment),
@@ -69,7 +82,7 @@ impl<T: GerberCode> GerberCode for Vec<T> {
 
 #[cfg(test)]
 mod test {
-    use super::{Command, FunctionCode, DCode, GCode};
+    use super::{Command, FunctionCode, DCode, GCode, InterpolationMode};
     use super::GerberCode;
 
     #[test]
@@ -91,6 +104,18 @@ mod test {
         v.push(GCode::Comment("comment 1".to_string()));
         v.push(GCode::Comment("another one".to_string()));
         assert_eq!(v.to_code(), "G04 comment 1 *\nG04 another one *".to_string());
+    }
+
+    #[test]
+    fn test_interpolation_mode() {
+        let mut commands = Vec::new();
+        let c1 = GCode::InterpolationMode(InterpolationMode::Linear);
+        let c2 = GCode::InterpolationMode(InterpolationMode::ClockwiseCircular);
+        let c3 = GCode::InterpolationMode(InterpolationMode::CounterclockwiseCircular);
+        commands.push(c1);
+        commands.push(c2);
+        commands.push(c3);
+        assert_eq!(commands.to_code(), "G01*\nG02*\nG03*".to_string());
     }
 
 }
