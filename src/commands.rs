@@ -1,22 +1,22 @@
-trait GerberCode {
+pub trait GerberCode {
     fn to_code(&self) -> String;
 }
 
 #[derive(Debug)]
-enum Command {
+pub enum Command {
     FunctionCode(FunctionCode),
     ExtendedCode(ExtendedCode),
 }
 
 #[derive(Debug)]
-enum FunctionCode {
+pub enum FunctionCode {
     DCode(DCode),
     GCode(GCode),
     MCode(MCode),
 }
 
 #[derive(Debug)]
-enum ExtendedCode {
+pub enum ExtendedCode {
     FS,
     MO,
     AD,
@@ -29,20 +29,20 @@ enum ExtendedCode {
 }
 
 #[derive(Debug)]
-enum DCode {
+pub enum DCode {
     Operation,
     SelectAperture,
 }
 
 #[derive(Debug)]
-enum InterpolationMode {
+pub enum InterpolationMode {
     Linear,
     ClockwiseCircular,
     CounterclockwiseCircular,
 }
 
 #[derive(Debug)]
-enum GCode {
+pub enum GCode {
     InterpolationMode(InterpolationMode),
     RegionMode(bool),
     QuadrantMode,
@@ -50,7 +50,7 @@ enum GCode {
 }
 
 #[derive(Debug)]
-enum MCode {
+pub enum MCode {
     EndOfFile,
 }
 
