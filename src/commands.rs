@@ -42,10 +42,16 @@ pub enum InterpolationMode {
 }
 
 #[derive(Debug)]
+pub enum QuadrantMode {
+    Single,
+    Multi,
+}
+
+#[derive(Debug)]
 pub enum GCode {
     InterpolationMode(InterpolationMode),
     RegionMode(bool),
-    QuadrantMode,
+    QuadrantMode(QuadrantMode),
     Comment(String),
 }
 
@@ -59,10 +65,10 @@ impl GerberCode for GCode {
         match self {
             &GCode::InterpolationMode(ref mode) => {
                 match *mode {
-                    InterpolationMode::Linear => "G01*".to_string(),
-                    InterpolationMode::ClockwiseCircular => "G02*".to_string(),
-                    InterpolationMode::CounterclockwiseCircular => "G03*".to_string(),
-                }
+                    InterpolationMode::Linear => "G01*",
+                    InterpolationMode::ClockwiseCircular => "G02*",
+                    InterpolationMode::CounterclockwiseCircular => "G03*",
+                }.to_string()
             },
             &GCode::RegionMode(enabled) => {
                 match enabled {
@@ -70,7 +76,12 @@ impl GerberCode for GCode {
                     false => "G37*",
                 }.to_string()
             },
-            &GCode::QuadrantMode => format!("TODO QuadrantMode"),
+            &GCode::QuadrantMode(ref mode) => {
+                match *mode {
+                    QuadrantMode::Single => "G74*",
+                    QuadrantMode::Multi => "G75*",
+                }.to_string()
+            },
             &GCode::Comment(ref comment) => format!("G04 {} *", comment),
         }
     }
@@ -87,7 +98,8 @@ impl<T: GerberCode> GerberCode for Vec<T> {
 
 #[cfg(test)]
 mod test {
-    use super::{Command, FunctionCode, DCode, GCode, InterpolationMode};
+    use super::{Command, FunctionCode, DCode};
+    use super::{GCode, InterpolationMode, QuadrantMode};
     use super::GerberCode;
 
     #[test]
@@ -129,6 +141,14 @@ mod test {
         commands.push(GCode::RegionMode(true));
         commands.push(GCode::RegionMode(false));
         assert_eq!(commands.to_code(), "G36*\nG37*".to_string());
+    }
+
+    #[test]
+    fn test_quadrant_mode() {
+        let mut commands = Vec::new();
+        commands.push(GCode::QuadrantMode(QuadrantMode::Single));
+        commands.push(GCode::QuadrantMode(QuadrantMode::Multi));
+        assert_eq!(commands.to_code(), "G74*\nG75*".to_string());
     }
 
 }
