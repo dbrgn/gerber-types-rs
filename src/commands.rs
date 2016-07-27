@@ -1,6 +1,48 @@
+/// All types that implement this trait can be converted to Gerber Code.
 pub trait GerberCode {
     fn to_code(&self) -> String;
 }
+
+/// Automatically implement GerberCode trait for struct types
+/// that are based on x and y attributes.
+macro_rules! impl_xy_gerbercode {
+    ($class:ty) => {
+        impl GerberCode for $class {
+            fn to_code(&self) -> String {
+                let mut code = String::new();
+                if let Some(x) = self.x {
+                    code = format!("X{}", x);
+                }
+                if let Some(y) = self.y {
+                    code.push_str(&format!("Y{}", y));
+                }
+                code
+            }
+        }
+    }
+}
+
+/// Coordinates are part of an operation.
+///
+/// Coordinates are modal. If an X is omitted, the X coordinate of the
+/// current point is used. Similar for Y.
+#[derive(Debug)]
+pub struct Coordinates {
+    pub x: Option<i32>,
+    pub y: Option<i32>,
+}
+
+impl_xy_gerbercode!(Coordinates);
+
+/// Coordinate offsets can be used for interpolate operations in circular
+/// interpolation mode.
+#[derive(Debug)]
+pub struct CoordinateOffset {
+    pub x: Option<i32>,
+    pub y: Option<i32>,
+}
+
+impl_xy_gerbercode!(CoordinateOffset);
 
 #[derive(Debug)]
 pub enum Command {
@@ -110,9 +152,10 @@ impl<T: GerberCode> GerberCode for Vec<T> {
 
 #[cfg(test)]
 mod test {
-    use super::{Command, FunctionCode, DCode};
+    use super::{Command, FunctionCode};
     use super::{GCode, InterpolationMode, QuadrantMode};
     use super::{MCode};
+    use super::{DCode, Coordinates, CoordinateOffset};
     use super::GerberCode;
 
     #[test]
@@ -171,6 +214,34 @@ mod test {
     fn test_end_of_file() {
         let c = MCode::EndOfFile;
         assert_eq!(c.to_code(), "M02*".to_string());
+    }
+
+    #[test]
+    fn test_coordinates() {
+        macro_rules! assert_coords {
+            ($x:expr, $y:expr, $result:expr) => {{
+                assert_eq!(Coordinates { x: $x, y: $y }.to_code(), $result.to_string());
+            }}
+        }
+        assert_coords!(Some(10), Some(20), "X10Y20");
+        assert_coords!(None, None, ""); // TODO should we catch this?
+        assert_coords!(Some(10), None, "X10");
+        assert_coords!(None, Some(20), "Y20");
+        assert_coords!(Some(0), Some(-400), "X0Y-400");
+    }
+
+    #[test]
+    fn test_offset() {
+        macro_rules! assert_coords {
+            ($x:expr, $y:expr, $result:expr) => {{
+                assert_eq!(CoordinateOffset { x: $x, y: $y }.to_code(), $result.to_string());
+            }}
+        }
+        assert_coords!(Some(10), Some(20), "X10Y20");
+        assert_coords!(None, None, ""); // TODO should we catch this?
+        assert_coords!(Some(10), None, "X10");
+        assert_coords!(None, Some(20), "Y20");
+        assert_coords!(Some(0), Some(-400), "X0Y-400");
     }
 
 }
