@@ -41,10 +41,29 @@ pub enum InterpolationMode {
     CounterclockwiseCircular,
 }
 
+impl GerberCode for InterpolationMode {
+    fn to_code(&self) -> String {
+        match *self {
+            InterpolationMode::Linear => "G01*",
+            InterpolationMode::ClockwiseCircular => "G02*",
+            InterpolationMode::CounterclockwiseCircular => "G03*",
+        }.to_string()
+    }
+}
+
 #[derive(Debug)]
 pub enum QuadrantMode {
     Single,
     Multi,
+}
+
+impl GerberCode for QuadrantMode {
+    fn to_code(&self) -> String {
+        match *self {
+            QuadrantMode::Single => "G74*",
+            QuadrantMode::Multi => "G75*",
+        }.to_string()
+    }
 }
 
 #[derive(Debug)]
@@ -57,27 +76,16 @@ pub enum GCode {
 
 impl GerberCode for GCode {
     fn to_code(&self) -> String {
-        match self {
-            &GCode::InterpolationMode(ref mode) => {
-                match *mode {
-                    InterpolationMode::Linear => "G01*",
-                    InterpolationMode::ClockwiseCircular => "G02*",
-                    InterpolationMode::CounterclockwiseCircular => "G03*",
-                }.to_string()
-            },
-            &GCode::RegionMode(enabled) => {
+        match *self {
+            GCode::InterpolationMode(ref mode) => mode.to_code(),
+            GCode::RegionMode(enabled) => {
                 match enabled {
                     true => "G36*",
                     false => "G37*",
                 }.to_string()
             },
-            &GCode::QuadrantMode(ref mode) => {
-                match *mode {
-                    QuadrantMode::Single => "G74*",
-                    QuadrantMode::Multi => "G75*",
-                }.to_string()
-            },
-            &GCode::Comment(ref comment) => format!("G04 {} *", comment),
+            GCode::QuadrantMode(ref mode) => mode.to_code(),
+            GCode::Comment(ref comment) => format!("G04 {} *", comment),
         }
     }
 }
