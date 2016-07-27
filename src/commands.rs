@@ -78,12 +78,7 @@ impl GerberCode for GCode {
     fn to_code(&self) -> String {
         match *self {
             GCode::InterpolationMode(ref mode) => mode.to_code(),
-            GCode::RegionMode(enabled) => {
-                match enabled {
-                    true => "G36*",
-                    false => "G37*",
-                }.to_string()
-            },
+            GCode::RegionMode(enabled) => if enabled { "G36*".to_string() } else { "G37*".to_string() },
             GCode::QuadrantMode(ref mode) => mode.to_code(),
             GCode::Comment(ref comment) => format!("G04 {} *", comment),
         }
