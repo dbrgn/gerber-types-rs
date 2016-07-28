@@ -6,15 +6,15 @@ pub trait GerberCode {
 /// Automatically implement GerberCode trait for struct types
 /// that are based on x and y attributes.
 macro_rules! impl_xy_gerbercode {
-    ($class:ty) => {
+    ($class:ty, $x:expr, $y: expr) => {
         impl GerberCode for $class {
             fn to_code(&self) -> String {
                 let mut code = String::new();
                 if let Some(x) = self.x {
-                    code = format!("X{}", x);
+                    code = format!("{}{}", $x, x);
                 }
                 if let Some(y) = self.y {
-                    code.push_str(&format!("Y{}", y));
+                    code.push_str(&format!("{}{}", $y, y));
                 }
                 code
             }
@@ -32,7 +32,7 @@ pub struct Coordinates {
     pub y: Option<i32>,
 }
 
-impl_xy_gerbercode!(Coordinates);
+impl_xy_gerbercode!(Coordinates, "X", "Y");
 
 /// Coordinate offsets can be used for interpolate operations in circular
 /// interpolation mode.
@@ -42,7 +42,7 @@ pub struct CoordinateOffset {
     pub y: Option<i32>,
 }
 
-impl_xy_gerbercode!(CoordinateOffset);
+impl_xy_gerbercode!(CoordinateOffset, "I", "J");
 
 #[derive(Debug)]
 pub enum Command {
@@ -237,11 +237,11 @@ mod test {
                 assert_eq!(CoordinateOffset { x: $x, y: $y }.to_code(), $result.to_string());
             }}
         }
-        assert_coords!(Some(10), Some(20), "X10Y20");
+        assert_coords!(Some(10), Some(20), "I10J20");
         assert_coords!(None, None, ""); // TODO should we catch this?
-        assert_coords!(Some(10), None, "X10");
-        assert_coords!(None, Some(20), "Y20");
-        assert_coords!(Some(0), Some(-400), "X0Y-400");
+        assert_coords!(Some(10), None, "I10");
+        assert_coords!(None, Some(20), "J20");
+        assert_coords!(Some(0), Some(-400), "I0J-400");
     }
 
 }
