@@ -1,3 +1,12 @@
+//! # Gerber commands
+//!
+//! This module implements the basic building blocks of Gerber code. It
+//! focusses on the low level types and does not do any semantic checking.
+//!
+//! For example, you can use an aperture without defining it. This will
+//! generate syntactically valid but semantially invalid Gerber code, but this
+//! module won't complain.
+
 /// All types that implement this trait can be converted to Gerber Code.
 pub trait GerberCode {
     fn to_code(&self) -> String;
@@ -117,8 +126,17 @@ impl GerberCode for Operation {
 
 #[derive(Debug)]
 pub enum DCode {
-    Operation,
-    SelectAperture,
+    Operation(Operation),
+    SelectAperture(i32),
+}
+
+impl GerberCode for DCode {
+    fn to_code(&self) -> String {
+        match *self {
+            DCode::Operation(ref operation) => operation.to_code(),
+            DCode::SelectAperture(code) => format!("D{}*", code),
+        }
+    }
 }
 
 #[derive(Debug)]
@@ -210,7 +228,7 @@ mod test {
     use super::{Command, FunctionCode};
     use super::{GCode, InterpolationMode, QuadrantMode};
     use super::{MCode};
-    use super::{Operation, Coordinates, CoordinateOffset};
+    use super::{DCode, Operation, Coordinates, CoordinateOffset};
     use super::GerberCode;
 
     #[test]
@@ -328,6 +346,14 @@ mod test {
     fn test_operation_flash() {
         let c = Operation::Flash(Coordinates::new(23, 42));
         assert_eq!(c.to_code(), "X23Y42D03*".to_string());
+    }
+
+    #[test]
+    fn test_select_aperture() {
+        let c1 = DCode::SelectAperture(10);
+        assert_eq!(c1.to_code(), "D10*".to_string());
+        let c2 = DCode::SelectAperture(2147483647);
+        assert_eq!(c2.to_code(), "D2147483647*".to_string());
     }
 
 }
