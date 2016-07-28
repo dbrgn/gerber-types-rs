@@ -32,6 +32,20 @@ pub struct Coordinates {
     pub y: Option<i32>,
 }
 
+impl Coordinates {
+    pub fn new(x: i32, y: i32) -> Self {
+        Coordinates { x: Some(x), y: Some(y) }
+    }
+
+    pub fn at_x(x: i32) -> Self {
+        Coordinates { x: Some(x), y: None }
+    }
+
+    pub fn at_y(y: i32) -> Self {
+        Coordinates { x: None, y: Some(y) }
+    }
+}
+
 impl_xy_gerbercode!(Coordinates, "X", "Y");
 
 /// Coordinate offsets can be used for interpolate operations in circular
@@ -40,6 +54,20 @@ impl_xy_gerbercode!(Coordinates, "X", "Y");
 pub struct CoordinateOffset {
     pub x: Option<i32>,
     pub y: Option<i32>,
+}
+
+impl CoordinateOffset {
+    pub fn new(x: i32, y: i32) -> Self {
+        CoordinateOffset { x: Some(x), y: Some(y) }
+    }
+
+    pub fn at_x(x: i32) -> Self {
+        CoordinateOffset { x: Some(x), y: None }
+    }
+
+    pub fn at_y(y: i32) -> Self {
+        CoordinateOffset { x: None, y: Some(y) }
+    }
 }
 
 impl_xy_gerbercode!(CoordinateOffset, "I", "J");
@@ -68,6 +96,23 @@ pub enum ExtendedCode {
     TF,
     TA,
     TD,
+}
+
+#[derive(Debug)]
+pub enum Operation {
+    Interpolate(Coordinates, Option<CoordinateOffset>),
+    Move(Coordinates),
+    Flash(Coordinates),
+}
+
+impl GerberCode for Operation {
+    fn to_code(&self) -> String {
+        match *self {
+            Operation::Interpolate(ref coords, ref offset) => format!("{}{}D01*", coords.to_code(), offset.to_code()),
+            Operation::Move(ref coords) => format!("{}D02*", coords.to_code()),
+            Operation::Flash(ref coords) => format!("{}D03*", coords.to_code()),
+        }
+    }
 }
 
 #[derive(Debug)]
@@ -150,12 +195,22 @@ impl<T: GerberCode> GerberCode for Vec<T> {
     }
 }
 
+/// Implement GerberCode for Option<T: GerberCode>
+impl<T: GerberCode> GerberCode for Option<T> {
+    fn to_code(&self) -> String {
+        match *self {
+            Some(ref v) => v.to_code(),
+            None => "".to_string(),
+        }
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::{Command, FunctionCode};
     use super::{GCode, InterpolationMode, QuadrantMode};
     use super::{MCode};
-    use super::{DCode, Coordinates, CoordinateOffset};
+    use super::{Operation, Coordinates, CoordinateOffset};
     use super::GerberCode;
 
     #[test]
@@ -242,6 +297,37 @@ mod test {
         assert_coords!(Some(10), None, "I10");
         assert_coords!(None, Some(20), "J20");
         assert_coords!(Some(0), Some(-400), "I0J-400");
+    }
+
+    #[test]
+    fn test_operation_interpolate() {
+        let c1 = Operation::Interpolate(
+            Coordinates::new(100, 200),
+            Some(CoordinateOffset::new(5, 10))
+        );
+        assert_eq!(c1.to_code(), "X100Y200I5J10D01*".to_string());
+        let c2 = Operation::Interpolate(
+            Coordinates::at_y(-200),
+            None
+        );
+        assert_eq!(c2.to_code(), "Y-200D01*".to_string());
+        let c3 = Operation::Interpolate(
+            Coordinates::at_x(1),
+            Some(CoordinateOffset::at_y(2))
+        );
+        assert_eq!(c3.to_code(), "X1J2D01*".to_string());
+    }
+
+    #[test]
+    fn test_operation_move() {
+        let c = Operation::Move(Coordinates::new(23, 42));
+        assert_eq!(c.to_code(), "X23Y42D02*".to_string());
+    }
+
+    #[test]
+    fn test_operation_flash() {
+        let c = Operation::Flash(Coordinates::new(23, 42));
+        assert_eq!(c.to_code(), "X23Y42D03*".to_string());
     }
 
 }
