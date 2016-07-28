@@ -4,3 +4,7 @@ version = "0.1.0"
 authors = ["Danilo Bargen <mail@dbrgn.ch>"]
 
 [dependencies]
+clippy = {version = "~0.0.79", optional = true}
+
+[features]
+nightly = ["clippy"]
