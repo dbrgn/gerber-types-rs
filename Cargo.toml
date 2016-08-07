@@ -1,5 +1,5 @@
 [package]
-name = "gerber"
+name = "gerber-types"
 version = "0.1.0"
 authors = ["Danilo Bargen <mail@dbrgn.ch>"]
 
