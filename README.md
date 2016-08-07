@@ -4,6 +4,8 @@
 [![Coveralls][coveralls-badge]][coveralls]
 [![Crates.io][crates-io-badge]][crates-io]
 
+[Docs](https://dbrgn.github.io/gerber-types-rs/)
+
 This crate implements the basic building blocks of Gerber code. It focusses on
 the low level types and does not do any semantic checking.
 
