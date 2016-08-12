@@ -108,3 +108,18 @@ pub enum GCode {
 pub enum MCode {
     EndOfFile,
 }
+
+
+#[cfg(test)]
+mod test {
+    use super::{Command, FunctionCode, GCode};
+
+    #[test]
+    fn test_debug() {
+        //! The debug representation should work properly.
+        let c = Command::FunctionCode(FunctionCode::GCode(GCode::Comment("test".to_string())));
+        let debug = format!("{:?}", c);
+        assert_eq!(debug, "FunctionCode(GCode(Comment(\"test\")))");
+    }
+
+}

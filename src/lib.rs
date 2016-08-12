@@ -16,19 +16,10 @@ pub use codegen::*;
 
 #[cfg(test)]
 mod test {
-    use super::{Command, FunctionCode};
     use super::{GCode, InterpolationMode, QuadrantMode};
     use super::{MCode};
     use super::{DCode, Operation, Coordinates, CoordinateOffset};
     use super::GerberCode;
-
-    #[test]
-    fn test_debug() {
-        //! The debug representation should work properly.
-        let c = Command::FunctionCode(FunctionCode::GCode(GCode::Comment("test".to_string())));
-        let debug = format!("{:?}", c);
-        assert_eq!(debug, "FunctionCode(GCode(Comment(\"test\")))");
-    }
 
     #[test]
     fn test_to_code() {
@@ -126,6 +117,7 @@ mod test {
         );
         assert_eq!(c3.to_code(), "X1J2D01*".to_string());
     }
+
 
     #[test]
     fn test_operation_move() {
