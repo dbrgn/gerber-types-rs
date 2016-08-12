@@ -44,11 +44,17 @@ impl CoordinateOffset {
     }
 }
 
+
+// Root type
+
 #[derive(Debug)]
 pub enum Command {
     FunctionCode(FunctionCode),
     ExtendedCode(ExtendedCode),
 }
+
+
+// Main categories
 
 #[derive(Debug)]
 pub enum FunctionCode {
@@ -70,30 +76,13 @@ pub enum ExtendedCode {
     TD,
 }
 
-#[derive(Debug)]
-pub enum Operation {
-    Interpolate(Coordinates, Option<CoordinateOffset>),
-    Move(Coordinates),
-    Flash(Coordinates),
-}
+
+// Function codes
 
 #[derive(Debug)]
 pub enum DCode {
     Operation(Operation),
     SelectAperture(i32),
-}
-
-#[derive(Debug)]
-pub enum InterpolationMode {
-    Linear,
-    ClockwiseCircular,
-    CounterclockwiseCircular,
-}
-
-#[derive(Debug)]
-pub enum QuadrantMode {
-    Single,
-    Multi,
 }
 
 #[derive(Debug)]
@@ -107,6 +96,26 @@ pub enum GCode {
 #[derive(Debug)]
 pub enum MCode {
     EndOfFile,
+}
+
+#[derive(Debug)]
+pub enum Operation {
+    Interpolate(Coordinates, Option<CoordinateOffset>),
+    Move(Coordinates),
+    Flash(Coordinates),
+}
+
+#[derive(Debug)]
+pub enum InterpolationMode {
+    Linear,
+    ClockwiseCircular,
+    CounterclockwiseCircular,
+}
+
+#[derive(Debug)]
+pub enum QuadrantMode {
+    Single,
+    Multi,
 }
 
 
