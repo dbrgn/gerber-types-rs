@@ -8,6 +8,7 @@
 //! module won't complain.
 
 mod types;
+mod attributes;
 mod codegen;
 
 pub use types::*;

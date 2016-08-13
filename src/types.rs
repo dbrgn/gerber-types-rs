@@ -65,15 +65,24 @@ pub enum FunctionCode {
 
 #[derive(Debug)]
 pub enum ExtendedCode {
-    FS,
-    MO,
-    AD,
-    AM,
-    SR,
-    LP,
-    TF,
-    TA,
-    TD,
+    /// FS
+    CoordinateFormat(u8, u8),
+    /// MO
+    Unit(Unit),
+    /// AD
+    ApertureDefinition(ApertureDefinition),
+    /// AM
+    ApertureMacro, // TODO
+    /// LP
+    LoadPolarity(Polarity),
+    /// SR
+    StepAndRepeat(StepAndRepeat),
+    /// TF
+    FileAttribute(::attributes::Attribute),
+    /// TA
+    ApertureAttribute(::attributes::Attribute),
+    /// TD
+    DeleteAttribute(String),
 }
 
 
@@ -116,6 +125,43 @@ pub enum InterpolationMode {
 pub enum QuadrantMode {
     Single,
     Multi,
+}
+
+
+// Extended codes
+
+#[derive(Debug)]
+pub enum Unit {
+    Inches,
+    Millimeters,
+}
+
+#[derive(Debug)]
+pub struct ApertureDefinition {
+    pub code: i32,
+    pub name: ApertureName,
+    pub modifiers: Vec<f64>,
+}
+
+#[derive(Debug)]
+pub enum ApertureName {
+    Circle,
+    Rectangle,
+    Obround,
+    Polygon,
+    Other(String),
+}
+
+#[derive(Debug)]
+pub enum Polarity {
+    Clear,
+    Dark,
+}
+
+#[derive(Debug)]
+pub enum StepAndRepeat {
+    Open { repeat_x: u32, repeat_y: u32, distance_x: f64, distance_y: f64 },
+    Close,
 }
 
 
