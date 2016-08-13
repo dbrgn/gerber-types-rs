@@ -12,6 +12,7 @@ mod attributes;
 mod codegen;
 
 pub use types::*;
+pub use attributes::*;
 pub use codegen::*;
 
 
