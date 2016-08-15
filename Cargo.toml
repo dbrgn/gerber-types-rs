@@ -5,6 +5,8 @@ authors = ["Danilo Bargen <mail@dbrgn.ch>"]
 
 [dependencies]
 clippy = {version = "~0.0.79", optional = true}
+chrono = "0.2"
+uuid = "0.2"
 
 [features]
 nightly = ["clippy"]

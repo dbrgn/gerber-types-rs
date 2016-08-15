@@ -78,9 +78,9 @@ pub enum ExtendedCode {
     /// SR
     StepAndRepeat(StepAndRepeat),
     /// TF
-    FileAttribute(::attributes::Attribute),
+    FileAttribute(::attributes::FileAttribute),
     /// TA
-    ApertureAttribute(::attributes::Attribute),
+    ApertureAttribute(::attributes::ApertureAttribute),
     /// TD
     DeleteAttribute(String),
 }

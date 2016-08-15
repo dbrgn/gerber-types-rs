@@ -1,13 +1,33 @@
+use chrono::{DateTime, UTC};
+use uuid::Uuid;
+
 #[derive(Debug)]
-pub enum Attribute {
+pub enum FileAttribute {
     Part(Part),
     FileFunction(FileFunction),
-    FilePolarity,
-    GenerationSoftware,
-    CreationDate,
-    ProjectId,
-    MD5,
+    FilePolarity(FilePolarity),
+    GenerationSoftware {
+        vendor: String,
+        application: String,
+        version: String,
+    },
+    CreationDate(DateTime<UTC>),
+    ProjectId {
+        id: String,
+        guid: Uuid,
+        revision: String,
+    },
+    Md5(String),
     UserDefined { name: String, value: Vec<String> },
+}
+
+#[derive(Debug)]
+pub enum ApertureAttribute {
+    ApertureFunction(ApertureFunction),
+    DrillTolerance {
+        plus: f64,
+        minus: f64,
+    },
 }
 
 #[derive(Debug)]
@@ -92,4 +112,75 @@ pub enum FileFunction {
     AssemblyDrawing(Position),
     Drawing(String),
     Other(String),
+}
+
+#[derive(Debug)]
+pub enum FilePolarity {
+    Positive,
+    Negative,
+}
+
+#[derive(Debug)]
+pub enum ApertureFunction {
+    // Only valid for layers with file function plated or non-plated
+    ViaDrill,
+    BackDrill,
+    ComponentDrill {
+        press_fit: Option<bool>, // TODO is this bool?
+    },
+    CastellatedDrill,
+    MechanicalDrill {
+        function: Option<DrillFunction>,
+    },
+    Slot,
+    CutOut,
+    Cavity,
+    OtherDrill(String),
+
+    // Only valid for layers with file function copper
+    ComponentPad {
+        press_fit: Option<bool>, // TODO is this bool?
+    },
+    SmdPad(SmdPadType),
+    BgaPad(SmdPadType),
+    ConnectorPad,
+    HeatsinkPad,
+    ViaPad,
+    TestPad,
+    CastellatedPad,
+    FiducialPad(FiducialScope),
+    ThermalReliefPad,
+    WasherPad,
+    AntiPad,
+    OtherPad(String),
+    Conductor,
+    NonConductor,
+    CopperBalancing,
+    Border,
+    OtherCopper(String),
+
+    // All layers
+    Profile,
+    NonMaterial,
+    Material,
+    Other(String),
+}
+
+#[derive(Debug)]
+pub enum DrillFunction {
+    BreakOut,
+    Tooling,
+    Other,
+}
+
+#[derive(Debug)]
+pub enum SmdPadType {
+    CopperDefined,
+    SoldermaskDefined,
+}
+
+#[derive(Debug)]
+pub enum FiducialScope{
+    Global,
+    Local,
 }

@@ -7,6 +7,9 @@
 //! generate syntactically valid but semantially invalid Gerber code, but this
 //! module won't complain.
 
+extern crate chrono;
+extern crate uuid;
+
 mod types;
 mod attributes;
 mod codegen;
