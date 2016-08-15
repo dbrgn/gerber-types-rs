@@ -17,6 +17,15 @@ Minimal required Rust version: 1.3.
 
 Gerber spec: https://www.ucamco.com/files/downloads/file/81/the_gerber_file_format_specification.pdf
 
+## License
+
+Licensed under either of
+
+ * Apache License, Version 2.0, ([LICENSE-APACHE](LICENSE-APACHE) or http://www.apache.org/licenses/LICENSE-2.0)
+ * MIT license ([LICENSE-MIT](LICENSE-MIT) or http://opensource.org/licenses/MIT)
+
+at your option.
+
 <!-- Badges -->
 [travis-ci]: https://travis-ci.org/dbrgn/gerber-types-rs
 [travis-ci-badge]: https://img.shields.io/travis/dbrgn/gerber-types-rs.svg

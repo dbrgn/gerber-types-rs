@@ -1,7 +1,19 @@
 [package]
 name = "gerber-types"
 version = "0.1.0"
+documentation = "https://dbrgn.github.io/gerber-types-rs/"
+repository = "https://github.com/dbrgn/gerber-types-rs"
+license = "MIT OR Apache-2.0"
 authors = ["Danilo Bargen <mail@dbrgn.ch>"]
+description = "Types and code generation for Gerber files (RS-274X)."
+readme = "README.md"
+keywords = ["gerber", "pcb", "rs274x", "cad", "cam"]
+include = [
+    "**/*.rs",
+    "Cargo.toml",
+    "README.md",
+    "LICENSE-*",
+]
 
 [dependencies]
 clippy = {version = "~0.0.79", optional = true}
