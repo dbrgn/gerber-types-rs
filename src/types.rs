@@ -139,17 +139,37 @@ pub enum Unit {
 #[derive(Debug)]
 pub struct ApertureDefinition {
     pub code: i32,
-    pub name: ApertureName,
-    pub modifiers: Vec<f64>,
+    pub aperture: Aperture,
 }
 
 #[derive(Debug)]
-pub enum ApertureName {
-    Circle,
-    Rectangle,
-    Obround,
-    Polygon,
+pub enum Aperture {
+    Circle(Circle),
+    Rectangle(Rectangular),
+    Obround(Rectangular),
+    Polygon(Polygon),
     Other(String),
+}
+
+#[derive(Debug)]
+pub struct Circle {
+    pub diameter: f64,
+    pub hole_diameter: Option<f64>,
+}
+
+#[derive(Debug)]
+pub struct Rectangular {
+    pub x: f64,
+    pub y: f64,
+    pub hole_diameter: Option<f64>,
+}
+
+#[derive(Debug)]
+pub struct Polygon {
+    pub diameter: f64,
+    pub vertices: u8, // 3--12
+    pub rotation: Option<f64>,
+    pub hole_diameter: Option<f64>,
 }
 
 #[derive(Debug)]

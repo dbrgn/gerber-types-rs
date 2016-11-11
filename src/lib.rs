@@ -24,10 +24,7 @@ pub use codegen::*;
 
 #[cfg(test)]
 mod test {
-    use super::{GCode, InterpolationMode, QuadrantMode};
-    use super::{MCode};
-    use super::{DCode, Operation, Coordinates, CoordinateOffset};
-    use super::GerberCode;
+    use super::*;
 
     #[test]
     fn test_to_code() {
@@ -145,6 +142,72 @@ mod test {
         assert_eq!(c1.to_code(), "D10*".to_string());
         let c2 = DCode::SelectAperture(2147483647);
         assert_eq!(c2.to_code(), "D2147483647*".to_string());
+    }
+
+    #[test]
+    fn test_coordinate_format() {
+        let c = ExtendedCode::CoordinateFormat(2, 5);
+        assert_eq!(c.to_code(), "%FSLAX25Y25*%".to_string());
+    }
+
+    #[test]
+    fn test_unit() {
+        let c1 = ExtendedCode::Unit(Unit::Millimeters);
+        let c2 = ExtendedCode::Unit(Unit::Inches);
+        assert_eq!(c1.to_code(), "%MOMM*%".to_string());
+        assert_eq!(c2.to_code(), "%MOIN*%".to_string());
+    }
+
+    #[test]
+    fn test_aperture_circle_definition() {
+        let ad1 = ApertureDefinition {
+            code: 10,
+            aperture: Aperture::Circle(Circle { diameter: 4.0, hole_diameter: Some(2.0) }),
+        };
+        let ad2 = ApertureDefinition {
+            code: 11,
+            aperture: Aperture::Circle(Circle { diameter: 4.5, hole_diameter: None }),
+        };
+        assert_eq!(ad1.to_code(), "10C,4X2".to_string());
+        assert_eq!(ad2.to_code(), "11C,4.5".to_string());
+    }
+
+    #[test]
+    fn test_aperture_rectangular_definition() {
+        let ad1 = ApertureDefinition {
+            code: 12,
+            aperture: Aperture::Rectangle(Rectangular { x: 1.5, y: 2.25, hole_diameter: Some(3.8) }),
+        };
+        let ad2 = ApertureDefinition {
+            code: 13,
+            aperture: Aperture::Rectangle(Rectangular { x: 1.0, y: 1.0, hole_diameter: None }),
+        };
+        let ad3 = ApertureDefinition {
+            code: 14,
+            aperture: Aperture::Obround(Rectangular { x: 2.0, y: 4.5, hole_diameter: None }),
+        };
+        assert_eq!(ad1.to_code(), "12R,1.5X2.25X3.8".to_string());
+        assert_eq!(ad2.to_code(), "13R,1X1".to_string());
+        assert_eq!(ad3.to_code(), "14O,2X4.5".to_string());
+    }
+
+    #[test]
+    fn test_aperture_polygon_definition() {
+        let ad1 = ApertureDefinition {
+            code: 15,
+            aperture: Aperture::Polygon(Polygon { diameter: 4.5, vertices: 3, rotation: None, hole_diameter: None }),
+        };
+        let ad2 = ApertureDefinition {
+            code: 16,
+            aperture: Aperture::Polygon(Polygon { diameter: 5.0, vertices: 4, rotation: Some(30.6), hole_diameter: None }),
+        };
+        let ad3 = ApertureDefinition {
+            code: 17,
+            aperture: Aperture::Polygon(Polygon { diameter: 5.5, vertices: 5, rotation: None, hole_diameter: Some(1.8) }),
+        };
+        assert_eq!(ad1.to_code(), "15P,4.5X3".to_string());
+        assert_eq!(ad2.to_code(), "16P,5X4X30.6".to_string());
+        assert_eq!(ad3.to_code(), "17P,5.5X5X0X1.8".to_string());
     }
 
 }

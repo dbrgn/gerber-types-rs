@@ -5,6 +5,26 @@ pub trait GerberCode {
     fn to_code(&self) -> String;
 }
 
+/// Implement GerberCode for Vectors of types that implement GerberCode.
+impl<T: GerberCode> GerberCode for Vec<T> {
+    fn to_code(&self) -> String {
+        self.iter()
+            .map(|g| g.to_code())
+            .collect::<Vec<String>>()
+            .join("\n")
+    }
+}
+
+/// Implement GerberCode for Option<T: GerberCode>
+impl<T: GerberCode> GerberCode for Option<T> {
+    fn to_code(&self) -> String {
+        match *self {
+            Some(ref v) => v.to_code(),
+            None => "".to_string(),
+        }
+    }
+}
+
 /// Automatically implement GerberCode trait for struct types
 /// that are based on x and y attributes.
 macro_rules! impl_xy_gerbercode {
@@ -85,22 +105,69 @@ impl GerberCode for MCode {
     }
 }
 
-/// Implement GerberCode for Vectors of types that implement GerberCode.
-impl<T: GerberCode> GerberCode for Vec<T> {
+impl GerberCode for Unit {
     fn to_code(&self) -> String {
-        self.iter()
-            .map(|g| g.to_code())
-            .collect::<Vec<String>>()
-            .join("\n")
+        match *self {
+            Unit::Millimeters => "MM",
+            Unit::Inches => "IN",
+        }.to_string()
     }
 }
 
-/// Implement GerberCode for Option<T: GerberCode>
-impl<T: GerberCode> GerberCode for Option<T> {
+impl GerberCode for ExtendedCode {
     fn to_code(&self) -> String {
         match *self {
-            Some(ref v) => v.to_code(),
-            None => "".to_string(),
+            ExtendedCode::CoordinateFormat(ref x, ref y) => format!("%FSLAX{0}{1}Y{0}{1}*%", x, y),
+            ExtendedCode::Unit(ref unit) => format!("%MO{}*%", unit.to_code()),
+            ExtendedCode::ApertureDefinition(ref def) => format!("%ADD{}*%", def.to_code()),
+            _ => panic!("not yet implemented"),
+        }
+    }
+}
+
+impl GerberCode for ApertureDefinition {
+    fn to_code(&self) -> String {
+        return format!("{}{}", self.code, self.aperture.to_code());
+    }
+}
+
+impl GerberCode for Circle {
+    fn to_code(&self) -> String {
+        match self.hole_diameter {
+            Some(hole_diameter) => format!("{}X{}", self.diameter, hole_diameter),
+            None => format!("{}", self.diameter),
+        }
+    }
+}
+
+impl GerberCode for Rectangular {
+    fn to_code(&self) -> String {
+        match self.hole_diameter {
+            Some(hole_diameter) => format!("{}X{}X{}", self.x, self.y, hole_diameter),
+            None => format!("{}X{}", self.x, self.y),
+        }
+    }
+}
+
+impl GerberCode for Polygon {
+    fn to_code(&self) -> String {
+        match (self.rotation, self.hole_diameter) {
+            (Some(rot), Some(hd)) => format!("{}X{}X{}X{}", self.diameter, self.vertices, rot, hd),
+            (Some(rot), None) => format!("{}X{}X{}", self.diameter, self.vertices, rot),
+            (None, Some(hd)) => format!("{}X{}X0X{}", self.diameter, self.vertices, hd),
+            (None, None) => format!("{}X{}", self.diameter, self.vertices),
+        }
+    }
+}
+
+impl GerberCode for Aperture {
+    fn to_code(&self) -> String {
+        match *self {
+            Aperture::Circle(ref circle) => format!("C,{}", circle.to_code()),
+            Aperture::Rectangle(ref rectangular) => format!("R,{}", rectangular.to_code()),
+            Aperture::Obround(ref rectangular) => format!("O,{}", rectangular.to_code()),
+            Aperture::Polygon(ref polygon) => format!("P,{}", polygon.to_code()),
+            Aperture::Other(ref string) => panic!("not yet implemented"),
         }
     }
 }
