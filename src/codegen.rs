@@ -114,6 +114,16 @@ impl GerberCode for Unit {
     }
 }
 
+impl GerberCode for FunctionCode {
+    fn to_code(&self) -> String {
+        match *self {
+            FunctionCode::DCode(ref code) => code.to_code(),
+            FunctionCode::GCode(ref code) => code.to_code(),
+            FunctionCode::MCode(ref code) => code.to_code(),
+        }
+    }
+}
+
 impl GerberCode for ExtendedCode {
     fn to_code(&self) -> String {
         match *self {

@@ -43,6 +43,13 @@ mod test {
     }
 
     #[test]
+    fn test_function_code_to_code() {
+        //! A `FunctionCode` should implement `GerberCode`
+        let c = FunctionCode::GCode(GCode::Comment("comment".to_string()));
+        assert_eq!(c.to_code(), "G04 comment *");
+    }
+
+    #[test]
     fn test_interpolation_mode() {
         let mut commands = Vec::new();
         let c1 = GCode::InterpolationMode(InterpolationMode::Linear);
