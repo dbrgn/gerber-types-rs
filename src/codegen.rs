@@ -1,4 +1,5 @@
 use types::*;
+use attributes::*;
 
 /// All types that implement this trait can be converted to Gerber Code.
 pub trait GerberCode {
@@ -142,7 +143,7 @@ impl GerberCode for ExtendedCode {
             ExtendedCode::ApertureMacro => panic!("not yet implemented"),
             ExtendedCode::LoadPolarity(ref polarity) => format!("%LP{}*%", polarity.to_code()),
             ExtendedCode::StepAndRepeat(ref sar) => format!("%SR{}*%", sar.to_code()),
-            //ExtendedCode::FileAttribute(ref attr) => format!("%TF*%"),
+            ExtendedCode::FileAttribute(ref attr) => format!("%TF.{}*%", attr.to_code()),
             //ExtendedCode::ApertureAttribute(ref attr) => ,
             ExtendedCode::DeleteAttribute(ref attr) => format!("%TD{}*%", attr),
             _ => panic!("not yet implemented"),
@@ -212,6 +213,27 @@ impl GerberCode for StepAndRepeat {
             StepAndRepeat::Open { repeat_x: rx, repeat_y: ry, distance_x: dx, distance_y: dy } =>
                 format!("X{}Y{}I{}J{}", rx, ry, dx, dy),
             StepAndRepeat::Close => String::new(),
+        }
+    }
+}
+
+impl GerberCode for Part {
+    fn to_code(&self) -> String {
+        match *self {
+            Part::Single => "Single".into(),
+            Part::Array => "Array".into(),
+            Part::FabricationPanel => "FabricationPanel".into(),
+            Part::Coupon => "Coupon".into(),
+            Part::Other(ref description) => format!("Other,{}", description),
+        }
+    }
+}
+
+impl GerberCode for FileAttribute {
+    fn to_code(&self) -> String {
+        match *self {
+            FileAttribute::Part(ref part) => format!("Part,{}", part.to_code()),
+            _ => panic!("Not yet implemented"),
         }
     }
 }

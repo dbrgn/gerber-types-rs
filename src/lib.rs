@@ -252,4 +252,10 @@ mod test {
         assert_eq!(d.to_code(), "%TDfoo*%".to_string());
     }
 
+    #[test]
+    fn test_file_attribute_to_code() {
+        let a = ExtendedCode::FileAttribute(FileAttribute::Part(Part::Other("foo".into())));
+        assert_eq!(a.to_code(), "%TF.Part,Other,foo*%".to_string());
+    }
+
 }
