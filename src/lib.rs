@@ -228,4 +228,28 @@ mod test {
         assert_eq!(ad3.to_code(), "17P,5.5X5X0X1.8".to_string());
     }
 
+    #[test]
+    fn test_polarity_to_code() {
+        let d = ExtendedCode::LoadPolarity(Polarity::Dark);
+        let c = ExtendedCode::LoadPolarity(Polarity::Clear);
+        assert_eq!(d.to_code(), "%LPD*%".to_string());
+        assert_eq!(c.to_code(), "%LPC*%".to_string());
+    }
+
+    #[test]
+    fn test_step_and_repeat_to_code() {
+        let o = ExtendedCode::StepAndRepeat(StepAndRepeat::Open {
+            repeat_x: 2, repeat_y: 3, distance_x: 2.0, distance_y: 3.0,
+        });
+        let c = ExtendedCode::StepAndRepeat(StepAndRepeat::Close);
+        assert_eq!(o.to_code(), "%SRX2Y3I2J3*%".to_string());
+        assert_eq!(c.to_code(), "%SR*%".to_string());
+    }
+
+    #[test]
+    fn test_delete_attribute_to_code() {
+        let d = ExtendedCode::DeleteAttribute("foo".into());
+        assert_eq!(d.to_code(), "%TDfoo*%".to_string());
+    }
+
 }

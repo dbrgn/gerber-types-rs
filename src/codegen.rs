@@ -139,6 +139,12 @@ impl GerberCode for ExtendedCode {
             ExtendedCode::CoordinateFormat(ref x, ref y) => format!("%FSLAX{0}{1}Y{0}{1}*%", x, y),
             ExtendedCode::Unit(ref unit) => format!("%MO{}*%", unit.to_code()),
             ExtendedCode::ApertureDefinition(ref def) => format!("%ADD{}*%", def.to_code()),
+            ExtendedCode::ApertureMacro => panic!("not yet implemented"),
+            ExtendedCode::LoadPolarity(ref polarity) => format!("%LP{}*%", polarity.to_code()),
+            ExtendedCode::StepAndRepeat(ref sar) => format!("%SR{}*%", sar.to_code()),
+            //ExtendedCode::FileAttribute(ref attr) => format!("%TF*%"),
+            //ExtendedCode::ApertureAttribute(ref attr) => ,
+            ExtendedCode::DeleteAttribute(ref attr) => format!("%TD{}*%", attr),
             _ => panic!("not yet implemented"),
         }
     }
@@ -187,6 +193,25 @@ impl GerberCode for Aperture {
             Aperture::Obround(ref rectangular) => format!("O,{}", rectangular.to_code()),
             Aperture::Polygon(ref polygon) => format!("P,{}", polygon.to_code()),
             Aperture::Other(ref string) => panic!("not yet implemented"),
+        }
+    }
+}
+
+impl GerberCode for Polarity {
+    fn to_code(&self) -> String {
+        match *self {
+            Polarity::Clear => "C".to_string(),
+            Polarity::Dark => "D".to_string(),
+        }
+    }
+}
+
+impl GerberCode for StepAndRepeat {
+    fn to_code(&self) -> String {
+        match *self {
+            StepAndRepeat::Open { repeat_x: rx, repeat_y: ry, distance_x: dx, distance_y: dy } =>
+                format!("X{}Y{}I{}J{}", rx, ry, dx, dy),
+            StepAndRepeat::Close => String::new(),
         }
     }
 }
