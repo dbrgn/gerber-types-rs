@@ -124,6 +124,15 @@ impl GerberCode for FunctionCode {
     }
 }
 
+impl GerberCode for Command {
+    fn to_code(&self) -> String {
+        match *self {
+            Command::FunctionCode(ref code) => code.to_code(),
+            Command::ExtendedCode(ref code) => code.to_code(),
+        }
+    }
+}
+
 impl GerberCode for ExtendedCode {
     fn to_code(&self) -> String {
         match *self {
