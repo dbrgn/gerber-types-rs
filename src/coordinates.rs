@@ -18,7 +18,7 @@ pub struct CoordinateFormat(pub u8, pub u8);
 /// double.
 ///
 /// The value is stored as a 64 bit integer with 9 decimal places.
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Copy, Clone)]
 pub struct Decimal(i64);
 
 const DECIMAL_PLACES: i64 = 1_000_000_000;
