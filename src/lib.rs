@@ -16,10 +16,12 @@ extern crate uuid;
 mod types;
 mod attributes;
 mod codegen;
+mod coordinates;
 
 pub use types::*;
 pub use attributes::*;
 pub use codegen::*;
+pub use coordinates::*;
 
 
 #[cfg(test)]
