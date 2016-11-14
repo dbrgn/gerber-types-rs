@@ -135,4 +135,12 @@ mod test {
         assert!(d.is_err());
     }
 
+    #[test]
+    /// Test decimal to string conversion (rounding of decimal part)
+    fn test_formatted_44_round_decimal() {
+        let cf = CoordinateFormat(4, 4);
+        let d = Decimal(1234432199999).gerber(&cf).unwrap();
+        assert_eq!(d, "12344322".to_string());
+    }
+
 }
