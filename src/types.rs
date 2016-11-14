@@ -4,7 +4,7 @@
 //! to render themselves. This means for example that each `Coordinates`
 //! instance contains a reference to the coordinate format to be used.
 
-use ::{CoordinateFormat, Decimal};
+use ::{CoordinateFormat, CoordinateNumber};
 
 
 /// Coordinates are part of an operation.
