@@ -14,7 +14,7 @@ pub struct CoordinateFormat(pub u8, pub u8);
 
 
 /// Decimals are a sequence of one or more digits with an optional decimal
-/// point optionally preceded by a ‘+’ or a ‘-’ sign. They must fit in an IEEE
+/// point optionally preceded by a `+` or a `-` sign. They must fit in an IEEE
 /// double.
 ///
 /// The value is stored as a 64 bit integer with 9 decimal places.
@@ -26,9 +26,7 @@ const DECIMAL_PLACES: i64 = 1_000_000_000;
 
 impl From<f64> for Decimal {
     fn from(val: f64) -> Decimal {
-        let integer = (val.trunc() as i64) * DECIMAL_PLACES;
-        let decimal = ((val - val.trunc()) * DECIMAL_PLACES as f64).trunc() as i64;
-        Decimal(integer + decimal)
+        Decimal((val * DECIMAL_PLACES as f64) as i64)
     }
 }
 
