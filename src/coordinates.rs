@@ -21,6 +21,7 @@ pub struct CoordinateFormat(pub u8, pub u8);
 #[derive(Debug, PartialEq, Copy, Clone)]
 pub struct Decimal(i64);
 
+const DECIMAL_PLACES_CHARS: u8 = 9;
 const DECIMAL_PLACES: i64 = 1_000_000_000;
 
 impl From<f64> for Decimal {
@@ -34,6 +35,29 @@ impl From<f64> for Decimal {
 impl Into<f64> for Decimal {
     fn into(self) -> f64 {
         (self.0 as f64) / DECIMAL_PLACES as f64
+    }
+}
+
+impl Decimal {
+    fn gerber(&self, format: &CoordinateFormat) -> Result<String, ::GerberError> {
+        // Format invariants
+        if format.1 > DECIMAL_PLACES_CHARS {
+            return Err(::GerberError::CoordinateFormatError("Invalid precision: Too high!".into()))
+        }
+
+        // If value is 0, return corresponding string
+        if self.0 == 0 {
+            return Ok("0".to_string());
+        }
+
+        // Convert to string
+        let integer: i64 = self.0 / DECIMAL_PLACES;
+        if integer > 10i64.pow(format.0 as u32) {
+            return Err(::GerberError::CoordinateFormatError("Decimal is too large for chosen format".into()));
+        }
+        let divisor: i64 = 10i64.pow((DECIMAL_PLACES_CHARS - format.1) as u32);
+        let decimal: i64 = (self.0 % DECIMAL_PLACES) / divisor;
+        Ok(format!("{}{}", integer, decimal))
     }
 }
 
@@ -53,12 +77,15 @@ mod test {
         let c = Decimal(123456888888000i64);
         let d = Decimal::from(123456.888888f64);
         assert_eq!(c, d);
+
+        let e = Decimal(0i64);
+        let f = Decimal::from(0f64);
+        assert_eq!(e, f);
     }
 
     #[test]
     /// Test decimal to float conversion
     fn test_into_f64() {
-
         let a: f64 = Decimal(1375000000i64).into();
         let b = 1.375f64;
         assert_eq!(a, b);
@@ -66,6 +93,46 @@ mod test {
         let c: f64 = Decimal(123456888888000i64).into();
         let d = 123456.888888f64;
         assert_eq!(c, d);
+
+        let e: f64 = Decimal(0i64).into();
+        let f = 0f64;
+        assert_eq!(e, f);
+    }
+
+    #[test]
+    /// Test decimal to string conversion when it's 0
+    fn test_formatted_zero() {
+        let cf1 = CoordinateFormat(6, 6);
+        let cf2 = CoordinateFormat(2, 4);
+
+        let a = Decimal(0).gerber(&cf1).unwrap();
+        let b = Decimal(0).gerber(&cf2).unwrap();
+        assert_eq!(a, "0".to_string());
+        assert_eq!(b, "0".to_string());
+    }
+
+    #[test]
+    /// Test decimal to string conversion
+    fn test_formatted_66() {
+        let cf = CoordinateFormat(6, 6);
+        let d = Decimal(123456789012345).gerber(&cf).unwrap();
+        assert_eq!(d, "123456789012".to_string());
+    }
+
+    #[test]
+    /// Test decimal to string conversion
+    fn test_formatted_54() {
+        let cf = CoordinateFormat(5, 4);
+        let d = Decimal(12345678901234).gerber(&cf).unwrap();
+        assert_eq!(d, "123456789".to_string());
+    }
+
+    #[test]
+    /// Test decimal to string conversion failure
+    fn test_formatted_number_too_large() {
+        let cf = CoordinateFormat(4, 5);
+        let d = Decimal(12345000000000).gerber(&cf);
+        assert!(d.is_err());
     }
 
 }

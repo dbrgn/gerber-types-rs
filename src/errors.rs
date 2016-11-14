@@ -4,6 +4,6 @@ quick_error! {
     #[derive(Debug)]
     pub enum GerberError {
         /// Bad coordinate format
-        CoordinateFormatError(err: String) {}
+        CoordinateFormatError(msg: String) {}
     }
 }
