@@ -7,8 +7,7 @@ use std::convert::{From, Into};
 /// a coordinate number. For example, the `24` format specifies 2 integer and 4
 /// decimal places. The number of decimal places must be 4, 5 or 6. The number
 /// of integer places must be not more than 6. Thus the longest representable
-/// coordinate number is `nnnnnn.nnnnnn`. The same format must be defined for X
-/// and Y. Signs in coordinates are allowed; the `+` sign is optional.
+/// coordinate number is `nnnnnn.nnnnnn`.
 #[derive(Debug, Copy, Clone)]
 pub struct CoordinateFormat(pub u8, pub u8);
 
