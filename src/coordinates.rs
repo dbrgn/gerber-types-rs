@@ -1,8 +1,9 @@
 //! Custom data types used in the Gerber format.
 
 use std::convert::Into;
-use conv::TryFrom;
 use std::num::FpCategory;
+
+use conv::TryFrom;
 
 use ::GerberError;
 
