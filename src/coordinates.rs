@@ -21,14 +21,14 @@ pub struct CoordinateFormat(pub u8, pub u8);
 /// A coordinate number must have at least one character. Zero therefore must
 /// be encoded as `0`.
 ///
-/// The value is stored as a 64 bit integer with 9 decimal places.
+/// The value is stored as a 64 bit integer with 6 decimal places.
 #[derive(Debug, PartialEq, Copy, Clone)]
 pub struct CoordinateNumber {
     nano: i64,
 }
 
-const DECIMAL_PLACES_CHARS: u8 = 9;
-const DECIMAL_PLACES: i64 = 1_000_000_000;
+const DECIMAL_PLACES_CHARS: u8 = 6;
+const DECIMAL_PLACES: i64 = 1_000_000;
 
 impl From<f64> for CoordinateNumber {
     fn from(val: f64) -> CoordinateNumber {
@@ -74,11 +74,11 @@ mod test {
     /// Test float to decimal conversion
     fn test_from_f64() {
 
-        let a = CoordinateNumber { nano: 1375000000i64 };
+        let a = CoordinateNumber { nano: 1375000i64 };
         let b = CoordinateNumber::from(1.375f64);
         assert_eq!(a, b);
 
-        let c = CoordinateNumber { nano: 123456888888000i64 };
+        let c = CoordinateNumber { nano: 123456888888i64 };
         let d = CoordinateNumber::from(123456.888888f64);
         assert_eq!(c, d);
 
@@ -90,11 +90,11 @@ mod test {
     #[test]
     /// Test decimal to float conversion
     fn test_into_f64() {
-        let a: f64 = CoordinateNumber { nano: 1375000000i64 }.into();
+        let a: f64 = CoordinateNumber { nano: 1375000i64 }.into();
         let b = 1.375f64;
         assert_eq!(a, b);
 
-        let c: f64 = CoordinateNumber { nano: 123456888888000i64 }.into();
+        let c: f64 = CoordinateNumber { nano: 123456888888i64 }.into();
         let d = 123456.888888f64;
         assert_eq!(c, d);
 
@@ -118,16 +118,16 @@ mod test {
     #[test]
     /// Test decimal to string conversion
     fn test_formatted_66() {
-        let cf = CoordinateFormat(6, 6);
-        let d = CoordinateNumber { nano: 123456789012345 }.gerber(&cf).unwrap();
-        assert_eq!(d, "123456789012".to_string());
+        let cf = CoordinateFormat(6, 5);
+        let d = CoordinateNumber { nano: 123456789012 }.gerber(&cf).unwrap();
+        assert_eq!(d, "12345678901".to_string());
     }
 
     #[test]
     /// Test decimal to string conversion
     fn test_formatted_54() {
         let cf = CoordinateFormat(5, 4);
-        let d = CoordinateNumber { nano: 12345678901234 }.gerber(&cf).unwrap();
+        let d = CoordinateNumber { nano: 12345678901 }.gerber(&cf).unwrap();
         assert_eq!(d, "123456789".to_string());
     }
 
@@ -135,7 +135,7 @@ mod test {
     /// Test decimal to string conversion failure
     fn test_formatted_number_too_large() {
         let cf = CoordinateFormat(4, 5);
-        let d = CoordinateNumber { nano: 12345000000000 }.gerber(&cf);
+        let d = CoordinateNumber { nano: 12345000000 }.gerber(&cf);
         assert!(d.is_err());
     }
 
@@ -143,7 +143,7 @@ mod test {
     /// Test decimal to string conversion (rounding of decimal part)
     fn test_formatted_44_round_decimal() {
         let cf = CoordinateFormat(4, 4);
-        let d = CoordinateNumber { nano: 1234432199999 }.gerber(&cf).unwrap();
+        let d = CoordinateNumber { nano: 1234432199 }.gerber(&cf).unwrap();
         assert_eq!(d, "12344322".to_string());
     }
 
