@@ -2,6 +2,8 @@
 
 use std::convert::{From, Into};
 
+use ::GerberError;
+
 
 /// The coordinate format specifies the number of integer and decimal places in
 /// a coordinate number. For example, the `24` format specifies 2 integer and 4
@@ -51,10 +53,10 @@ impl Into<f64> for CoordinateNumber {
 }
 
 impl CoordinateNumber {
-    fn gerber(&self, format: &CoordinateFormat) -> Result<String, ::GerberError> {
+    fn gerber(&self, format: &CoordinateFormat) -> Result<String, GerberError> {
         // Format invariants
         if format.decimal > DECIMAL_PLACES_CHARS {
-            return Err(::GerberError::CoordinateFormatError("Invalid precision: Too high!".into()))
+            return Err(GerberError::CoordinateFormatError("Invalid precision: Too high!".into()))
         }
 
         // If value is 0, return corresponding string
@@ -65,7 +67,7 @@ impl CoordinateNumber {
         // Convert to string
         let integer: i64 = self.nano / DECIMAL_PLACES;
         if integer > 10i64.pow(format.integer as u32) {
-            return Err(::GerberError::CoordinateFormatError("Decimal is too large for chosen format".into()));
+            return Err(GerberError::CoordinateFormatError("Decimal is too large for chosen format".into()));
         }
         let divisor: i64 = 10i64.pow((DECIMAL_PLACES_CHARS - format.decimal) as u32);
         let decimal: i64 = (self.nano % DECIMAL_PLACES) / divisor;
