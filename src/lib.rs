@@ -12,6 +12,7 @@
 
 extern crate chrono;
 extern crate uuid;
+extern crate conv;
 #[macro_use] extern crate quick_error;
 
 mod types;

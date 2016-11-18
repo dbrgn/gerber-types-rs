@@ -1,6 +1,8 @@
 //! Custom data types used in the Gerber format.
 
-use std::convert::{From, Into};
+use std::convert::Into;
+use conv::TryFrom;
+use std::num::FpCategory;
 
 use ::GerberError;
 
@@ -40,9 +42,16 @@ pub struct CoordinateNumber {
 const DECIMAL_PLACES_CHARS: u8 = 6;
 const DECIMAL_PLACES: i64 = 1_000_000;
 
-impl From<f64> for CoordinateNumber {
-    fn from(val: f64) -> CoordinateNumber {
-        CoordinateNumber { nano: (val * DECIMAL_PLACES as f64) as i64 }
+impl TryFrom<f64> for CoordinateNumber {
+    type Err = GerberError;
+    fn try_from(val: f64) -> Result<Self, Self::Err> {
+        match val.classify() {
+            FpCategory::Nan => Err(GerberError::ConversionError("Value is NaN".into())),
+            FpCategory::Infinite => Err(GerberError::ConversionError("Value is infinite".into())),
+            FpCategory::Zero => Ok(CoordinateNumber { nano: 0 }),
+            FpCategory::Subnormal => panic!("TODO: not yet decided"),
+            FpCategory::Normal => Ok(CoordinateNumber { nano: (val * DECIMAL_PLACES as f64) as i64 }),
+        }
     }
 }
 
@@ -83,22 +92,33 @@ impl CoordinateNumber {
 #[cfg(test)]
 mod test {
     use super::*;
+    use std::f64;
+    use conv::TryFrom;
 
     #[test]
     /// Test float to decimal conversion
-    fn test_from_f64() {
-
+    fn test_try_from_f64_success() {
         let a = CoordinateNumber { nano: 1375000i64 };
-        let b = CoordinateNumber::from(1.375f64);
+        let b = CoordinateNumber::try_from(1.375f64).unwrap();
         assert_eq!(a, b);
 
         let c = CoordinateNumber { nano: 123456888888i64 };
-        let d = CoordinateNumber::from(123456.888888f64);
+        let d = CoordinateNumber::try_from(123456.888888f64).unwrap();
         assert_eq!(c, d);
 
         let e = CoordinateNumber { nano: 0i64 };
-        let f = CoordinateNumber::from(0f64);
+        let f = CoordinateNumber::try_from(0f64).unwrap();
         assert_eq!(e, f);
+    }
+
+    #[test]
+    /// Test how NaN is handled
+    fn test_try_from_f64_fail() {
+        let cn = CoordinateNumber::try_from(f64::NAN);
+        assert!(cn.is_err());
+
+        let cn = CoordinateNumber::try_from(f64::INFINITY);
+        assert!(cn.is_err());
     }
 
     #[test]

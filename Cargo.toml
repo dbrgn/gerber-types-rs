@@ -20,6 +20,7 @@ clippy = {version = "~0.0.79", optional = true}
 chrono = "0.2"
 uuid = "0.2"
 quick-error = "1.1.0"
+conv = "0.3"
 
 [features]
 nightly = ["clippy"]
