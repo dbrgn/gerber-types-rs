@@ -41,7 +41,7 @@ pub struct CoordinateNumber {
 }
 
 const DECIMAL_PLACES_CHARS: u8 = 6;
-const DECIMAL_PLACES: i64 = 1_000_000;
+const DECIMAL_PLACES_FACTOR: i64 = 1_000_000;
 
 impl TryFrom<f64> for CoordinateNumber {
     type Err = GerberError;
@@ -51,14 +51,14 @@ impl TryFrom<f64> for CoordinateNumber {
             FpCategory::Infinite => Err(GerberError::ConversionError("Value is infinite".into())),
             FpCategory::Zero => Ok(CoordinateNumber { nano: 0 }),
             FpCategory::Subnormal => panic!("TODO: not yet decided"),
-            FpCategory::Normal => Ok(CoordinateNumber { nano: (val * DECIMAL_PLACES as f64) as i64 }),
+            FpCategory::Normal => Ok(CoordinateNumber { nano: (val * DECIMAL_PLACES_FACTOR as f64) as i64 }),
         }
     }
 }
 
 impl Into<f64> for CoordinateNumber {
     fn into(self) -> f64 {
-        (self.nano as f64) / DECIMAL_PLACES as f64
+        (self.nano as f64) / DECIMAL_PLACES_FACTOR as f64
     }
 }
 
@@ -75,14 +75,14 @@ impl CoordinateNumber {
         }
 
         // Get integer part by doing floor division
-        let integer: i64 = self.nano / DECIMAL_PLACES;
+        let integer: i64 = self.nano / DECIMAL_PLACES_FACTOR;
         if integer > 10i64.pow(format.integer as u32) {
             return Err(GerberError::CoordinateFormatError("Decimal is too large for chosen format".into()));
         }
 
         // Get decimal part with proper rounding
         let divisor: i64 = 10i64.pow((DECIMAL_PLACES_CHARS - format.decimal) as u32);
-        let decimal: i64 = ((self.nano % DECIMAL_PLACES) + (divisor / 2)) / divisor;
+        let decimal: i64 = ((self.nano % DECIMAL_PLACES_FACTOR) + (divisor / 2)) / divisor;
 
         // Convert to string
         Ok(format!("{}{}", integer, decimal))
