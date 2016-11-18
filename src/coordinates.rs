@@ -82,7 +82,7 @@ impl CoordinateNumber {
 
         // Get decimal part with proper rounding
         let divisor: i64 = 10i64.pow((DECIMAL_PLACES_CHARS - format.decimal) as u32);
-        let decimal: i64 = ((self.nano % DECIMAL_PLACES_FACTOR) + (divisor / 2)) / divisor;
+        let decimal: i64 = ((self.nano % DECIMAL_PLACES_FACTOR).abs() + (divisor / 2)) / divisor;
 
         // Convert to string
         Ok(format!("{}{}", integer, decimal))
@@ -110,6 +110,10 @@ mod test {
         let e = CoordinateNumber { nano: 0i64 };
         let f = CoordinateNumber::try_from(0f64).unwrap();
         assert_eq!(e, f);
+
+        let g = CoordinateNumber { nano: -12345678 };
+        let h = CoordinateNumber::try_from(-12.345678).unwrap();
+        assert_eq!(g, h);
     }
 
     #[test]
@@ -176,10 +180,18 @@ mod test {
 
     #[test]
     /// Test coordinate number to string conversion (rounding of decimal part)
-    fn test_formatted_44_round_decimal() {
+    fn test_formatted_44_rounding() {
         let cf = CoordinateFormat::new(4, 4);
         let d = CoordinateNumber { nano: 1234432199 }.gerber(&cf).unwrap();
         assert_eq!(d, "12344322".to_string());
+    }
+
+    #[test]
+    /// Test negative coordinate number to string conversion
+    fn test_formatted_negative_rounding() {
+        let cf = CoordinateFormat::new(6, 4);
+        let d = CoordinateNumber { nano: -123456789099 }.gerber(&cf).unwrap();
+        assert_eq!(d, "-1234567891".to_string());
     }
 
 }
