@@ -97,7 +97,7 @@ mod test {
     use conv::TryFrom;
 
     #[test]
-    /// Test float to decimal conversion
+    /// Test float to coordinate number conversion
     fn test_try_from_f64_success() {
         let a = CoordinateNumber { nano: 1375000i64 };
         let b = CoordinateNumber::try_from(1.375f64).unwrap();
@@ -113,7 +113,7 @@ mod test {
     }
 
     #[test]
-    /// Test how NaN is handled
+    /// Test failing float to coordinate number conversion
     fn test_try_from_f64_fail() {
         let cn = CoordinateNumber::try_from(f64::NAN);
         assert!(cn.is_err());
@@ -123,7 +123,7 @@ mod test {
     }
 
     #[test]
-    /// Test decimal to float conversion
+    /// Test coordinate number to float conversion
     fn test_into_f64() {
         let a: f64 = CoordinateNumber { nano: 1375000i64 }.into();
         let b = 1.375f64;
@@ -139,7 +139,7 @@ mod test {
     }
 
     #[test]
-    /// Test decimal to string conversion when it's 0
+    /// Test coordinate number to string conversion when it's 0
     fn test_formatted_zero() {
         let cf1 = CoordinateFormat::new(6, 6);
         let cf2 = CoordinateFormat::new(2, 4);
@@ -151,7 +151,7 @@ mod test {
     }
 
     #[test]
-    /// Test decimal to string conversion
+    /// Test coordinate number to string conversion
     fn test_formatted_66() {
         let cf = CoordinateFormat::new(6, 5);
         let d = CoordinateNumber { nano: 123456789012 }.gerber(&cf).unwrap();
@@ -159,7 +159,7 @@ mod test {
     }
 
     #[test]
-    /// Test decimal to string conversion
+    /// Test coordinate number to string conversion
     fn test_formatted_54() {
         let cf = CoordinateFormat::new(5, 4);
         let d = CoordinateNumber { nano: 12345678901 }.gerber(&cf).unwrap();
@@ -167,7 +167,7 @@ mod test {
     }
 
     #[test]
-    /// Test decimal to string conversion failure
+    /// Test coordinate number to string conversion failure
     fn test_formatted_number_too_large() {
         let cf = CoordinateFormat::new(4, 5);
         let d = CoordinateNumber { nano: 12345000000 }.gerber(&cf);
@@ -175,7 +175,7 @@ mod test {
     }
 
     #[test]
-    /// Test decimal to string conversion (rounding of decimal part)
+    /// Test coordinate number to string conversion (rounding of decimal part)
     fn test_formatted_44_round_decimal() {
         let cf = CoordinateFormat::new(4, 4);
         let d = CoordinateNumber { nano: 1234432199 }.gerber(&cf).unwrap();
