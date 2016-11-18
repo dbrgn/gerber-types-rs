@@ -80,7 +80,7 @@ impl CoordinateNumber {
             return Err(GerberError::CoordinateFormatError("Decimal is too large for chosen format".into()));
         }
 
-        // Get decimal part
+        // Get decimal part with proper rounding
         let divisor: i64 = 10i64.pow((DECIMAL_PLACES_CHARS - format.decimal) as u32);
         let decimal: i64 = ((self.nano % DECIMAL_PLACES) + (divisor / 2)) / divisor;
 
