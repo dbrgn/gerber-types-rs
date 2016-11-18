@@ -53,7 +53,7 @@ impl Into<f64> for CoordinateNumber {
 }
 
 impl CoordinateNumber {
-    fn gerber(&self, format: &CoordinateFormat) -> Result<String, GerberError> {
+    pub fn gerber(&self, format: &CoordinateFormat) -> Result<String, GerberError> {
         // Format invariants
         if format.decimal > DECIMAL_PLACES_CHARS {
             return Err(GerberError::CoordinateFormatError("Invalid precision: Too high!".into()))
@@ -64,13 +64,17 @@ impl CoordinateNumber {
             return Ok("0".to_string());
         }
 
-        // Convert to string
+        // Get integer part by doing floor division
         let integer: i64 = self.nano / DECIMAL_PLACES;
         if integer > 10i64.pow(format.integer as u32) {
             return Err(GerberError::CoordinateFormatError("Decimal is too large for chosen format".into()));
         }
+
+        // Get decimal part
         let divisor: i64 = 10i64.pow((DECIMAL_PLACES_CHARS - format.decimal) as u32);
-        let decimal: i64 = (self.nano % DECIMAL_PLACES) / divisor;
+        let decimal: i64 = ((self.nano % DECIMAL_PLACES) + (divisor / 2)) / divisor;
+
+        // Convert to string
         Ok(format!("{}{}", integer, decimal))
     }
 }
