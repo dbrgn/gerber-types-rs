@@ -152,7 +152,7 @@ mod test {
 
     #[test]
     /// Test coordinate number to string conversion
-    fn test_formatted_66() {
+    fn test_formatted_65() {
         let cf = CoordinateFormat::new(6, 5);
         let d = CoordinateNumber { nano: 123456789012 }.gerber(&cf).unwrap();
         assert_eq!(d, "12345678901".to_string());
