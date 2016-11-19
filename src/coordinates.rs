@@ -49,8 +49,7 @@ impl TryFrom<f64> for CoordinateNumber {
         match val.classify() {
             FpCategory::Nan => Err(GerberError::ConversionError("Value is NaN".into())),
             FpCategory::Infinite => Err(GerberError::ConversionError("Value is infinite".into())),
-            FpCategory::Zero => Ok(CoordinateNumber { nano: 0 }),
-            FpCategory::Subnormal => panic!("TODO: not yet decided"),
+            FpCategory::Zero | FpCategory::Subnormal => Ok(CoordinateNumber { nano: 0 }),
             FpCategory::Normal => Ok(CoordinateNumber { nano: (val * DECIMAL_PLACES_FACTOR as f64) as i64 }),
         }
     }
