@@ -1,6 +1,6 @@
 //! Custom data types used in the Gerber format.
 
-use std::convert::Into;
+use std::convert::{From, Into};
 use std::num::FpCategory;
 use std::i64;
 
@@ -69,6 +69,24 @@ impl Into<f64> for CoordinateNumber {
     }
 }
 
+macro_rules! impl_from_integer {
+    ($class:ty) => {
+        impl From<$class> for CoordinateNumber {
+            fn from(val: $class) -> Self {
+                CoordinateNumber { nano: val as i64 * DECIMAL_PLACES_FACTOR }
+            }
+        }
+    }
+}
+
+// These are the types we can safely multiply with DECIMAL_PLACES_FACTOR
+// without the risk of an overflow.
+impl_from_integer!(i8);
+impl_from_integer!(i16);
+impl_from_integer!(i32);
+impl_from_integer!(u8);
+impl_from_integer!(u16);
+
 impl CoordinateNumber {
     pub fn gerber(&self, format: &CoordinateFormat) -> Result<String, GerberError> {
         // Format invariants
@@ -102,6 +120,30 @@ mod test {
     use super::*;
     use std::f64;
     use conv::TryFrom;
+
+    #[test]
+    /// Test integer to coordinate number conversion
+    fn test_from_i8() {
+        let a = CoordinateNumber { nano: 13000000 };
+        let b = CoordinateNumber::from(13i8);
+        assert_eq!(a, b);
+
+        let c = CoordinateNumber { nano: -99000000 };
+        let d = CoordinateNumber::from(-99i8);
+        assert_eq!(c, d);
+    }
+
+    #[test]
+    /// Test integer to coordinate number conversion
+    fn test_from_i32() {
+        let a = CoordinateNumber { nano: 13000000 };
+        let b = CoordinateNumber::from(13);
+        assert_eq!(a, b);
+
+        let c = CoordinateNumber { nano: -998000000 };
+        let d = CoordinateNumber::from(-998);
+        assert_eq!(c, d);
+    }
 
     #[test]
     /// Test float to coordinate number conversion
