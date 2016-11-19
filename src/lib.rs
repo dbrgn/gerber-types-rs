@@ -12,14 +12,20 @@
 
 extern crate chrono;
 extern crate uuid;
+extern crate conv;
+#[macro_use] extern crate quick_error;
 
 mod types;
 mod attributes;
 mod codegen;
+mod coordinates;
+mod errors;
 
 pub use types::*;
 pub use attributes::*;
 pub use codegen::*;
+pub use coordinates::*;
+pub use errors::*;
 
 
 #[cfg(test)]

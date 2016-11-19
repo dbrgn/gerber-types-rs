@@ -1,3 +1,12 @@
+//! Types for Gerber code generation.
+//!
+//! All types are stateless, meaning that they contain all information in order
+//! to render themselves. This means for example that each `Coordinates`
+//! instance contains a reference to the coordinate format to be used.
+
+use ::{CoordinateFormat, CoordinateNumber};
+
+
 /// Coordinates are part of an operation.
 ///
 /// Coordinates are modal. If an X is omitted, the X coordinate of the
