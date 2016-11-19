@@ -9,3 +9,5 @@ quick_error! {
         CoordinateFormatError(msg: String) {}
     }
 }
+
+pub type GerberResult<T> = Result<T, GerberError>;
