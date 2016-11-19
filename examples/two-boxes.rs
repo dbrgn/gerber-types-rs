@@ -124,5 +124,5 @@ fn main() {
         ),
         Command::FunctionCode(FunctionCode::MCode(MCode::EndOfFile)),
     ];
-    println!("{}", commands.to_code());
+    println!("{}", commands.to_code().unwrap());
 }
