@@ -2,6 +2,7 @@
 
 use std::convert::Into;
 use std::num::FpCategory;
+use std::i64;
 
 use conv::TryFrom;
 
@@ -50,7 +51,14 @@ impl TryFrom<f64> for CoordinateNumber {
             FpCategory::Nan => Err(GerberError::ConversionError("Value is NaN".into())),
             FpCategory::Infinite => Err(GerberError::ConversionError("Value is infinite".into())),
             FpCategory::Zero | FpCategory::Subnormal => Ok(CoordinateNumber { nano: 0 }),
-            FpCategory::Normal => Ok(CoordinateNumber { nano: (val * DECIMAL_PLACES_FACTOR as f64) as i64 }),
+            FpCategory::Normal => {
+                let multiplied = val * DECIMAL_PLACES_FACTOR as f64;
+                if (multiplied > i64::MAX as f64) || (multiplied < i64::MIN as f64) {
+                    Err(GerberError::ConversionError("Value is out of bounds".into()))
+                } else {
+                    Ok(CoordinateNumber { nano: multiplied as i64 })
+                }
+            }
         }
     }
 }
@@ -118,11 +126,17 @@ mod test {
     #[test]
     /// Test failing float to coordinate number conversion
     fn test_try_from_f64_fail() {
-        let cn = CoordinateNumber::try_from(f64::NAN);
-        assert!(cn.is_err());
+        let cn1 = CoordinateNumber::try_from(f64::NAN);
+        assert!(cn1.is_err());
 
-        let cn = CoordinateNumber::try_from(f64::INFINITY);
-        assert!(cn.is_err());
+        let cn2 = CoordinateNumber::try_from(f64::INFINITY);
+        assert!(cn2.is_err());
+
+        let cn3 = CoordinateNumber::try_from(f64::MAX - 1.0);
+        assert!(cn3.is_err());
+
+        let cn4 = CoordinateNumber::try_from(f64::MIN + 1.0);
+        assert!(cn4.is_err());
     }
 
     #[test]
