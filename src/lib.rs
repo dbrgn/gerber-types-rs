@@ -17,12 +17,14 @@ extern crate conv;
 
 mod types;
 mod attributes;
+mod macros;
 mod codegen;
 mod coordinates;
 mod errors;
 
 pub use types::*;
 pub use attributes::*;
+pub use macros::*;
 pub use codegen::*;
 pub use coordinates::*;
 pub use errors::*;

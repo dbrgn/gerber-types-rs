@@ -85,7 +85,7 @@ pub enum ExtendedCode {
     /// AD
     ApertureDefinition(ApertureDefinition),
     /// AM
-    ApertureMacro, // TODO
+    ApertureMacro(::macros::ApertureMacro),
     /// LP
     LoadPolarity(Polarity),
     /// SR

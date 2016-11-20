@@ -165,7 +165,7 @@ impl GerberCode for ExtendedCode {
             ExtendedCode::CoordinateFormat(ref cf) => format!("%FSLAX{0}{1}Y{0}{1}*%", cf.integer, cf.decimal),
             ExtendedCode::Unit(ref unit) => format!("%MO{}*%", try!(unit.to_code())),
             ExtendedCode::ApertureDefinition(ref def) => format!("%ADD{}*%", try!(def.to_code())),
-            ExtendedCode::ApertureMacro => panic!("not yet implemented"),
+            ExtendedCode::ApertureMacro(ref am) => panic!("not yet implemented"),
             ExtendedCode::LoadPolarity(ref polarity) => format!("%LP{}*%", try!(polarity.to_code())),
             ExtendedCode::StepAndRepeat(ref sar) => format!("%SR{}*%", try!(sar.to_code())),
             ExtendedCode::FileAttribute(ref attr) => format!("%TF.{}*%", try!(attr.to_code())),
