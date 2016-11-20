@@ -4,6 +4,8 @@
 //! to render themselves. This means for example that each `Coordinates`
 //! instance contains a reference to the coordinate format to be used.
 
+use std::convert::Into;
+
 use ::{CoordinateFormat, CoordinateNumber};
 
 
@@ -13,21 +15,22 @@ use ::{CoordinateFormat, CoordinateNumber};
 /// current point is used. Similar for Y.
 #[derive(Debug)]
 pub struct Coordinates {
-    pub x: Option<i32>,
-    pub y: Option<i32>,
+    pub x: Option<CoordinateNumber>,
+    pub y: Option<CoordinateNumber>,
+    pub format: CoordinateFormat,
 }
 
 impl Coordinates {
-    pub fn new(x: i32, y: i32) -> Self {
-        Coordinates { x: Some(x), y: Some(y) }
+    pub fn new<T>(x: T, y: T, format: CoordinateFormat) -> Self where T: Into<CoordinateNumber> {
+        Coordinates { x: Some(x.into()), y: Some(y.into()), format: format }
     }
 
-    pub fn at_x(x: i32) -> Self {
-        Coordinates { x: Some(x), y: None }
+    pub fn at_x<T>(x: T, format: CoordinateFormat) -> Self where T: Into<CoordinateNumber> {
+        Coordinates { x: Some(x.into()), y: None, format: format }
     }
 
-    pub fn at_y(y: i32) -> Self {
-        Coordinates { x: None, y: Some(y) }
+    pub fn at_y<T>(y: T, format: CoordinateFormat) -> Self where T: Into<CoordinateNumber> {
+        Coordinates { x: None, y: Some(y.into()), format: format }
     }
 }
 
@@ -35,21 +38,22 @@ impl Coordinates {
 /// interpolation mode.
 #[derive(Debug)]
 pub struct CoordinateOffset {
-    pub x: Option<i32>,
-    pub y: Option<i32>,
+    pub x: Option<CoordinateNumber>,
+    pub y: Option<CoordinateNumber>,
+    pub format: CoordinateFormat,
 }
 
 impl CoordinateOffset {
-    pub fn new(x: i32, y: i32) -> Self {
-        CoordinateOffset { x: Some(x), y: Some(y) }
+    pub fn new<T>(x: T, y: T, format: CoordinateFormat) -> Self where T: Into<CoordinateNumber> {
+        CoordinateOffset { x: Some(x.into()), y: Some(y.into()), format: format }
     }
 
-    pub fn at_x(x: i32) -> Self {
-        CoordinateOffset { x: Some(x), y: None }
+    pub fn at_x<T>(x: T, format: CoordinateFormat) -> Self where T: Into<CoordinateNumber> {
+        CoordinateOffset { x: Some(x.into()), y: None, format: format }
     }
 
-    pub fn at_y(y: i32) -> Self {
-        CoordinateOffset { x: None, y: Some(y) }
+    pub fn at_y<T>(y: T, format: CoordinateFormat) -> Self where T: Into<CoordinateNumber> {
+        CoordinateOffset { x: None, y: Some(y.into()), format: format }
     }
 }
 
@@ -75,7 +79,7 @@ pub enum FunctionCode {
 #[derive(Debug)]
 pub enum ExtendedCode {
     /// FS
-    CoordinateFormat(u8, u8),
+    CoordinateFormat(CoordinateFormat),
     /// MO
     Unit(Unit),
     /// AD
