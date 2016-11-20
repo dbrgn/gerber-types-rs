@@ -100,7 +100,7 @@ impl CoordinateNumber {
         if format.decimal > DECIMAL_PLACES_CHARS {
             return Err(GerberError::CoordinateFormatError("Invalid precision: Too high!".into()))
         }
-        if self.nano >= 10_i64.pow((format.integer + DECIMAL_PLACES_CHARS) as u32) {
+        if self.nano.abs() >= 10_i64.pow((format.integer + DECIMAL_PLACES_CHARS) as u32) {
             return Err(GerberError::CoordinateFormatError("Number is too large for chosen format!".into()));
         }
 
@@ -238,6 +238,14 @@ mod test {
     fn test_formatted_number_too_large() {
         let cf = CoordinateFormat::new(4, 5);
         let d = CoordinateNumber { nano: 12345000000 }.gerber(&cf);
+        assert!(d.is_err());
+    }
+    
+    #[test]
+    /// Test coordinate number to string conversion failure
+    fn test_formatted_negative_number_too_large() {
+        let cf = CoordinateFormat::new(4, 5);
+        let d = CoordinateNumber { nano: -12345000000 }.gerber(&cf);
         assert!(d.is_err());
     }
 
