@@ -3,13 +3,15 @@
 extern crate gerber_types;
 
 use gerber_types::{Command};
-use gerber_types::{ExtendedCode, Unit, FileAttribute, Part, Polarity,
+use gerber_types::{ExtendedCode, Unit, FileAttribute, GenerationSoftware, Part, Polarity,
                    ApertureDefinition, Aperture, Circle, CoordinateFormat};
 use gerber_types::{FunctionCode};
-use gerber_types::{DCode, Operation, Coordinates, CoordinateOffset};
+use gerber_types::{DCode, Operation, Coordinates};
 use gerber_types::{GCode, InterpolationMode};
 use gerber_types::{MCode};
 use gerber_types::GerberCode;
+
+const VERSION: &'static str = env!("CARGO_PKG_VERSION");
 
 fn main() {
     let cf = CoordinateFormat::new(2, 5);
@@ -22,6 +24,13 @@ fn main() {
         Command::ExtendedCode(ExtendedCode::CoordinateFormat(cf)),
         Command::ExtendedCode(
             ExtendedCode::Unit(Unit::Millimeters)
+        ),
+        Command::ExtendedCode(
+            ExtendedCode::FileAttribute(
+                FileAttribute::GenerationSoftware(
+                    GenerationSoftware::new("Rust Gerber", "gerber-types-rs", Some(VERSION))
+                )
+            )
         ),
         Command::ExtendedCode(
             ExtendedCode::FileAttribute(

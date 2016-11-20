@@ -6,11 +6,7 @@ pub enum FileAttribute {
     Part(Part),
     FileFunction(FileFunction),
     FilePolarity(FilePolarity),
-    GenerationSoftware {
-        vendor: String,
-        application: String,
-        version: String,
-    },
+    GenerationSoftware(GenerationSoftware),
     CreationDate(DateTime<UTC>),
     ProjectId {
         id: String,
@@ -118,6 +114,23 @@ pub enum FileFunction {
 pub enum FilePolarity {
     Positive,
     Negative,
+}
+
+#[derive(Debug)]
+pub struct GenerationSoftware {
+    pub vendor: String,
+    pub application: String,
+    pub version: Option<String>,
+}
+
+impl GenerationSoftware {
+    pub fn new<S: Into<String>>(vendor: S, application: S, version: Option<S>) -> Self {
+        GenerationSoftware {
+            vendor: vendor.into(),
+            application: application.into(),
+            version: version.map(|s| s.into()),
+        }
+    }
 }
 
 #[derive(Debug)]

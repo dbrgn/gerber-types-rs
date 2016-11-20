@@ -262,10 +262,21 @@ impl GerberCode for Part {
     }
 }
 
+impl GerberCode for GenerationSoftware {
+    fn to_code(&self) -> GerberResult<String> {
+        let code = match self.version {
+            Some(ref v) => format!("{},{},{}", self.vendor, self.application, v),
+            None => format!("{},{}", self.vendor, self.application),
+        };
+        Ok(code)
+    }
+}
+
 impl GerberCode for FileAttribute {
     fn to_code(&self) -> GerberResult<String> {
         let code = match *self {
             FileAttribute::Part(ref part) => format!("Part,{}", try!(part.to_code())),
+            FileAttribute::GenerationSoftware(ref gs) => format!("GenerationSoftware,{}", try!(gs.to_code())),
             _ => panic!("Not yet implemented"),
         };
         Ok(code)

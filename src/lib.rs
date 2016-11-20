@@ -267,8 +267,20 @@ mod test {
 
     #[test]
     fn test_file_attribute_to_code() {
-        let a = ExtendedCode::FileAttribute(FileAttribute::Part(Part::Other("foo".into())));
-        assert_eq!(a.to_code().unwrap(), "%TF.Part,Other,foo*%".to_string());
+        let part = ExtendedCode::FileAttribute(FileAttribute::Part(
+            Part::Other("foo".into())
+        ));
+        assert_eq!(part.to_code().unwrap(), "%TF.Part,Other,foo*%".to_string());
+
+        let gensw1 = ExtendedCode::FileAttribute(FileAttribute::GenerationSoftware(
+            GenerationSoftware::new("Vend0r", "superpcb", None)
+        ));
+        assert_eq!(gensw1.to_code().unwrap(), "%TF.GenerationSoftware,Vend0r,superpcb*%".to_string());
+
+        let gensw2 = ExtendedCode::FileAttribute(FileAttribute::GenerationSoftware(
+            GenerationSoftware::new("Vend0r", "superpcb", Some("1.2.3"))
+        ));
+        assert_eq!(gensw2.to_code().unwrap(), "%TF.GenerationSoftware,Vend0r,superpcb,1.2.3*%".to_string());
     }
 
 }
