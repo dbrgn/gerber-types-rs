@@ -39,7 +39,7 @@ pub struct CirclePrimitive {
     /// The rotation angle is specified by a decimal, in degrees. The primitive
     /// is rotated around the origin of the macro definition, i.e. the (0, 0)
     /// point of macro coordinates.
-    /// 
+    ///
     /// The rotation modifier is optional. The default is no rotation. (We
     /// recommend always to set the angle explicitly.
     pub angle: Option<f64>,
@@ -48,7 +48,7 @@ pub struct CirclePrimitive {
 impl GerberCode for CirclePrimitive {
     fn to_code(&self) -> GerberResult<String> {
         let mut code = "1,".to_string();
-        code.push_str(if self.exposure { "1" } else { "0" });
+        code.push_str(&try!(self.exposure.to_code()));
         code.push_str(&format!(",{},{},{}", self.diameter, self.center.0, self.center.1));
         if let Some(a) = self.angle {
             code.push_str(&format!(",{}", a));

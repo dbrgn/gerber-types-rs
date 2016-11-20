@@ -7,6 +7,17 @@ pub trait GerberCode {
     fn to_code(&self) -> GerberResult<String>;
 }
 
+/// Implement GerberCode for booleans
+impl GerberCode for bool {
+    fn to_code(&self) -> GerberResult<String> {
+        Ok(if *self {
+            "1".to_string()
+        } else {
+            "0".to_string()
+        })
+    }
+}
+
 /// Implement GerberCode for Vectors of types that implement GerberCode.
 impl<T: GerberCode> GerberCode for Vec<T> {
     fn to_code(&self) -> GerberResult<String> {
