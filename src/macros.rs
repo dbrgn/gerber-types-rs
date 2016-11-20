@@ -11,6 +11,7 @@ pub struct ApertureMacro {
 pub enum Primitive {
     Comment(String),
     Circle(CirclePrimitive),
+    VectorLine(VectorLinePrimitive),
 }
 
 impl GerberCode for Primitive {
@@ -18,6 +19,7 @@ impl GerberCode for Primitive {
         let code = match *self {
             Primitive::Comment(ref s) => s.clone(),
             Primitive::Circle(ref cp) => try!(cp.to_code()),
+            Primitive::VectorLine(ref cp) => try!(cp.to_code()),
         };
         Ok(code)
     }
@@ -57,6 +59,41 @@ impl GerberCode for CirclePrimitive {
     }
 }
 
+#[derive(Debug)]
+pub struct VectorLinePrimitive {
+    /// Exposure off/on
+    pub exposure: bool,
+
+    /// Line width, a decimal >= 0
+    pub width: f64,
+
+    /// Coordinates of start point, a decimal
+    pub start: (f64, f64),
+
+    /// Coordinates of end point, a decimal
+    pub end: (f64, f64),
+
+    /// Rotation angle of the vector line primitive
+    ///
+    /// The rotation angle is specified by a decimal, in degrees. The primitive
+    /// is rotated around the origin of the macro definition, i.e. the (0, 0)
+    /// point of macro coordinates.
+    pub angle: f64,
+}
+
+impl GerberCode for VectorLinePrimitive {
+    fn to_code(&self) -> GerberResult<String> {
+        let code = format!(
+            "20,{},{},{},{},{},{},{}",
+            try!(self.exposure.to_code()),
+            self.width,
+            self.start.0, self.start.1, self.end.0, self.end.1,
+            self.angle
+        );
+        Ok(code)
+    }
+}
+
 
 #[cfg(test)]
 mod test {
@@ -79,5 +116,17 @@ mod test {
             angle: None,
         };
         assert_eq!(no_angle.to_code().unwrap(), "1,0,99.9,1.1,2.2".to_string());
+    }
+
+    #[test]
+    fn test_vector_line_primitive_codegen() {
+        let line = VectorLinePrimitive {
+            exposure: true,
+            width: 0.9,
+            start: (0., 0.45),
+            end: (12., 0.45),
+            angle: 0.,
+        };
+        assert_eq!(line.to_code().unwrap(), "20,1,0.9,0,0.45,12,0.45,0".to_string());
     }
 }
