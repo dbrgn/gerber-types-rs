@@ -89,28 +89,24 @@ impl_from_integer!(u16);
 
 impl CoordinateNumber {
     pub fn gerber(&self, format: &CoordinateFormat) -> Result<String, GerberError> {
-        // Format invariants
+        fn rounded_div(dividend: i64, divisor: i64) -> i64 {
+            if dividend.is_positive() == divisor.is_positive() {
+                (dividend + (divisor / 2)) / divisor
+            } else {
+                (dividend - (divisor / 2)) / divisor
+            }
+        }
+
         if format.decimal > DECIMAL_PLACES_CHARS {
             return Err(GerberError::CoordinateFormatError("Invalid precision: Too high!".into()))
         }
-
-        // If value is 0, return corresponding string
-        if self.nano == 0 {
-            return Ok("0".to_string());
+        if self.nano >= 10_i64.pow((format.integer + DECIMAL_PLACES_CHARS) as u32) {
+            return Err(GerberError::CoordinateFormatError("Number is too large for chosen format!".into()));
         }
 
-        // Get integer part by doing floor division
-        let integer: i64 = self.nano / DECIMAL_PLACES_FACTOR;
-        if integer > 10i64.pow(format.integer as u32) {
-            return Err(GerberError::CoordinateFormatError("Decimal is too large for chosen format".into()));
-        }
-
-        // Get decimal part with proper rounding
-        let divisor: i64 = 10i64.pow((DECIMAL_PLACES_CHARS - format.decimal) as u32);
-        let decimal: i64 = ((self.nano % DECIMAL_PLACES_FACTOR).abs() + (divisor / 2)) / divisor;
-
-        // Convert to string
-        Ok(format!("{}{:0<width$}", integer, decimal, width=format.decimal as usize))
+        let divisor: i64 = 10_i64.pow((DECIMAL_PLACES_CHARS - format.decimal) as u32);
+        let number: i64 = rounded_div(self.nano, divisor);
+        Ok(number.to_string())
     }
 }
 
