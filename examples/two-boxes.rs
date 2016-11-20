@@ -4,7 +4,7 @@ extern crate gerber_types;
 
 use gerber_types::{Command};
 use gerber_types::{ExtendedCode, Unit, FileAttribute, Part, Polarity,
-                   ApertureDefinition, Aperture, Circle};
+                   ApertureDefinition, Aperture, Circle, CoordinateFormat};
 use gerber_types::{FunctionCode};
 use gerber_types::{DCode, Operation, Coordinates, CoordinateOffset};
 use gerber_types::{GCode, InterpolationMode};
@@ -12,15 +12,14 @@ use gerber_types::{MCode};
 use gerber_types::GerberCode;
 
 fn main() {
+    let cf = CoordinateFormat::new(2, 5);
     let commands: Vec<Command> = vec![
         Command::FunctionCode(
             FunctionCode::GCode(
                 GCode::Comment("Ucamco ex. 1: Two square boxes".to_string())
             )
         ),
-        Command::ExtendedCode(
-            ExtendedCode::CoordinateFormat(2, 5)
-        ),
+        Command::ExtendedCode(ExtendedCode::CoordinateFormat(cf)),
         Command::ExtendedCode(
             ExtendedCode::Unit(Unit::Millimeters)
         ),
@@ -48,7 +47,7 @@ fn main() {
         Command::FunctionCode(
             FunctionCode::DCode(
                 DCode::Operation(
-                    Operation::Move(Coordinates::new(0, 0))
+                    Operation::Move(Coordinates::new(0, 0, cf))
                 )
             )
         ),
@@ -62,63 +61,63 @@ fn main() {
         Command::FunctionCode(
             FunctionCode::DCode(
                 DCode::Operation(
-                    Operation::Interpolate(Coordinates::new(5, 0), None)
+                    Operation::Interpolate(Coordinates::new(5, 0, cf), None)
                 )
             )
         ),
         Command::FunctionCode(
             FunctionCode::DCode(
                 DCode::Operation(
-                    Operation::Interpolate(Coordinates::at_y(5), None)
+                    Operation::Interpolate(Coordinates::at_y(5, cf), None)
                 )
             )
         ),
         Command::FunctionCode(
             FunctionCode::DCode(
                 DCode::Operation(
-                    Operation::Interpolate(Coordinates::at_x(0), None)
+                    Operation::Interpolate(Coordinates::at_x(0, cf), None)
                 )
             )
         ),
         Command::FunctionCode(
             FunctionCode::DCode(
                 DCode::Operation(
-                    Operation::Interpolate(Coordinates::at_y(0), None)
+                    Operation::Interpolate(Coordinates::at_y(0, cf), None)
                 )
             )
         ),
         Command::FunctionCode(
             FunctionCode::DCode(
                 DCode::Operation(
-                    Operation::Move(Coordinates::at_x(6))
+                    Operation::Move(Coordinates::at_x(6, cf))
                 )
             )
         ),
         Command::FunctionCode(
             FunctionCode::DCode(
                 DCode::Operation(
-                    Operation::Interpolate(Coordinates::at_x(11), None)
+                    Operation::Interpolate(Coordinates::at_x(11, cf), None)
                 )
             )
         ),
         Command::FunctionCode(
             FunctionCode::DCode(
                 DCode::Operation(
-                    Operation::Interpolate(Coordinates::at_y(5), None)
+                    Operation::Interpolate(Coordinates::at_y(5, cf), None)
                 )
             )
         ),
         Command::FunctionCode(
             FunctionCode::DCode(
                 DCode::Operation(
-                    Operation::Interpolate(Coordinates::at_x(6), None)
+                    Operation::Interpolate(Coordinates::at_x(6, cf), None)
                 )
             )
         ),
         Command::FunctionCode(
             FunctionCode::DCode(
                 DCode::Operation(
-                    Operation::Interpolate(Coordinates::at_y(0), None)
+                    Operation::Interpolate(Coordinates::at_y(0, cf), None)
                 )
             )
         ),
