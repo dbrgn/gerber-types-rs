@@ -110,7 +110,7 @@ impl CoordinateNumber {
         let decimal: i64 = ((self.nano % DECIMAL_PLACES_FACTOR).abs() + (divisor / 2)) / divisor;
 
         // Convert to string
-        Ok(format!("{}{}", integer, decimal))
+        Ok(format!("{}{:0<width$}", integer, decimal, width=format.decimal as usize))
     }
 }
 
@@ -207,6 +207,18 @@ mod test {
         let b = CoordinateNumber { nano: 0 }.gerber(&cf2).unwrap();
         assert_eq!(a, "0".to_string());
         assert_eq!(b, "0".to_string());
+    }
+
+    #[test]
+    /// Test coordinate number to string conversion when the decimal part is 0
+    fn test_formatted_decimal_zero() {
+        let cf1 = CoordinateFormat::new(6, 6);
+        let cf2 = CoordinateFormat::new(2, 4);
+
+        let a = CoordinateNumber { nano: 10000000 }.gerber(&cf1).unwrap();
+        let b = CoordinateNumber { nano: 20000000 }.gerber(&cf2).unwrap();
+        assert_eq!(a, "10000000".to_string());
+        assert_eq!(b, "200000".to_string());
     }
 
     #[test]
