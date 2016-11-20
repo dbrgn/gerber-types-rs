@@ -13,6 +13,16 @@ pub enum Primitive {
     Circle(CirclePrimitive),
 }
 
+impl GerberCode for Primitive {
+    fn to_code(&self) -> GerberResult<String> {
+        let code = match *self {
+            Primitive::Comment(ref s) => s.clone(),
+            Primitive::Circle(ref cp) => try!(cp.to_code()),
+        };
+        Ok(code)
+    }
+}
+
 #[derive(Debug)]
 pub struct CirclePrimitive {
     /// Exposure off/on
