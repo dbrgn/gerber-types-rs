@@ -57,6 +57,7 @@ impl GerberCode for CirclePrimitive {
         if let Some(a) = self.angle {
             code.push_str(&format!(",{}", a));
         }
+        code.push_str("*");
         Ok(code)
     }
 }
@@ -86,7 +87,7 @@ pub struct VectorLinePrimitive {
 impl GerberCode for VectorLinePrimitive {
     fn to_code(&self) -> GerberResult<String> {
         let code = format!(
-            "20,{},{},{},{},{},{},{}",
+            "20,{},{},{},{},{},{},{}*",
             try!(self.exposure.to_code()),
             self.width,
             self.start.0, self.start.1, self.end.0, self.end.1,
@@ -118,7 +119,7 @@ pub struct CenterLinePrimitive {
 impl GerberCode for CenterLinePrimitive {
     fn to_code(&self) -> GerberResult<String> {
         let code = format!(
-            "21,{},{},{},{},{},{}",
+            "21,{},{},{},{},{},{}*",
             try!(self.exposure.to_code()),
             self.dimensions.0, self.dimensions.1,
             self.center.0, self.center.1,
@@ -142,14 +143,14 @@ mod test {
             center: (0., 0.),
             angle: Some(0.),
         };
-        assert_eq!(with_angle.to_code().unwrap(), "1,1,1.5,0,0,0".to_string());
+        assert_eq!(with_angle.to_code().unwrap(), "1,1,1.5,0,0,0*".to_string());
         let no_angle = CirclePrimitive {
             exposure: false,
             diameter: 99.9,
             center: (1.1, 2.2),
             angle: None,
         };
-        assert_eq!(no_angle.to_code().unwrap(), "1,0,99.9,1.1,2.2".to_string());
+        assert_eq!(no_angle.to_code().unwrap(), "1,0,99.9,1.1,2.2*".to_string());
     }
 
     #[test]
@@ -161,7 +162,7 @@ mod test {
             end: (12., 0.45),
             angle: 0.,
         };
-        assert_eq!(line.to_code().unwrap(), "20,1,0.9,0,0.45,12,0.45,0".to_string());
+        assert_eq!(line.to_code().unwrap(), "20,1,0.9,0,0.45,12,0.45,0*".to_string());
     }
 
     #[test]
@@ -172,6 +173,6 @@ mod test {
             center: (3.4, 0.6),
             angle: 30.0,
         };
-        assert_eq!(line.to_code().unwrap(), "21,1,6.8,1.2,3.4,0.6,30".to_string());
+        assert_eq!(line.to_code().unwrap(), "21,1,6.8,1.2,3.4,0.6,30*".to_string());
     }
 }
