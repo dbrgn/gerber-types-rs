@@ -7,6 +7,8 @@ quick_error! {
         ConversionError(msg: String) {}
         /// Bad coordinate format
         CoordinateFormatError(msg: String) {}
+        /// A value is out of range
+        RangeError(msg: String) {}
     }
 }
 
