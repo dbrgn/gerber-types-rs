@@ -3,6 +3,7 @@
 use std::convert::{From, Into};
 use std::num::FpCategory;
 use std::i64;
+use num::rational::Ratio;
 
 use conv::TryFrom;
 
@@ -89,14 +90,6 @@ impl_from_integer!(u16);
 
 impl CoordinateNumber {
     pub fn gerber(&self, format: &CoordinateFormat) -> Result<String, GerberError> {
-        fn rounded_div(dividend: i64, divisor: i64) -> i64 {
-            if dividend.is_positive() == divisor.is_positive() {
-                (dividend + (divisor / 2)) / divisor
-            } else {
-                (dividend - (divisor / 2)) / divisor
-            }
-        }
-
         if format.decimal > DECIMAL_PLACES_CHARS {
             return Err(GerberError::CoordinateFormatError("Invalid precision: Too high!".into()))
         }
@@ -105,7 +98,7 @@ impl CoordinateNumber {
         }
 
         let divisor: i64 = 10_i64.pow((DECIMAL_PLACES_CHARS - format.decimal) as u32);
-        let number: i64 = rounded_div(self.nano, divisor);
+        let number: i64 = Ratio::new(self.nano, divisor).round().to_integer();
         Ok(number.to_string())
     }
 }
