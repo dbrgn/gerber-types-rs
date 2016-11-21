@@ -3,6 +3,7 @@
 use std::convert::{From, Into};
 use std::num::FpCategory;
 use std::i64;
+use num::rational::Ratio;
 
 use conv::TryFrom;
 
@@ -89,28 +90,16 @@ impl_from_integer!(u16);
 
 impl CoordinateNumber {
     pub fn gerber(&self, format: &CoordinateFormat) -> Result<String, GerberError> {
-        // Format invariants
         if format.decimal > DECIMAL_PLACES_CHARS {
             return Err(GerberError::CoordinateFormatError("Invalid precision: Too high!".into()))
         }
-
-        // If value is 0, return corresponding string
-        if self.nano == 0 {
-            return Ok("0".to_string());
+        if self.nano.abs() >= 10_i64.pow((format.integer + DECIMAL_PLACES_CHARS) as u32) {
+            return Err(GerberError::CoordinateFormatError("Number is too large for chosen format!".into()));
         }
 
-        // Get integer part by doing floor division
-        let integer: i64 = self.nano / DECIMAL_PLACES_FACTOR;
-        if integer > 10i64.pow(format.integer as u32) {
-            return Err(GerberError::CoordinateFormatError("Decimal is too large for chosen format".into()));
-        }
-
-        // Get decimal part with proper rounding
-        let divisor: i64 = 10i64.pow((DECIMAL_PLACES_CHARS - format.decimal) as u32);
-        let decimal: i64 = ((self.nano % DECIMAL_PLACES_FACTOR).abs() + (divisor / 2)) / divisor;
-
-        // Convert to string
-        Ok(format!("{}{:0<width$}", integer, decimal, width=format.decimal as usize))
+        let divisor: i64 = 10_i64.pow((DECIMAL_PLACES_CHARS - format.decimal) as u32);
+        let number: i64 = Ratio::new(self.nano, divisor).round().to_integer();
+        Ok(number.to_string())
     }
 }
 
@@ -242,6 +231,14 @@ mod test {
     fn test_formatted_number_too_large() {
         let cf = CoordinateFormat::new(4, 5);
         let d = CoordinateNumber { nano: 12345000000 }.gerber(&cf);
+        assert!(d.is_err());
+    }
+    
+    #[test]
+    /// Test coordinate number to string conversion failure
+    fn test_formatted_negative_number_too_large() {
+        let cf = CoordinateFormat::new(4, 5);
+        let d = CoordinateNumber { nano: -12345000000 }.gerber(&cf);
         assert!(d.is_err());
     }
 
