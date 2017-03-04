@@ -16,6 +16,7 @@ pub enum Primitive {
     Outline(OutlinePrimitive),
     Polygon(PolygonPrimitive),
     Moire(MoirePrimitive),
+    Thermal(ThermalPrimitive),
 }
 
 impl GerberCode for Primitive {
@@ -28,6 +29,7 @@ impl GerberCode for Primitive {
             Primitive::Outline(ref o) => try!(o.to_code()),
             Primitive::Polygon(ref p) => try!(p.to_code()),
             Primitive::Moire(ref m) => try!(m.to_code()),
+            Primitive::Thermal(ref t) => try!(t.to_code()),
         };
         Ok(code)
     }
@@ -298,6 +300,58 @@ impl GerberCode for MoirePrimitive {
     }
 }
 
+/// The thermal primitive is a ring (annulus) interrupted by four gaps.
+/// Exposure is always on.
+#[derive(Debug)]
+pub struct ThermalPrimitive {
+    /// X and Y coordinates of center point, decimals
+    pub center: (f64, f64),
+
+    /// Outer diameter, a decimal > inner diameter
+    pub outer_diameter: f64,
+
+    /// Inner diameter, a decimal >= 0
+    pub inner_diameter: f64,
+
+    /// Gap thickness, a decimal < (outer diameter) / sqrt(2)
+    pub gap: f64,
+
+    /// Rotation angle of the thermal primitive
+    ///
+    /// The rotation angle is specified by a decimal, in degrees. The primitive
+    /// is rotated around the origin of the macro definition, i.e. the (0, 0)
+    /// point of macro coordinates. The gaps are on the X and Y axes through
+    /// the center when the rotation angle is zero
+    ///
+    /// Note: Rotation is only allowed if the primitive center point coincides
+    /// with the origin of the macro definition.
+    pub angle: f64,
+}
+
+impl GerberCode for ThermalPrimitive {
+    fn to_code(&self) -> GerberResult<String> {
+        // Decimal invariants
+        if self.inner_diameter < 0.0 {
+            return Err(GerberError::RangeError("Inner diameter of a thermal may not be negative".into()));
+        }
+        if self.outer_diameter <= self.inner_diameter {
+            return Err(GerberError::RangeError("Outer diameter of a thermal must be larger than inner diameter".into()));
+        }
+        if self.gap > (self.outer_diameter / 2f64.sqrt()) {
+            return Err(GerberError::RangeError("Gap of a thermal must be smaller than outer_diameter/sqrt(2)".into()));
+        }
+        let code = format!(
+            "7,{},{},{},{},{},{}*",
+            self.center.0, self.center.1,
+            self.outer_diameter,
+            self.inner_diameter,
+            self.gap,
+            self.angle
+        );
+        Ok(code)
+    }
+}
+
 
 #[cfg(test)]
 mod test {
@@ -386,5 +440,17 @@ mod test {
             angle: 0.0,
         };
         assert_eq!(line.to_code().unwrap(), "6,0,0,5,0.5,0.5,2,0.1,6,0*".to_string());
+    }
+
+    #[test]
+    fn test_thermal_primitive_codegen() {
+        let line = ThermalPrimitive {
+            center: (0.0, 0.0),
+            outer_diameter: 8.0,
+            inner_diameter: 6.5,
+            gap: 1.0,
+            angle: 45.0,
+        };
+        assert_eq!(line.to_code().unwrap(), "7,0,0,8,6.5,1,45*".to_string());
     }
 }
