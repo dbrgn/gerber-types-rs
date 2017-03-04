@@ -15,6 +15,7 @@ pub enum Primitive {
     CenterLine(CenterLinePrimitive),
     Outline(OutlinePrimitive),
     Polygon(PolygonPrimitive),
+    Moire(MoirePrimitive),
 }
 
 impl GerberCode for Primitive {
@@ -26,6 +27,7 @@ impl GerberCode for Primitive {
             Primitive::CenterLine(ref cl) => try!(cl.to_code()),
             Primitive::Outline(ref o) => try!(o.to_code()),
             Primitive::Polygon(ref p) => try!(p.to_code()),
+            Primitive::Moire(ref m) => try!(m.to_code()),
         };
         Ok(code)
     }
@@ -228,6 +230,74 @@ impl GerberCode for PolygonPrimitive {
     }
 }
 
+/// The moiré primitive is a cross hair centered on concentric rings (annuli).
+/// Exposure is always on.
+#[derive(Debug)]
+pub struct MoirePrimitive {
+    /// X and Y coordinates of center point, decimals
+    pub center: (f64, f64),
+
+    /// Outer diameter of outer concentric ring, a decimal >= 0
+    pub diameter: f64,
+
+    /// Ring thickness, a decimal >= 0
+    pub ring_thickness: f64,
+
+    /// Gap between rings, a decimal >= 0
+    pub gap: f64,
+
+    /// Maximum number of rings
+    pub max_rings: u32,
+
+    /// Cross hair thickness, a decimal >= 0
+    pub cross_hair_thickness: f64,
+
+    /// Cross hair length, a decimal >= 0
+    pub cross_hair_length: f64,
+
+    /// Rotation angle of the moiré primitive
+    ///
+    /// The rotation angle is specified by a decimal, in degrees. The primitive
+    /// is rotated around the origin of the macro definition, i.e. the (0, 0)
+    /// point of macro coordinates.
+    ///
+    /// Note: Rotation is only allowed if the primitive center point coincides
+    /// with the origin of the macro definition.
+    pub angle: f64,
+}
+
+impl GerberCode for MoirePrimitive {
+    fn to_code(&self) -> GerberResult<String> {
+        // Decimal invariants
+        if self.diameter < 0.0 {
+            return Err(GerberError::RangeError("Outer diameter of a moiré may not be negative".into()));
+        }
+        if self.ring_thickness < 0.0 {
+            return Err(GerberError::RangeError("Ring thickness of a moiré may not be negative".into()));
+        }
+        if self.gap < 0.0 {
+            return Err(GerberError::RangeError("Gap of a moiré may not be negative".into()));
+        }
+        if self.cross_hair_thickness < 0.0 {
+            return Err(GerberError::RangeError("Cross hair thickness of a moiré may not be negative".into()));
+        }
+        if self.cross_hair_length < 0.0 {
+            return Err(GerberError::RangeError("Cross hair length of a moiré may not be negative".into()));
+        }
+        let code = format!(
+            "6,{},{},{},{},{},{},{},{},{}*",
+            self.center.0, self.center.1,
+            self.diameter,
+            self.ring_thickness,
+            self.gap,
+            self.max_rings,
+            self.cross_hair_thickness, self.cross_hair_length,
+            self.angle
+        );
+        Ok(code)
+    }
+}
+
 
 #[cfg(test)]
 mod test {
@@ -301,5 +371,20 @@ mod test {
             angle: 0.0,
         };
         assert_eq!(line.to_code().unwrap(), "5,1,8,1.5,2,8,0*".to_string());
+    }
+
+    #[test]
+    fn test_moire_primitive_codegen() {
+        let line = MoirePrimitive {
+            center: (0.0, 0.0),
+            diameter: 5.0,
+            ring_thickness: 0.5,
+            gap: 0.5,
+            max_rings: 2,
+            cross_hair_thickness: 0.1,
+            cross_hair_length: 6.0,
+            angle: 0.0,
+        };
+        assert_eq!(line.to_code().unwrap(), "6,0,0,5,0.5,0.5,2,0.1,6,0*".to_string());
     }
 }
