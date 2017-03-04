@@ -14,6 +14,7 @@ pub enum Primitive {
     VectorLine(VectorLinePrimitive),
     CenterLine(CenterLinePrimitive),
     Outline(OutlinePrimitive),
+    Polygon(PolygonPrimitive),
 }
 
 impl GerberCode for Primitive {
@@ -24,6 +25,7 @@ impl GerberCode for Primitive {
             Primitive::VectorLine(ref vl) => try!(vl.to_code()),
             Primitive::CenterLine(ref cl) => try!(cl.to_code()),
             Primitive::Outline(ref o) => try!(o.to_code()),
+            Primitive::Polygon(ref p) => try!(p.to_code()),
         };
         Ok(code)
     }
@@ -174,6 +176,58 @@ impl GerberCode for OutlinePrimitive {
     }
 }
 
+#[derive(Debug)]
+/// A polygon primitive is a regular polygon defined by the number of vertices,
+/// the center point and the diameter of the circumscribed circle.
+pub struct PolygonPrimitive {
+    /// Exposure off/on (0/1)
+    pub exposure: bool,
+
+    /// Number of vertices n, 3 <= n <= 12
+    pub vertices: u8,
+
+    /// X and Y coordinates of center point, decimals
+    pub center: (f64, f64),
+
+    /// Diameter of the circumscribed circle, a decimal >= 0
+    pub diameter: f64,
+
+    /// Rotation angle of the polygon primitive
+    ///
+    /// The rotation angle is specified by a decimal, in degrees. The primitive
+    /// is rotated around the origin of the macro definition, i.e. the (0, 0)
+    /// point of macro coordinates. The first vertex is on the positive X-axis
+    /// through the center point when the rotation angle is zero.
+    ///
+    /// Note: Rotation is only allowed if the primitive center point coincides
+    /// with the origin of the macro definition.
+    pub angle: f64,
+}
+
+impl GerberCode for PolygonPrimitive {
+    fn to_code(&self) -> GerberResult<String> {
+        // Vertice count invariants
+        if self.vertices < 3 {
+            return Err(GerberError::RangeError("There must be at least 3 vertices in a polygon".into()));
+        }
+        if self.vertices > 12 {
+            return Err(GerberError::RangeError("The maximum number of vertices in a polygon is 12".into()));
+        }
+        if self.diameter < 0.0 {
+            return Err(GerberError::RangeError("The diameter must not be negative".into()));
+        }
+        let code = format!(
+            "5,{},{},{},{},{},{}*",
+            try!(self.exposure.to_code()),
+            self.vertices,
+            self.center.0, self.center.1,
+            self.diameter,
+            self.angle
+        );
+        Ok(code)
+    }
+}
+
 
 #[cfg(test)]
 mod test {
@@ -235,5 +289,17 @@ mod test {
             angle: 0.0,
         };
         assert_eq!(line.to_code().unwrap(), "4,1,4,\n0.1,0.1,\n0.5,0.1,\n0.5,0.5,\n0.1,0.5,\n0.1,0.1,\n0*".to_string());
+    }
+
+    #[test]
+    fn test_polygon_primitive_codegen() {
+        let line = PolygonPrimitive {
+            exposure: true,
+            vertices: 8,
+            center: (1.5, 2.0),
+            diameter: 8.0,
+            angle: 0.0,
+        };
+        assert_eq!(line.to_code().unwrap(), "5,1,8,1.5,2,8,0*".to_string());
     }
 }
