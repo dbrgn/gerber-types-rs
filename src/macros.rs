@@ -38,6 +38,35 @@ impl GerberCode for ApertureMacro {
     }
 }
 
+#[derive(Debug, PartialEq)]
+/// A macro decimal can either be an f64 or a variable placeholder.
+pub enum MacroDecimal {
+    /// A decimal value.
+    Value(f64),
+    /// A variable placeholder.
+    Variable(u8),
+}
+use MacroDecimal::{Value, Variable};
+
+impl MacroDecimal {
+    fn is_negative(&self) -> bool {
+        match *self {
+            Value(v) => v < 0.0,
+            Variable(_) => false,
+        }
+    }
+}
+
+impl GerberCode for MacroDecimal {
+    fn to_code(&self) -> GerberResult<String> {
+        let code = match *self {
+            Value(ref v) => format!("{}", v),
+            Variable(ref v) => format!("${}", v),
+        };
+        Ok(code)
+    }
+}
+
 #[derive(Debug)]
 pub enum Primitive {
     Comment(String),
@@ -72,10 +101,10 @@ pub struct CirclePrimitive {
     pub exposure: bool,
 
     /// Diameter, a decimal >= 0
-    pub diameter: f64,
+    pub diameter: MacroDecimal,
 
     /// X and Y coordinates of center position, decimals
-    pub center: (f64, f64),
+    pub center: (MacroDecimal, MacroDecimal),
 
     /// Rotation angle.
     ///
@@ -85,16 +114,16 @@ pub struct CirclePrimitive {
     ///
     /// The rotation modifier is optional. The default is no rotation. (We
     /// recommend always to set the angle explicitly.
-    pub angle: Option<f64>,
+    pub angle: Option<MacroDecimal>,
 }
 
 impl GerberCode for CirclePrimitive {
     fn to_code(&self) -> GerberResult<String> {
         let mut code = "1,".to_string();
         code.push_str(&try!(self.exposure.to_code()));
-        code.push_str(&format!(",{},{},{}", self.diameter, self.center.0, self.center.1));
-        if let Some(a) = self.angle {
-            code.push_str(&format!(",{}", a));
+        code.push_str(&format!(",{},{},{}", self.diameter.to_code()?, self.center.0.to_code()?, self.center.1.to_code()?));
+        if let Some(ref a) = self.angle {
+            code.push_str(&format!(",{}", a.to_code()?));
         }
         code.push_str("*");
         Ok(code)
@@ -107,30 +136,31 @@ pub struct VectorLinePrimitive {
     pub exposure: bool,
 
     /// Line width, a decimal >= 0
-    pub width: f64,
+    pub width: MacroDecimal,
 
     /// X and Y coordinates of start point, decimals
-    pub start: (f64, f64),
+    pub start: (MacroDecimal, MacroDecimal),
 
     /// X and Y coordinates of end point, decimals
-    pub end: (f64, f64),
+    pub end: (MacroDecimal, MacroDecimal),
 
     /// Rotation angle of the vector line primitive
     ///
     /// The rotation angle is specified by a decimal, in degrees. The primitive
     /// is rotated around the origin of the macro definition, i.e. the (0, 0)
     /// point of macro coordinates.
-    pub angle: f64,
+    pub angle: MacroDecimal,
 }
 
 impl GerberCode for VectorLinePrimitive {
     fn to_code(&self) -> GerberResult<String> {
         let code = format!(
             "20,{},{},{},{},{},{},{}*",
-            try!(self.exposure.to_code()),
-            self.width,
-            self.start.0, self.start.1, self.end.0, self.end.1,
-            self.angle
+            self.exposure.to_code()?,
+            self.width.to_code()?,
+            self.start.0.to_code()?, self.start.1.to_code()?,
+            self.end.0.to_code()?, self.end.1.to_code()?,
+            self.angle.to_code()?
         );
         Ok(code)
     }
@@ -142,17 +172,17 @@ pub struct CenterLinePrimitive {
     pub exposure: bool,
 
     /// Rectangle dimensions (width/height)
-    pub dimensions: (f64, f64),
+    pub dimensions: (MacroDecimal, MacroDecimal),
 
     /// X and Y coordinates of center point, decimals
-    pub center: (f64, f64),
+    pub center: (MacroDecimal, MacroDecimal),
 
     /// Rotation angle
     ///
     /// The rotation angle is specified by a decimal, in degrees. The primitive
     /// is rotated around the origin of the macro definition, i.e. (0, 0) point
     /// of macro coordinates.
-    pub angle: f64,
+    pub angle: MacroDecimal,
 }
 
 impl GerberCode for CenterLinePrimitive {
@@ -160,9 +190,9 @@ impl GerberCode for CenterLinePrimitive {
         let code = format!(
             "21,{},{},{},{},{},{}*",
             try!(self.exposure.to_code()),
-            self.dimensions.0, self.dimensions.1,
-            self.center.0, self.center.1,
-            self.angle
+            self.dimensions.0.to_code()?, self.dimensions.1.to_code()?,
+            self.center.0.to_code()?, self.center.1.to_code()?,
+            self.angle.to_code()?
         );
         Ok(code)
     }
@@ -176,14 +206,14 @@ pub struct OutlinePrimitive {
     /// Vector of coordinate pairs.
     ///
     /// The last coordinate pair must be equal to the first coordinate pair!
-    pub points: Vec<(f64, f64)>,
+    pub points: Vec<(MacroDecimal, MacroDecimal)>,
 
     /// Rotation angle of the outline primitive
     ///
     /// The rotation angle is specified by a decimal, in degrees. The primitive
     /// is rotated around the origin of the macro definition, i.e. the (0, 0)
     /// point of macro coordinates.
-    pub angle: f64,
+    pub angle: MacroDecimal,
 }
 
 impl GerberCode for OutlinePrimitive {
@@ -196,17 +226,15 @@ impl GerberCode for OutlinePrimitive {
             return Err(GerberError::RangeError("The maximum number of subsequent points in an outline is 5000".into()));
         }
         if self.points[0] != self.points[self.points.len() - 1] {
-            return Err(GerberError::RangeError("The maximum number of subsequent points n is 5000".into()));
+            return Err(GerberError::RangeError("The last point must be equal to the first point".into()));
         }
 
         let mut code = format!("4,{},{},\n", try!(self.exposure.to_code()), self.points.len() - 1);
-        code.push_str(
-            &self.points.iter()
-                        .map(|&(x, y)| format!("{},{},", x, y))
-                        .collect::<Vec<String>>()
-                        .join("\n")
-        );
-        code.push_str(&format!("\n{}*", self.angle));
+        let points = self.points.iter()
+                         .map(|&(ref x, ref y)| Ok(format!("{},{},", x.to_code()?, y.to_code()?)))
+                         .collect::<GerberResult<Vec<String>>>()?;
+        code.push_str(&points.join("\n"));
+        code.push_str(&format!("\n{}*", self.angle.to_code()?));
         Ok(code)
     }
 }
@@ -222,10 +250,10 @@ pub struct PolygonPrimitive {
     pub vertices: u8,
 
     /// X and Y coordinates of center point, decimals
-    pub center: (f64, f64),
+    pub center: (MacroDecimal, MacroDecimal),
 
     /// Diameter of the circumscribed circle, a decimal >= 0
-    pub diameter: f64,
+    pub diameter: MacroDecimal,
 
     /// Rotation angle of the polygon primitive
     ///
@@ -236,7 +264,7 @@ pub struct PolygonPrimitive {
     ///
     /// Note: Rotation is only allowed if the primitive center point coincides
     /// with the origin of the macro definition.
-    pub angle: f64,
+    pub angle: MacroDecimal,
 }
 
 impl GerberCode for PolygonPrimitive {
@@ -248,16 +276,16 @@ impl GerberCode for PolygonPrimitive {
         if self.vertices > 12 {
             return Err(GerberError::RangeError("The maximum number of vertices in a polygon is 12".into()));
         }
-        if self.diameter < 0.0 {
+        if self.diameter.is_negative() {
             return Err(GerberError::RangeError("The diameter must not be negative".into()));
         }
         let code = format!(
             "5,{},{},{},{},{},{}*",
-            try!(self.exposure.to_code()),
+            self.exposure.to_code()?,
             self.vertices,
-            self.center.0, self.center.1,
-            self.diameter,
-            self.angle
+            self.center.0.to_code()?, self.center.1.to_code()?,
+            self.diameter.to_code()?,
+            self.angle.to_code()?
         );
         Ok(code)
     }
@@ -268,25 +296,25 @@ impl GerberCode for PolygonPrimitive {
 #[derive(Debug)]
 pub struct MoirePrimitive {
     /// X and Y coordinates of center point, decimals
-    pub center: (f64, f64),
+    pub center: (MacroDecimal, MacroDecimal),
 
     /// Outer diameter of outer concentric ring, a decimal >= 0
-    pub diameter: f64,
+    pub diameter: MacroDecimal,
 
     /// Ring thickness, a decimal >= 0
-    pub ring_thickness: f64,
+    pub ring_thickness: MacroDecimal,
 
     /// Gap between rings, a decimal >= 0
-    pub gap: f64,
+    pub gap: MacroDecimal,
 
     /// Maximum number of rings
     pub max_rings: u32,
 
     /// Cross hair thickness, a decimal >= 0
-    pub cross_hair_thickness: f64,
+    pub cross_hair_thickness: MacroDecimal,
 
     /// Cross hair length, a decimal >= 0
-    pub cross_hair_length: f64,
+    pub cross_hair_length: MacroDecimal,
 
     /// Rotation angle of the moiré primitive
     ///
@@ -296,36 +324,36 @@ pub struct MoirePrimitive {
     ///
     /// Note: Rotation is only allowed if the primitive center point coincides
     /// with the origin of the macro definition.
-    pub angle: f64,
+    pub angle: MacroDecimal,
 }
 
 impl GerberCode for MoirePrimitive {
     fn to_code(&self) -> GerberResult<String> {
         // Decimal invariants
-        if self.diameter < 0.0 {
+        if self.diameter.is_negative() {
             return Err(GerberError::RangeError("Outer diameter of a moiré may not be negative".into()));
         }
-        if self.ring_thickness < 0.0 {
+        if self.ring_thickness.is_negative() {
             return Err(GerberError::RangeError("Ring thickness of a moiré may not be negative".into()));
         }
-        if self.gap < 0.0 {
+        if self.gap.is_negative() {
             return Err(GerberError::RangeError("Gap of a moiré may not be negative".into()));
         }
-        if self.cross_hair_thickness < 0.0 {
+        if self.cross_hair_thickness.is_negative() {
             return Err(GerberError::RangeError("Cross hair thickness of a moiré may not be negative".into()));
         }
-        if self.cross_hair_length < 0.0 {
+        if self.cross_hair_length.is_negative() {
             return Err(GerberError::RangeError("Cross hair length of a moiré may not be negative".into()));
         }
         let code = format!(
             "6,{},{},{},{},{},{},{},{},{}*",
-            self.center.0, self.center.1,
-            self.diameter,
-            self.ring_thickness,
-            self.gap,
+            self.center.0.to_code()?, self.center.1.to_code()?,
+            self.diameter.to_code()?,
+            self.ring_thickness.to_code()?,
+            self.gap.to_code()?,
             self.max_rings,
-            self.cross_hair_thickness, self.cross_hair_length,
-            self.angle
+            self.cross_hair_thickness.to_code()?, self.cross_hair_length.to_code()?,
+            self.angle.to_code()?
         );
         Ok(code)
     }
@@ -336,16 +364,16 @@ impl GerberCode for MoirePrimitive {
 #[derive(Debug)]
 pub struct ThermalPrimitive {
     /// X and Y coordinates of center point, decimals
-    pub center: (f64, f64),
+    pub center: (MacroDecimal, MacroDecimal),
 
     /// Outer diameter, a decimal > inner diameter
-    pub outer_diameter: f64,
+    pub outer_diameter: MacroDecimal,
 
     /// Inner diameter, a decimal >= 0
-    pub inner_diameter: f64,
+    pub inner_diameter: MacroDecimal,
 
     /// Gap thickness, a decimal < (outer diameter) / sqrt(2)
-    pub gap: f64,
+    pub gap: MacroDecimal,
 
     /// Rotation angle of the thermal primitive
     ///
@@ -356,28 +384,22 @@ pub struct ThermalPrimitive {
     ///
     /// Note: Rotation is only allowed if the primitive center point coincides
     /// with the origin of the macro definition.
-    pub angle: f64,
+    pub angle: MacroDecimal,
 }
 
 impl GerberCode for ThermalPrimitive {
     fn to_code(&self) -> GerberResult<String> {
         // Decimal invariants
-        if self.inner_diameter < 0.0 {
+        if self.inner_diameter.is_negative() {
             return Err(GerberError::RangeError("Inner diameter of a thermal may not be negative".into()));
-        }
-        if self.outer_diameter <= self.inner_diameter {
-            return Err(GerberError::RangeError("Outer diameter of a thermal must be larger than inner diameter".into()));
-        }
-        if self.gap > (self.outer_diameter / 2f64.sqrt()) {
-            return Err(GerberError::RangeError("Gap of a thermal must be smaller than outer_diameter/sqrt(2)".into()));
         }
         let code = format!(
             "7,{},{},{},{},{},{}*",
-            self.center.0, self.center.1,
-            self.outer_diameter,
-            self.inner_diameter,
-            self.gap,
-            self.angle
+            self.center.0.to_code()?, self.center.1.to_code()?,
+            self.outer_diameter.to_code()?,
+            self.inner_diameter.to_code()?,
+            self.gap.to_code()?,
+            self.angle.to_code()?
         );
         Ok(code)
     }
@@ -387,21 +409,22 @@ impl GerberCode for ThermalPrimitive {
 #[cfg(test)]
 mod test {
     use super::*;
+    use super::MacroDecimal::{Value, Variable};
     use ::GerberCode;
 
     #[test]
     fn test_circle_primitive_codegen() {
         let with_angle = CirclePrimitive {
             exposure: true,
-            diameter: 1.5,
-            center: (0., 0.),
-            angle: Some(0.),
+            diameter: Value(1.5),
+            center: (Value(0.), Value(0.)),
+            angle: Some(Value(0.)),
         };
         assert_eq!(with_angle.to_code().unwrap(), "1,1,1.5,0,0,0*".to_string());
         let no_angle = CirclePrimitive {
             exposure: false,
-            diameter: 99.9,
-            center: (1.1, 2.2),
+            diameter: Value(99.9),
+            center: (Value(1.1), Value(2.2)),
             angle: None,
         };
         assert_eq!(no_angle.to_code().unwrap(), "1,0,99.9,1.1,2.2*".to_string());
@@ -411,10 +434,10 @@ mod test {
     fn test_vector_line_primitive_codegen() {
         let line = VectorLinePrimitive {
             exposure: true,
-            width: 0.9,
-            start: (0., 0.45),
-            end: (12., 0.45),
-            angle: 0.,
+            width: Value(0.9),
+            start: (Value(0.), Value(0.45)),
+            end: (Value(12.), Value(0.45)),
+            angle: Value(0.),
         };
         assert_eq!(line.to_code().unwrap(), "20,1,0.9,0,0.45,12,0.45,0*".to_string());
     }
@@ -423,9 +446,9 @@ mod test {
     fn test_center_line_primitive_codegen() {
         let line = CenterLinePrimitive {
             exposure: true,
-            dimensions: (6.8, 1.2),
-            center: (3.4, 0.6),
-            angle: 30.0,
+            dimensions: (Value(6.8), Value(1.2)),
+            center: (Value(3.4), Value(0.6)),
+            angle: Value(30.0),
         };
         assert_eq!(line.to_code().unwrap(), "21,1,6.8,1.2,3.4,0.6,30*".to_string());
     }
@@ -435,13 +458,13 @@ mod test {
         let line = OutlinePrimitive {
             exposure: true,
             points: vec![
-                (0.1, 0.1),
-                (0.5, 0.1),
-                (0.5, 0.5),
-                (0.1, 0.5),
-                (0.1, 0.1),
+                (Value(0.1), Value(0.1)),
+                (Value(0.5), Value(0.1)),
+                (Value(0.5), Value(0.5)),
+                (Value(0.1), Value(0.5)),
+                (Value(0.1), Value(0.1)),
             ],
-            angle: 0.0,
+            angle: Value(0.0),
         };
         assert_eq!(line.to_code().unwrap(), "4,1,4,\n0.1,0.1,\n0.5,0.1,\n0.5,0.5,\n0.1,0.5,\n0.1,0.1,\n0*".to_string());
     }
@@ -451,9 +474,9 @@ mod test {
         let line = PolygonPrimitive {
             exposure: true,
             vertices: 8,
-            center: (1.5, 2.0),
-            diameter: 8.0,
-            angle: 0.0,
+            center: (Value(1.5), Value(2.0)),
+            diameter: Value(8.0),
+            angle: Value(0.0),
         };
         assert_eq!(line.to_code().unwrap(), "5,1,8,1.5,2,8,0*".to_string());
     }
@@ -461,14 +484,14 @@ mod test {
     #[test]
     fn test_moire_primitive_codegen() {
         let line = MoirePrimitive {
-            center: (0.0, 0.0),
-            diameter: 5.0,
-            ring_thickness: 0.5,
-            gap: 0.5,
+            center: (Value(0.0), Value(0.0)),
+            diameter: Value(5.0),
+            ring_thickness: Value(0.5),
+            gap: Value(0.5),
             max_rings: 2,
-            cross_hair_thickness: 0.1,
-            cross_hair_length: 6.0,
-            angle: 0.0,
+            cross_hair_thickness: Value(0.1),
+            cross_hair_length: Value(6.0),
+            angle: Value(0.0),
         };
         assert_eq!(line.to_code().unwrap(), "6,0,0,5,0.5,0.5,2,0.1,6,0*".to_string());
     }
@@ -476,11 +499,11 @@ mod test {
     #[test]
     fn test_thermal_primitive_codegen() {
         let line = ThermalPrimitive {
-            center: (0.0, 0.0),
-            outer_diameter: 8.0,
-            inner_diameter: 6.5,
-            gap: 1.0,
-            angle: 45.0,
+            center: (Value(0.0), Value(0.0)),
+            outer_diameter: Value(8.0),
+            inner_diameter: Value(6.5),
+            gap: Value(1.0),
+            angle: Value(45.0),
         };
         assert_eq!(line.to_code().unwrap(), "7,0,0,8,6.5,1,45*".to_string());
     }
@@ -490,27 +513,39 @@ mod test {
         let am = ApertureMacro::new("CRAZY").add_primitive(
             Primitive::Thermal(
                 ThermalPrimitive {
-                    center: (0.0, 0.0),
-                    outer_diameter: 0.08,
-                    inner_diameter: 0.055,
-                    gap: 0.0125,
-                    angle: 45.0,
+                    center: (Value(0.0), Value(0.0)),
+                    outer_diameter: Value(0.08),
+                    inner_diameter: Value(0.055),
+                    gap: Value(0.0125),
+                    angle: Value(45.0),
                 }
             )
         ).add_primitive(
             Primitive::Moire(
                 MoirePrimitive {
-                    center: (0.0, 0.0),
-                    diameter: 0.125,
-                    ring_thickness: 0.01,
-                    gap: 0.01,
+                    center: (Value(0.0), Value(0.0)),
+                    diameter: Value(0.125),
+                    ring_thickness: Value(0.01),
+                    gap: Value(0.01),
                     max_rings: 3,
-                    cross_hair_thickness: 0.003,
-                    cross_hair_length: 0.150,
-                    angle: 0.0,
+                    cross_hair_thickness: Value(0.003),
+                    cross_hair_length: Value(0.150),
+                    angle: Value(0.0),
                 }
             )
         );
         assert_eq!(am.to_code().unwrap(), "AMCRAZY*\n7,0,0,0.08,0.055,0.0125,45*\n6,0,0,0.125,0.01,0.01,3,0.003,0.15,0*".to_string());
+    }
+
+    #[test]
+    fn test_codegen_with_variable() {
+        let line = VectorLinePrimitive {
+            exposure: true,
+            width: Variable(0),
+            start: (Variable(1), Value(0.45)),
+            end: (Value(12.), Variable(2)),
+            angle: Variable(3),
+        };
+        assert_eq!(line.to_code().unwrap(), "20,1,$0,$1,0.45,12,$2,$3*".to_string());
     }
 }
