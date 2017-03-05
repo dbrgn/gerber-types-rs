@@ -208,6 +208,7 @@ mod test {
     extern crate conv;
 
     use conv::TryFrom;
+    use ::{CoordinateNumber, CoordinateFormat};
     use super::*;
 
     #[test]
