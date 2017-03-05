@@ -13,7 +13,7 @@ use ::{CoordinateFormat, CoordinateNumber};
 ///
 /// Coordinates are modal. If an X is omitted, the X coordinate of the
 /// current point is used. Similar for Y.
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct Coordinates {
     pub x: Option<CoordinateNumber>,
     pub y: Option<CoordinateNumber>,
@@ -36,7 +36,7 @@ impl Coordinates {
 
 /// Coordinate offsets can be used for interpolate operations in circular
 /// interpolation mode.
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct CoordinateOffset {
     pub x: Option<CoordinateNumber>,
     pub y: Option<CoordinateNumber>,

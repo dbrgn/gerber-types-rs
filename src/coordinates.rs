@@ -14,7 +14,7 @@ use ::GerberError;
 /// decimal places. The number of decimal places must be 4, 5 or 6. The number
 /// of integer places must be not more than 6. Thus the longest representable
 /// coordinate number is `nnnnnn.nnnnnn`.
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub struct CoordinateFormat {
     pub integer: u8,
     pub decimal: u8,
@@ -36,7 +36,7 @@ impl CoordinateFormat {
 /// be encoded as `0`.
 ///
 /// The value is stored as a 64 bit integer with 6 decimal places.
-#[derive(Debug, PartialEq, Copy, Clone)]
+#[derive(Debug, PartialEq, Eq, Copy, Clone)]
 pub struct CoordinateNumber {
     nano: i64,
 }
