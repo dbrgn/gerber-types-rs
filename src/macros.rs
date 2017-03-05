@@ -5,6 +5,37 @@ use ::{GerberCode, GerberError, GerberResult};
 #[derive(Debug)]
 pub struct ApertureMacro {
     pub name: String,
+    pub primitives: Vec<Primitive>,
+}
+
+impl ApertureMacro {
+    pub fn new<S: Into<String>>(name: S) -> Self {
+        ApertureMacro {
+            name: name.into(),
+            primitives: Vec::new(),
+        }
+    }
+
+    pub fn add_primitive(mut self, p: Primitive) -> Self {
+        self.primitives.push(p);
+        self
+    }
+
+    pub fn add_primitive_mut(&mut self, p: Primitive) {
+        self.primitives.push(p);
+    }
+}
+
+impl GerberCode for ApertureMacro {
+    fn to_code(&self) -> GerberResult<String> {
+        if self.primitives.len() == 0 {
+            return Err(GerberError::MissingDataError("There must be at least 1 primitive in an aperture macro".into()));
+        }
+        let primitives = self.primitives.iter()
+                                        .map(|p| p.to_code())
+                                        .collect::<GerberResult<Vec<String>>>()?;
+        Ok(format!("AM{}*\n{}", self.name, primitives.join("\n")))
+    }
 }
 
 #[derive(Debug)]
@@ -159,7 +190,7 @@ impl GerberCode for OutlinePrimitive {
     fn to_code(&self) -> GerberResult<String> {
         // Points invariants
         if self.points.len() < 2 {
-            return Err(GerberError::RangeError("There must be at least 1 subsequent point in an outline".into()));
+            return Err(GerberError::MissingDataError("There must be at least 1 subsequent point in an outline".into()));
         }
         if self.points.len() > 5001 {
             return Err(GerberError::RangeError("The maximum number of subsequent points in an outline is 5000".into()));
@@ -212,7 +243,7 @@ impl GerberCode for PolygonPrimitive {
     fn to_code(&self) -> GerberResult<String> {
         // Vertice count invariants
         if self.vertices < 3 {
-            return Err(GerberError::RangeError("There must be at least 3 vertices in a polygon".into()));
+            return Err(GerberError::MissingDataError("There must be at least 3 vertices in a polygon".into()));
         }
         if self.vertices > 12 {
             return Err(GerberError::RangeError("The maximum number of vertices in a polygon is 12".into()));
@@ -452,5 +483,34 @@ mod test {
             angle: 45.0,
         };
         assert_eq!(line.to_code().unwrap(), "7,0,0,8,6.5,1,45*".to_string());
+    }
+
+    #[test]
+    fn test_aperture_macro_codegen() {
+        let am = ApertureMacro::new("CRAZY").add_primitive(
+            Primitive::Thermal(
+                ThermalPrimitive {
+                    center: (0.0, 0.0),
+                    outer_diameter: 0.08,
+                    inner_diameter: 0.055,
+                    gap: 0.0125,
+                    angle: 45.0,
+                }
+            )
+        ).add_primitive(
+            Primitive::Moire(
+                MoirePrimitive {
+                    center: (0.0, 0.0),
+                    diameter: 0.125,
+                    ring_thickness: 0.01,
+                    gap: 0.01,
+                    max_rings: 3,
+                    cross_hair_thickness: 0.003,
+                    cross_hair_length: 0.150,
+                    angle: 0.0,
+                }
+            )
+        );
+        assert_eq!(am.to_code().unwrap(), "AMCRAZY*\n7,0,0,0.08,0.055,0.0125,45*\n6,0,0,0.125,0.01,0.01,3,0.003,0.15,0*".to_string());
     }
 }

@@ -124,8 +124,11 @@ pub enum MCode {
 
 #[derive(Debug)]
 pub enum Operation {
+    /// D01 Command
     Interpolate(Coordinates, Option<CoordinateOffset>),
+    /// D02 Command
     Move(Coordinates),
+    /// D03 Command
     Flash(Coordinates),
 }
 

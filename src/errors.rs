@@ -9,6 +9,8 @@ quick_error! {
         CoordinateFormatError(msg: String) {}
         /// A value is out of range
         RangeError(msg: String) {}
+        /// Required data is missing
+        MissingDataError(msg: String) {}
     }
 }
 
