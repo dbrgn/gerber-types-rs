@@ -14,7 +14,7 @@ For example, you can use an aperture without defining it. This will generate
 syntactically valid but semantially invalid Gerber code, but this module won't
 complain.
 
-Minimal required Rust version: 1.8.
+Minimal required Rust version: 1.13.
 
 Current Gerber X2 spec: https://www.ucamco.com/files/downloads/file/81/the_gerber_file_format_specification.pdf
 
