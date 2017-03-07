@@ -7,36 +7,36 @@ use ::{GerberCode, GerberError, GerberResult};
 #[derive(Debug)]
 pub struct ApertureMacro {
     pub name: String,
-    pub primitives: Vec<Primitive>,
+    pub content: Vec<MacroContent>,
 }
 
 impl ApertureMacro {
     pub fn new<S: Into<String>>(name: S) -> Self {
         ApertureMacro {
             name: name.into(),
-            primitives: Vec::new(),
+            content: Vec::new(),
         }
     }
 
-    pub fn add_primitive(mut self, p: Primitive) -> Self {
-        self.primitives.push(p);
+    pub fn add_content(mut self, c: MacroContent) -> Self {
+        self.content.push(c);
         self
     }
 
-    pub fn add_primitive_mut(&mut self, p: Primitive) {
-        self.primitives.push(p);
+    pub fn add_content_mut(&mut self, c: MacroContent) {
+        self.content.push(c);
     }
 }
 
 impl GerberCode for ApertureMacro {
     fn to_code(&self) -> GerberResult<String> {
-        if self.primitives.len() == 0 {
-            return Err(GerberError::MissingDataError("There must be at least 1 primitive in an aperture macro".into()));
+        if self.content.len() == 0 {
+            return Err(GerberError::MissingDataError("There must be at least 1 content element in an aperture macro".into()));
         }
-        let primitives = self.primitives.iter()
-                                        .map(|p| p.to_code())
-                                        .collect::<GerberResult<Vec<String>>>()?;
-        Ok(format!("AM{}*\n{}", self.name, primitives.join("\n")))
+        let content = self.content.iter()
+                                  .map(|p| p.to_code())
+                                  .collect::<GerberResult<Vec<String>>>()?;
+        Ok(format!("AM{}*\n{}", self.name, content.join("\n")))
     }
 }
 
@@ -81,7 +81,7 @@ impl GerberCode for MacroDecimal {
 }
 
 #[derive(Debug)]
-pub enum Primitive {
+pub enum MacroContent {
     Comment(String),
     Circle(CirclePrimitive),
     VectorLine(VectorLinePrimitive),
@@ -92,17 +92,17 @@ pub enum Primitive {
     Thermal(ThermalPrimitive),
 }
 
-impl GerberCode for Primitive {
+impl GerberCode for MacroContent {
     fn to_code(&self) -> GerberResult<String> {
         let code = match *self {
-            Primitive::Comment(ref s) => format!("0 {}*", &s),
-            Primitive::Circle(ref c) => try!(c.to_code()),
-            Primitive::VectorLine(ref vl) => try!(vl.to_code()),
-            Primitive::CenterLine(ref cl) => try!(cl.to_code()),
-            Primitive::Outline(ref o) => try!(o.to_code()),
-            Primitive::Polygon(ref p) => try!(p.to_code()),
-            Primitive::Moire(ref m) => try!(m.to_code()),
-            Primitive::Thermal(ref t) => try!(t.to_code()),
+            MacroContent::Comment(ref s) => format!("0 {}*", &s),
+            MacroContent::Circle(ref c) => try!(c.to_code()),
+            MacroContent::VectorLine(ref vl) => try!(vl.to_code()),
+            MacroContent::CenterLine(ref cl) => try!(cl.to_code()),
+            MacroContent::Outline(ref o) => try!(o.to_code()),
+            MacroContent::Polygon(ref p) => try!(p.to_code()),
+            MacroContent::Moire(ref m) => try!(m.to_code()),
+            MacroContent::Thermal(ref t) => try!(t.to_code()),
         };
         Ok(code)
     }
@@ -523,8 +523,8 @@ mod test {
 
     #[test]
     fn test_aperture_macro_codegen() {
-        let am = ApertureMacro::new("CRAZY").add_primitive(
-            Primitive::Thermal(
+        let am = ApertureMacro::new("CRAZY").add_content(
+            MacroContent::Thermal(
                 ThermalPrimitive {
                     center: (Value(0.0), Value(0.0)),
                     outer_diameter: Value(0.08),
@@ -533,8 +533,8 @@ mod test {
                     angle: Value(45.0),
                 }
             )
-        ).add_primitive(
-            Primitive::Moire(
+        ).add_content(
+            MacroContent::Moire(
                 MoirePrimitive {
                     center: (Value(0.0), Value(0.0)),
                     diameter: Value(0.125),
@@ -574,7 +574,7 @@ mod test {
 
     #[test]
     fn test_comment_codegen() {
-        let comment = Primitive::Comment("hello world".to_string());
+        let comment = MacroContent::Comment("hello world".to_string());
         assert_eq!(&comment.to_code().unwrap(), "0 hello world*");
     }
 }

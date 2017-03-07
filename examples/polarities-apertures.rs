@@ -41,8 +41,8 @@ fn main() {
         ),
         Command::ExtendedCode(
             ExtendedCode::ApertureMacro(
-                ApertureMacro::new("TARGET125").add_primitive(
-                    Primitive::Moire(
+                ApertureMacro::new("TARGET125").add_content(
+                    MacroContent::Moire(
                         MoirePrimitive {
                             center: (0.0.into(), 0.0.into()),
                             diameter: 0.125.into(),
@@ -59,8 +59,8 @@ fn main() {
         ),
         Command::ExtendedCode(
             ExtendedCode::ApertureMacro(
-                ApertureMacro::new("THERMAL80").add_primitive(
-                    Primitive::Thermal(
+                ApertureMacro::new("THERMAL80").add_content(
+                    MacroContent::Thermal(
                         ThermalPrimitive {
                             center: (0.0.into(), 0.0.into()),
                             outer_diameter: 0.08.into(),
