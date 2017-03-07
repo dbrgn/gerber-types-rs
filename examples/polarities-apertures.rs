@@ -42,33 +42,29 @@ fn main() {
         Command::ExtendedCode(
             ExtendedCode::ApertureMacro(
                 ApertureMacro::new("TARGET125").add_content(
-                    MacroContent::Moire(
-                        MoirePrimitive {
-                            center: (0.0.into(), 0.0.into()),
-                            diameter: 0.125.into(),
-                            ring_thickness: 0.01.into(),
-                            gap: 0.01.into(),
-                            max_rings: 3,
-                            cross_hair_thickness: 0.003.into(),
-                            cross_hair_length: 0.150.into(),
-                            angle: 0.0.into(),
-                        }
-                    )
+                    MoirePrimitive {
+                        center: (0.0.into(), 0.0.into()),
+                        diameter: 0.125.into(),
+                        ring_thickness: 0.01.into(),
+                        gap: 0.01.into(),
+                        max_rings: 3,
+                        cross_hair_thickness: 0.003.into(),
+                        cross_hair_length: 0.150.into(),
+                        angle: 0.0.into(),
+                    }
                 )
             )
         ),
         Command::ExtendedCode(
             ExtendedCode::ApertureMacro(
                 ApertureMacro::new("THERMAL80").add_content(
-                    MacroContent::Thermal(
-                        ThermalPrimitive {
-                            center: (0.0.into(), 0.0.into()),
-                            outer_diameter: 0.08.into(),
-                            inner_diameter: 0.055.into(),
-                            gap: 0.0125.into(),
-                            angle: 45.0.into(),
-                        }
-                    )
+                    ThermalPrimitive {
+                        center: (0.0.into(), 0.0.into()),
+                        outer_diameter: 0.08.into(),
+                        inner_diameter: 0.055.into(),
+                        gap: 0.0125.into(),
+                        angle: 45.0.into(),
+                    }
                 )
             )
         ),

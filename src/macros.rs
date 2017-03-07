@@ -18,13 +18,13 @@ impl ApertureMacro {
         }
     }
 
-    pub fn add_content(mut self, c: MacroContent) -> Self {
-        self.content.push(c);
+    pub fn add_content<C>(mut self, c: C) -> Self where C: Into<MacroContent>{
+        self.content.push(c.into());
         self
     }
 
-    pub fn add_content_mut(&mut self, c: MacroContent) {
-        self.content.push(c);
+    pub fn add_content_mut<C>(&mut self, c: C) where C: Into<MacroContent> {
+        self.content.push(c.into());
     }
 }
 
@@ -80,7 +80,7 @@ impl GerberCode for MacroDecimal {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum MacroContent {
     // Primitives
     Circle(CirclePrimitive),
@@ -115,7 +115,32 @@ impl GerberCode for MacroContent {
     }
 }
 
-#[derive(Debug)]
+macro_rules! impl_into {
+    ($target:ty, $from:ty, $choice:expr) => {
+        impl From<$from> for $target {
+            fn from(val: $from) -> $target {
+                $choice(val)
+            }
+        }
+    }
+}
+
+impl_into!(MacroContent, CirclePrimitive, MacroContent::Circle);
+impl_into!(MacroContent, VectorLinePrimitive, MacroContent::VectorLine);
+impl_into!(MacroContent, CenterLinePrimitive, MacroContent::CenterLine);
+impl_into!(MacroContent, OutlinePrimitive, MacroContent::Outline);
+impl_into!(MacroContent, PolygonPrimitive, MacroContent::Polygon);
+impl_into!(MacroContent, MoirePrimitive, MacroContent::Moire);
+impl_into!(MacroContent, ThermalPrimitive, MacroContent::Thermal);
+impl_into!(MacroContent, VariableDefinition, MacroContent::VariableDefinition);
+
+impl<T: Into<String>> From<T> for MacroContent {
+    fn from(val: T) -> Self {
+        MacroContent::Comment(val.into())
+    }
+}
+
+#[derive(Debug, PartialEq)]
 pub struct CirclePrimitive {
     /// Exposure off/on
     pub exposure: bool,
@@ -150,7 +175,7 @@ impl GerberCode for CirclePrimitive {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct VectorLinePrimitive {
     /// Exposure off/on
     pub exposure: bool,
@@ -186,7 +211,7 @@ impl GerberCode for VectorLinePrimitive {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct CenterLinePrimitive {
     /// Exposure off/on (0/1)
     pub exposure: bool,
@@ -218,7 +243,7 @@ impl GerberCode for CenterLinePrimitive {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct OutlinePrimitive {
     /// Exposure off/on (0/1)
     pub exposure: bool,
@@ -259,7 +284,7 @@ impl GerberCode for OutlinePrimitive {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 /// A polygon primitive is a regular polygon defined by the number of vertices,
 /// the center point and the diameter of the circumscribed circle.
 pub struct PolygonPrimitive {
@@ -313,7 +338,7 @@ impl GerberCode for PolygonPrimitive {
 
 /// The moiré primitive is a cross hair centered on concentric rings (annuli).
 /// Exposure is always on.
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct MoirePrimitive {
     /// X and Y coordinates of center point, decimals
     pub center: (MacroDecimal, MacroDecimal),
@@ -381,7 +406,7 @@ impl GerberCode for MoirePrimitive {
 
 /// The thermal primitive is a ring (annulus) interrupted by four gaps.
 /// Exposure is always on.
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct ThermalPrimitive {
     /// X and Y coordinates of center point, decimals
     pub center: (MacroDecimal, MacroDecimal),
@@ -604,5 +629,14 @@ mod test {
             expression: "$40+2".to_string(),
         };
         assert_eq!(&var.to_code().unwrap(), "$17=$40+2*");
+    }
+
+    #[test]
+    fn test_macrocontent_from_into() {
+        let a = MacroContent::Comment("hello".into());
+        let b: MacroContent = "hello".to_string().into();
+        let c: MacroContent = "hello".into();
+        assert_eq!(a, b);
+        assert_eq!(b, c);
     }
 }
