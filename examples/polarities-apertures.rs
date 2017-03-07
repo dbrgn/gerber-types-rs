@@ -6,7 +6,6 @@ extern crate conv;
 use conv::TryFrom;
 
 use gerber_types::*;
-use gerber_types::MacroDecimal::Value;
 
 const VERSION: &'static str = env!("CARGO_PKG_VERSION");
 
@@ -45,14 +44,14 @@ fn main() {
                 ApertureMacro::new("TARGET125").add_primitive(
                     Primitive::Moire(
                         MoirePrimitive {
-                            center: (Value(0.0), Value(0.0)),
-                            diameter: Value(0.125),
-                            ring_thickness: Value(0.01),
-                            gap: Value(0.01),
+                            center: (0.0.into(), 0.0.into()),
+                            diameter: 0.125.into(),
+                            ring_thickness: 0.01.into(),
+                            gap: 0.01.into(),
                             max_rings: 3,
-                            cross_hair_thickness: Value(0.003),
-                            cross_hair_length: Value(0.150),
-                            angle: Value(0.0),
+                            cross_hair_thickness: 0.003.into(),
+                            cross_hair_length: 0.150.into(),
+                            angle: 0.0.into(),
                         }
                     )
                 )
@@ -63,11 +62,11 @@ fn main() {
                 ApertureMacro::new("THERMAL80").add_primitive(
                     Primitive::Thermal(
                         ThermalPrimitive {
-                            center: (Value(0.0), Value(0.0)),
-                            outer_diameter: Value(0.08),
-                            inner_diameter: Value(0.055),
-                            gap: Value(0.0125),
-                            angle: Value(45.0),
+                            center: (0.0.into(), 0.0.into()),
+                            outer_diameter: 0.08.into(),
+                            inner_diameter: 0.055.into(),
+                            gap: 0.0125.into(),
+                            angle: 45.0.into(),
                         }
                     )
                 )

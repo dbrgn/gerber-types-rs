@@ -1,5 +1,7 @@
 //! Aperture Macros.
 
+use std::convert::From;
+
 use ::{GerberCode, GerberError, GerberResult};
 
 #[derive(Debug)]
@@ -46,22 +48,33 @@ pub enum MacroDecimal {
     /// A variable placeholder.
     Variable(u8),
 }
-use MacroDecimal::{Value, Variable};
 
 impl MacroDecimal {
     fn is_negative(&self) -> bool {
         match *self {
-            Value(v) => v < 0.0,
-            Variable(_) => false,
+            MacroDecimal::Value(v) => v < 0.0,
+            MacroDecimal::Variable(_) => false,
         }
+    }
+}
+
+impl From<f32> for MacroDecimal {
+    fn from(val: f32) -> Self {
+        MacroDecimal::Value(val as f64)
+    }
+}
+
+impl From<f64> for MacroDecimal {
+    fn from(val: f64) -> Self {
+        MacroDecimal::Value(val)
     }
 }
 
 impl GerberCode for MacroDecimal {
     fn to_code(&self) -> GerberResult<String> {
         let code = match *self {
-            Value(ref v) => format!("{}", v),
-            Variable(ref v) => format!("${}", v),
+            MacroDecimal::Value(ref v) => format!("{}", v),
+            MacroDecimal::Variable(ref v) => format!("${}", v),
         };
         Ok(code)
     }
@@ -542,10 +555,20 @@ mod test {
         let line = VectorLinePrimitive {
             exposure: true,
             width: Variable(0),
-            start: (Variable(1), Value(0.45)),
+            start: (Variable(1), 0.45.into()),
             end: (Value(12.), Variable(2)),
             angle: Variable(3),
         };
         assert_eq!(line.to_code().unwrap(), "20,1,$0,$1,0.45,12,$2,$3*".to_string());
+    }
+
+    #[test]
+    fn test_macro_decimal_into() {
+        let a = Value(1.0);
+        let b: MacroDecimal = 1.0.into();
+        assert_eq!(a, b);
+        let c = Variable(1);
+        let d = Variable(1);
+        assert_eq!(c, d);
     }
 }
