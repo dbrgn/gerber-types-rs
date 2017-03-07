@@ -46,7 +46,7 @@ pub enum MacroDecimal {
     /// A decimal value.
     Value(f64),
     /// A variable placeholder.
-    Variable(u8),
+    Variable(u32),
 }
 
 impl MacroDecimal {
@@ -82,7 +82,7 @@ impl GerberCode for MacroDecimal {
 
 #[derive(Debug)]
 pub enum MacroContent {
-    Comment(String),
+    // Primitives
     Circle(CirclePrimitive),
     VectorLine(VectorLinePrimitive),
     CenterLine(CenterLinePrimitive),
@@ -90,19 +90,26 @@ pub enum MacroContent {
     Polygon(PolygonPrimitive),
     Moire(MoirePrimitive),
     Thermal(ThermalPrimitive),
+
+    // Variables
+    VariableDefinition(VariableDefinition),
+
+    // Comment
+    Comment(String),
 }
 
 impl GerberCode for MacroContent {
     fn to_code(&self) -> GerberResult<String> {
         let code = match *self {
+            MacroContent::Circle(ref c) => c.to_code()?,
+            MacroContent::VectorLine(ref vl) => vl.to_code()?,
+            MacroContent::CenterLine(ref cl) => cl.to_code()?,
+            MacroContent::Outline(ref o) => o.to_code()?,
+            MacroContent::Polygon(ref p) => p.to_code()?,
+            MacroContent::Moire(ref m) => m.to_code()?,
+            MacroContent::Thermal(ref t) => t.to_code()?,
             MacroContent::Comment(ref s) => format!("0 {}*", &s),
-            MacroContent::Circle(ref c) => try!(c.to_code()),
-            MacroContent::VectorLine(ref vl) => try!(vl.to_code()),
-            MacroContent::CenterLine(ref cl) => try!(cl.to_code()),
-            MacroContent::Outline(ref o) => try!(o.to_code()),
-            MacroContent::Polygon(ref p) => try!(p.to_code()),
-            MacroContent::Moire(ref m) => try!(m.to_code()),
-            MacroContent::Thermal(ref t) => try!(t.to_code()),
+            MacroContent::VariableDefinition(ref v) => v.to_code()?,
         };
         Ok(code)
     }
@@ -418,6 +425,18 @@ impl GerberCode for ThermalPrimitive {
     }
 }
 
+#[derive(Debug, PartialEq, Eq)]
+pub struct VariableDefinition {
+    number: u32,
+    expression: String,
+}
+
+impl GerberCode for VariableDefinition {
+    fn to_code(&self) -> GerberResult<String> {
+        Ok(format!("${}={}*", self.number, self.expression))
+    }
+}
+
 
 #[cfg(test)]
 mod test {
@@ -576,5 +595,14 @@ mod test {
     fn test_comment_codegen() {
         let comment = MacroContent::Comment("hello world".to_string());
         assert_eq!(&comment.to_code().unwrap(), "0 hello world*");
+    }
+
+    #[test]
+    fn test_variable_definition_codegen() {
+        let var = VariableDefinition {
+            number: 17,
+            expression: "$40+2".to_string(),
+        };
+        assert_eq!(&var.to_code().unwrap(), "$17=$40+2*");
     }
 }
