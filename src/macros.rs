@@ -95,7 +95,7 @@ pub enum Primitive {
 impl GerberCode for Primitive {
     fn to_code(&self) -> GerberResult<String> {
         let code = match *self {
-            Primitive::Comment(ref s) => s.clone(),
+            Primitive::Comment(ref s) => format!("0 {}*", &s),
             Primitive::Circle(ref c) => try!(c.to_code()),
             Primitive::VectorLine(ref vl) => try!(vl.to_code()),
             Primitive::CenterLine(ref cl) => try!(cl.to_code()),
@@ -570,5 +570,11 @@ mod test {
         let c = Variable(1);
         let d = Variable(1);
         assert_eq!(c, d);
+    }
+
+    #[test]
+    fn test_comment_codegen() {
+        let comment = Primitive::Comment("hello world".to_string());
+        assert_eq!(&comment.to_code().unwrap(), "0 hello world*");
     }
 }
