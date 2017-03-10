@@ -1,3 +1,5 @@
+//! Attributes.
+
 use chrono::{DateTime, UTC};
 use uuid::Uuid;
 

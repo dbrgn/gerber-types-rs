@@ -7,6 +7,17 @@ pub trait GerberCode {
     fn to_code(&self) -> GerberResult<String>;
 }
 
+/// Implement GerberCode for booleans
+impl GerberCode for bool {
+    fn to_code(&self) -> GerberResult<String> {
+        Ok(if *self {
+            "1".to_string()
+        } else {
+            "0".to_string()
+        })
+    }
+}
+
 /// Implement GerberCode for Vectors of types that implement GerberCode.
 impl<T: GerberCode> GerberCode for Vec<T> {
     fn to_code(&self) -> GerberResult<String> {
@@ -165,7 +176,7 @@ impl GerberCode for ExtendedCode {
             ExtendedCode::CoordinateFormat(ref cf) => format!("%FSLAX{0}{1}Y{0}{1}*%", cf.integer, cf.decimal),
             ExtendedCode::Unit(ref unit) => format!("%MO{}*%", try!(unit.to_code())),
             ExtendedCode::ApertureDefinition(ref def) => format!("%ADD{}*%", try!(def.to_code())),
-            ExtendedCode::ApertureMacro => panic!("not yet implemented"),
+            ExtendedCode::ApertureMacro(ref am) => format!("%{}%", try!(am.to_code())),
             ExtendedCode::LoadPolarity(ref polarity) => format!("%LP{}*%", try!(polarity.to_code())),
             ExtendedCode::StepAndRepeat(ref sar) => format!("%SR{}*%", try!(sar.to_code())),
             ExtendedCode::FileAttribute(ref attr) => format!("%TF.{}*%", try!(attr.to_code())),
@@ -222,7 +233,7 @@ impl GerberCode for Aperture {
             Aperture::Rectangle(ref rectangular) => format!("R,{}", try!(rectangular.to_code())),
             Aperture::Obround(ref rectangular) => format!("O,{}", try!(rectangular.to_code())),
             Aperture::Polygon(ref polygon) => format!("P,{}", try!(polygon.to_code())),
-            Aperture::Other(ref string) => panic!("not yet implemented"),
+            Aperture::Other(ref string) => format!("{}", string),
         };
         Ok(code)
     }
@@ -277,6 +288,7 @@ impl GerberCode for FileAttribute {
         let code = match *self {
             FileAttribute::Part(ref part) => format!("Part,{}", try!(part.to_code())),
             FileAttribute::GenerationSoftware(ref gs) => format!("GenerationSoftware,{}", try!(gs.to_code())),
+            FileAttribute::Md5(ref hash) => format!("MD5,{}", hash),
             _ => panic!("Not yet implemented"),
         };
         Ok(code)

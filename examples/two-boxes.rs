@@ -1,4 +1,4 @@
-//! Example from spec chapter 2.13.1
+//! Example from spec chapter 2.12.1
 
 extern crate gerber_types;
 
@@ -22,9 +22,7 @@ fn main() {
             )
         ),
         Command::ExtendedCode(ExtendedCode::CoordinateFormat(cf)),
-        Command::ExtendedCode(
-            ExtendedCode::Unit(Unit::Millimeters)
-        ),
+        Command::ExtendedCode(ExtendedCode::Unit(Unit::Millimeters)),
         Command::ExtendedCode(
             ExtendedCode::FileAttribute(
                 FileAttribute::GenerationSoftware(
