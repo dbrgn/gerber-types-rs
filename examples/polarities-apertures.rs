@@ -633,5 +633,5 @@ fn main() {
     ];
     let mut stdout = stdout();
     commands.to_code(&mut stdout).unwrap();
-    writeln!(stdout).unwrap();
+    write!(stdout, "\n").unwrap();
 }

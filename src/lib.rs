@@ -61,7 +61,7 @@ mod test {
                 if first {
                     first = false;
                 } else {
-                    writeln!(buf).unwrap();
+                    write!(buf, "\n").unwrap();
                 }
                 obj.to_code(&mut buf).expect("Could not generate Gerber code");
             }

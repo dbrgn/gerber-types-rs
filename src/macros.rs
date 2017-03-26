@@ -40,7 +40,7 @@ impl<W: Write> GerberCode<W> for ApertureMacro {
             if first {
                 first = false;
             } else {
-                writeln!(writer)?;
+                write!(writer, "\n")?;
             }
             content.to_code(&mut writer)?;
         }
