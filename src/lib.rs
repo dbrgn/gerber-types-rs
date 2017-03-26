@@ -9,6 +9,13 @@
 //! module won't complain.
 //!
 //! Minimal required Rust version: 1.6.
+//!
+//! ## Newlines in Code Generation
+//!
+//! By default, types implementing `GerberCode` don't output a newline at the
+//! end. An exception is the impl for `Vec<Command>`, which outputs a newline
+//! between two following commands. No newline is emitted after the last
+//! command.
 
 extern crate chrono;
 extern crate uuid;
@@ -34,12 +41,30 @@ pub use errors::*;
 #[cfg(test)]
 mod test {
     use super::*;
-    use std::io::BufWriter;
+    use std::io::{Write, BufWriter};
 
     macro_rules! assert_code {
         ($obj:expr, $expected:expr) => {
             let mut buf = BufWriter::new(Vec::new());
             $obj.to_code(&mut buf).expect("Could not generate Gerber code");
+            let bytes = buf.into_inner().unwrap();
+            let code = String::from_utf8(bytes).unwrap();
+            assert_eq!(&code, $expected);
+        }
+    }
+
+    macro_rules! assert_code_vec {
+        ($vec:expr, $expected:expr) => {
+            let mut buf = BufWriter::new(Vec::new());
+            let mut first = true;
+            for obj in $vec.iter() {
+                if first {
+                    first = false;
+                } else {
+                    writeln!(buf).unwrap();
+                }
+                obj.to_code(&mut buf).expect("Could not generate Gerber code");
+            }
             let bytes = buf.into_inner().unwrap();
             let code = String::from_utf8(bytes).unwrap();
             assert_eq!(&code, $expected);
@@ -59,7 +84,7 @@ mod test {
         let mut v = Vec::new();
         v.push(GCode::Comment("comment 1".to_string()));
         v.push(GCode::Comment("another one".to_string()));
-        assert_code!(v, "G04 comment 1 *\nG04 another one *");
+        assert_code_vec!(v, "G04 comment 1 *\nG04 another one *");
     }
 
     #[test]
@@ -89,7 +114,7 @@ mod test {
         commands.push(c1);
         commands.push(c2);
         commands.push(c3);
-        assert_code!(commands, "G01*\nG02*\nG03*");
+        assert_code_vec!(commands, "G01*\nG02*\nG03*");
     }
 
     #[test]
@@ -97,7 +122,7 @@ mod test {
         let mut commands = Vec::new();
         commands.push(GCode::RegionMode(true));
         commands.push(GCode::RegionMode(false));
-        assert_code!(commands, "G36*\nG37*");
+        assert_code_vec!(commands, "G36*\nG37*");
     }
 
     #[test]
@@ -105,7 +130,7 @@ mod test {
         let mut commands = Vec::new();
         commands.push(GCode::QuadrantMode(QuadrantMode::Single));
         commands.push(GCode::QuadrantMode(QuadrantMode::Multi));
-        assert_code!(commands, "G74*\nG75*");
+        assert_code_vec!(commands, "G74*\nG75*");
     }
 
     #[test]

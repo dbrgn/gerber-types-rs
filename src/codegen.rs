@@ -20,8 +20,8 @@ impl<W: Write> GerberCode<W> for bool {
     }
 }
 
-/// Implement GerberCode for Vectors of types that implement GerberCode.
-impl<T, W: Write> GerberCode<W> for Vec<T> where T: GerberCode<W> {
+/// Implement GerberCode for Vectors of commands.
+impl<W: Write> GerberCode<W> for Vec<Command> {
     fn to_code(&self, mut writer: &mut W) -> GerberResult<()> {
         let mut first = true;
         for item in self.iter() {
