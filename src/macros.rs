@@ -1,6 +1,7 @@
 //! Aperture Macros.
 
 use std::convert::From;
+use std::io::Write;
 
 use ::{GerberCode, GerberError, GerberResult};
 
@@ -28,15 +29,22 @@ impl ApertureMacro {
     }
 }
 
-impl GerberCode for ApertureMacro {
-    fn to_code(&self) -> GerberResult<String> {
+impl<W: Write> GerberCode<W> for ApertureMacro {
+    fn to_code(&self, mut writer: &mut W) -> GerberResult<()> {
         if self.content.len() == 0 {
             return Err(GerberError::MissingDataError("There must be at least 1 content element in an aperture macro".into()));
         }
-        let content = self.content.iter()
-                                  .map(|p| p.to_code())
-                                  .collect::<GerberResult<Vec<String>>>()?;
-        Ok(format!("AM{}*\n{}", self.name, content.join("\n")))
+        writeln!(writer, "AM{}*", self.name)?;
+        let mut first = true;
+        for content in self.content.iter() {
+            if first {
+                first = false;
+            } else {
+                writeln!(writer)?;
+            }
+            content.to_code(&mut writer)?;
+        }
+        Ok(())
     }
 }
 
@@ -70,13 +78,13 @@ impl From<f64> for MacroDecimal {
     }
 }
 
-impl GerberCode for MacroDecimal {
-    fn to_code(&self) -> GerberResult<String> {
-        let code = match *self {
-            MacroDecimal::Value(ref v) => format!("{}", v),
-            MacroDecimal::Variable(ref v) => format!("${}", v),
+impl<W: Write> GerberCode<W> for MacroDecimal {
+    fn to_code(&self, mut writer: &mut W) -> GerberResult<()> {
+        match *self {
+            MacroDecimal::Value(ref v) => write!(writer, "{}", v)?,
+            MacroDecimal::Variable(ref v) => write!(writer, "${}", v)?,
         };
-        Ok(code)
+        Ok(())
     }
 }
 
@@ -98,20 +106,20 @@ pub enum MacroContent {
     Comment(String),
 }
 
-impl GerberCode for MacroContent {
-    fn to_code(&self) -> GerberResult<String> {
-        let code = match *self {
-            MacroContent::Circle(ref c) => c.to_code()?,
-            MacroContent::VectorLine(ref vl) => vl.to_code()?,
-            MacroContent::CenterLine(ref cl) => cl.to_code()?,
-            MacroContent::Outline(ref o) => o.to_code()?,
-            MacroContent::Polygon(ref p) => p.to_code()?,
-            MacroContent::Moire(ref m) => m.to_code()?,
-            MacroContent::Thermal(ref t) => t.to_code()?,
-            MacroContent::Comment(ref s) => format!("0 {}*", &s),
-            MacroContent::VariableDefinition(ref v) => v.to_code()?,
+impl<W: Write> GerberCode<W> for MacroContent {
+    fn to_code(&self, mut writer: &mut W) -> GerberResult<()> {
+        match *self {
+            MacroContent::Circle(ref c) => c.to_code(&mut writer)?,
+            MacroContent::VectorLine(ref vl) => vl.to_code(&mut writer)?,
+            MacroContent::CenterLine(ref cl) => cl.to_code(&mut writer)?,
+            MacroContent::Outline(ref o) => o.to_code(&mut writer)?,
+            MacroContent::Polygon(ref p) => p.to_code(&mut writer)?,
+            MacroContent::Moire(ref m) => m.to_code(&mut writer)?,
+            MacroContent::Thermal(ref t) => t.to_code(&mut writer)?,
+            MacroContent::Comment(ref s) => write!(writer, "0 {}*", &s)?,
+            MacroContent::VariableDefinition(ref v) => v.to_code(&mut writer)?,
         };
-        Ok(code)
+        Ok(())
     }
 }
 
@@ -162,16 +170,22 @@ pub struct CirclePrimitive {
     pub angle: Option<MacroDecimal>,
 }
 
-impl GerberCode for CirclePrimitive {
-    fn to_code(&self) -> GerberResult<String> {
-        let mut code = "1,".to_string();
-        code.push_str(&try!(self.exposure.to_code()));
-        code.push_str(&format!(",{},{},{}", self.diameter.to_code()?, self.center.0.to_code()?, self.center.1.to_code()?));
+impl<W: Write> GerberCode<W> for CirclePrimitive {
+    fn to_code(&self, mut writer: &mut W) -> GerberResult<()> {
+        write!(writer, "1,")?;
+        self.exposure.to_code(&mut writer)?;
+        write!(writer, ",")?;
+        self.diameter.to_code(&mut writer)?;
+        write!(writer, ",")?;
+        self.center.0.to_code(&mut writer)?;
+        write!(writer, ",")?;
+        self.center.1.to_code(&mut writer)?;
         if let Some(ref a) = self.angle {
-            code.push_str(&format!(",{}", a.to_code()?));
+            write!(writer, ",")?;
+            a.to_code(&mut writer)?;
         }
-        code.push_str("*");
-        Ok(code)
+        write!(writer, "*")?;
+        Ok(())
     }
 }
 
@@ -197,17 +211,24 @@ pub struct VectorLinePrimitive {
     pub angle: MacroDecimal,
 }
 
-impl GerberCode for VectorLinePrimitive {
-    fn to_code(&self) -> GerberResult<String> {
-        let code = format!(
-            "20,{},{},{},{},{},{},{}*",
-            self.exposure.to_code()?,
-            self.width.to_code()?,
-            self.start.0.to_code()?, self.start.1.to_code()?,
-            self.end.0.to_code()?, self.end.1.to_code()?,
-            self.angle.to_code()?
-        );
-        Ok(code)
+impl<W: Write> GerberCode<W> for VectorLinePrimitive {
+    fn to_code(&self, mut writer: &mut W) -> GerberResult<()> {
+        write!(writer, "20,")?;
+        self.exposure.to_code(&mut writer)?;
+        write!(writer, ",")?;
+        self.width.to_code(&mut writer)?;
+        write!(writer, ",")?;
+        self.start.0.to_code(&mut writer)?;
+        write!(writer, ",")?;
+        self.start.1.to_code(&mut writer)?;
+        write!(writer, ",")?;
+        self.end.0.to_code(&mut writer)?;
+        write!(writer, ",")?;
+        self.end.1.to_code(&mut writer)?;
+        write!(writer, ",")?;
+        self.angle.to_code(&mut writer)?;
+        write!(writer, "*")?;
+        Ok(())
     }
 }
 
@@ -230,16 +251,22 @@ pub struct CenterLinePrimitive {
     pub angle: MacroDecimal,
 }
 
-impl GerberCode for CenterLinePrimitive {
-    fn to_code(&self) -> GerberResult<String> {
-        let code = format!(
-            "21,{},{},{},{},{},{}*",
-            try!(self.exposure.to_code()),
-            self.dimensions.0.to_code()?, self.dimensions.1.to_code()?,
-            self.center.0.to_code()?, self.center.1.to_code()?,
-            self.angle.to_code()?
-        );
-        Ok(code)
+impl<W: Write> GerberCode<W> for CenterLinePrimitive {
+    fn to_code(&self, mut writer: &mut W) -> GerberResult<()> {
+        write!(writer, "21,")?;
+        self.exposure.to_code(&mut writer)?;
+        write!(writer, ",")?;
+        self.dimensions.0.to_code(&mut writer)?;
+        write!(writer, ",")?;
+        self.dimensions.1.to_code(&mut writer)?;
+        write!(writer, ",")?;
+        self.center.0.to_code(&mut writer)?;
+        write!(writer, ",")?;
+        self.center.1.to_code(&mut writer)?;
+        write!(writer, ",")?;
+        self.angle.to_code(&mut writer)?;
+        write!(writer, "*")?;
+        Ok(())
     }
 }
 
@@ -261,8 +288,8 @@ pub struct OutlinePrimitive {
     pub angle: MacroDecimal,
 }
 
-impl GerberCode for OutlinePrimitive {
-    fn to_code(&self) -> GerberResult<String> {
+impl<W: Write> GerberCode<W> for OutlinePrimitive {
+    fn to_code(&self, mut writer: &mut W) -> GerberResult<()> {
         // Points invariants
         if self.points.len() < 2 {
             return Err(GerberError::MissingDataError("There must be at least 1 subsequent point in an outline".into()));
@@ -274,13 +301,19 @@ impl GerberCode for OutlinePrimitive {
             return Err(GerberError::RangeError("The last point must be equal to the first point".into()));
         }
 
-        let mut code = format!("4,{},{},\n", try!(self.exposure.to_code()), self.points.len() - 1);
-        let points = self.points.iter()
-                         .map(|&(ref x, ref y)| Ok(format!("{},{},", x.to_code()?, y.to_code()?)))
-                         .collect::<GerberResult<Vec<String>>>()?;
-        code.push_str(&points.join("\n"));
-        code.push_str(&format!("\n{}*", self.angle.to_code()?));
-        Ok(code)
+        write!(writer, "4,")?;
+        self.exposure.to_code(&mut writer)?;
+        writeln!(writer, ",{},", self.points.len() - 1)?;
+
+        for &(ref x, ref y) in self.points.iter() {
+            x.to_code(&mut writer)?;
+            write!(writer, ",")?;
+            y.to_code(&mut writer)?;
+            writeln!(writer, ",")?;
+        }
+        self.angle.to_code(&mut writer)?;
+        write!(writer, "*")?;
+        Ok(())
     }
 }
 
@@ -312,8 +345,8 @@ pub struct PolygonPrimitive {
     pub angle: MacroDecimal,
 }
 
-impl GerberCode for PolygonPrimitive {
-    fn to_code(&self) -> GerberResult<String> {
+impl<W: Write> GerberCode<W> for PolygonPrimitive {
+    fn to_code(&self, mut writer: &mut W) -> GerberResult<()> {
         // Vertice count invariants
         if self.vertices < 3 {
             return Err(GerberError::MissingDataError("There must be at least 3 vertices in a polygon".into()));
@@ -324,15 +357,18 @@ impl GerberCode for PolygonPrimitive {
         if self.diameter.is_negative() {
             return Err(GerberError::RangeError("The diameter must not be negative".into()));
         }
-        let code = format!(
-            "5,{},{},{},{},{},{}*",
-            self.exposure.to_code()?,
-            self.vertices,
-            self.center.0.to_code()?, self.center.1.to_code()?,
-            self.diameter.to_code()?,
-            self.angle.to_code()?
-        );
-        Ok(code)
+        write!(writer, "5,")?;
+        self.exposure.to_code(&mut writer)?;
+        write!(writer, ",{},", self.vertices)?;
+        self.center.0.to_code(&mut writer)?;
+        write!(writer, ",")?;
+        self.center.1.to_code(&mut writer)?;
+        write!(writer, ",")?;
+        self.diameter.to_code(&mut writer)?;
+        write!(writer, ",")?;
+        self.angle.to_code(&mut writer)?;
+        write!(writer, "*")?;
+        Ok(())
     }
 }
 
@@ -372,8 +408,8 @@ pub struct MoirePrimitive {
     pub angle: MacroDecimal,
 }
 
-impl GerberCode for MoirePrimitive {
-    fn to_code(&self) -> GerberResult<String> {
+impl<W: Write> GerberCode<W> for MoirePrimitive {
+    fn to_code(&self, mut writer: &mut W) -> GerberResult<()> {
         // Decimal invariants
         if self.diameter.is_negative() {
             return Err(GerberError::RangeError("Outer diameter of a moiré may not be negative".into()));
@@ -390,17 +426,24 @@ impl GerberCode for MoirePrimitive {
         if self.cross_hair_length.is_negative() {
             return Err(GerberError::RangeError("Cross hair length of a moiré may not be negative".into()));
         }
-        let code = format!(
-            "6,{},{},{},{},{},{},{},{},{}*",
-            self.center.0.to_code()?, self.center.1.to_code()?,
-            self.diameter.to_code()?,
-            self.ring_thickness.to_code()?,
-            self.gap.to_code()?,
-            self.max_rings,
-            self.cross_hair_thickness.to_code()?, self.cross_hair_length.to_code()?,
-            self.angle.to_code()?
-        );
-        Ok(code)
+        write!(writer, "6,")?;
+        self.center.0.to_code(&mut writer)?;
+        write!(writer, ",")?;
+        self.center.1.to_code(&mut writer)?;
+        write!(writer, ",")?;
+        self.diameter.to_code(&mut writer)?;
+        write!(writer, ",")?;
+        self.ring_thickness.to_code(&mut writer)?;
+        write!(writer, ",")?;
+        self.gap.to_code(&mut writer)?;
+        write!(writer, ",{},", self.max_rings)?;
+        self.cross_hair_thickness.to_code(&mut writer)?;
+        write!(writer, ",")?;
+        self.cross_hair_length.to_code(&mut writer)?;
+        write!(writer, ",")?;
+        self.angle.to_code(&mut writer)?;
+        write!(writer, "*")?;
+        Ok(())
     }
 }
 
@@ -432,21 +475,26 @@ pub struct ThermalPrimitive {
     pub angle: MacroDecimal,
 }
 
-impl GerberCode for ThermalPrimitive {
-    fn to_code(&self) -> GerberResult<String> {
+impl<W: Write> GerberCode<W> for ThermalPrimitive {
+    fn to_code(&self, mut writer: &mut W) -> GerberResult<()> {
         // Decimal invariants
         if self.inner_diameter.is_negative() {
             return Err(GerberError::RangeError("Inner diameter of a thermal may not be negative".into()));
         }
-        let code = format!(
-            "7,{},{},{},{},{},{}*",
-            self.center.0.to_code()?, self.center.1.to_code()?,
-            self.outer_diameter.to_code()?,
-            self.inner_diameter.to_code()?,
-            self.gap.to_code()?,
-            self.angle.to_code()?
-        );
-        Ok(code)
+        write!(writer, "7,")?;
+        self.center.0.to_code(&mut writer)?;
+        write!(writer, ",")?;
+        self.center.1.to_code(&mut writer)?;
+        write!(writer, ",")?;
+        self.outer_diameter.to_code(&mut writer)?;
+        write!(writer, ",")?;
+        self.inner_diameter.to_code(&mut writer)?;
+        write!(writer, ",")?;
+        self.gap.to_code(&mut writer)?;
+        write!(writer, ",")?;
+        self.angle.to_code(&mut writer)?;
+        write!(writer, "*")?;
+        Ok(())
     }
 }
 
@@ -456,18 +504,30 @@ pub struct VariableDefinition {
     expression: String,
 }
 
-impl GerberCode for VariableDefinition {
-    fn to_code(&self) -> GerberResult<String> {
-        Ok(format!("${}={}*", self.number, self.expression))
+impl<W: Write> GerberCode<W> for VariableDefinition {
+    fn to_code(&self, mut writer: &mut W) -> GerberResult<()> {
+        write!(writer, "${}={}*", self.number, self.expression)?;
+        Ok(())
     }
 }
 
 
 #[cfg(test)]
 mod test {
+    use std::io::BufWriter;
     use super::*;
     use super::MacroDecimal::{Value, Variable};
     use ::GerberCode;
+
+    macro_rules! assert_code {
+        ($obj:expr, $expected:expr) => {
+            let mut buf = BufWriter::new(Vec::new());
+            $obj.to_code(&mut buf).expect("Could not generate Gerber code");
+            let bytes = buf.into_inner().unwrap();
+            let code = String::from_utf8(bytes).unwrap();
+            assert_eq!(&code, $expected);
+        }
+    }
 
     #[test]
     fn test_circle_primitive_codegen() {
@@ -477,14 +537,14 @@ mod test {
             center: (Value(0.), Value(0.)),
             angle: Some(Value(0.)),
         };
-        assert_eq!(with_angle.to_code().unwrap(), "1,1,1.5,0,0,0*".to_string());
+        assert_code!(with_angle, "1,1,1.5,0,0,0*");
         let no_angle = CirclePrimitive {
             exposure: false,
             diameter: Value(99.9),
             center: (Value(1.1), Value(2.2)),
             angle: None,
         };
-        assert_eq!(no_angle.to_code().unwrap(), "1,0,99.9,1.1,2.2*".to_string());
+        assert_code!(no_angle, "1,0,99.9,1.1,2.2*");
     }
 
     #[test]
@@ -496,7 +556,7 @@ mod test {
             end: (Value(12.), Value(0.45)),
             angle: Value(0.),
         };
-        assert_eq!(line.to_code().unwrap(), "20,1,0.9,0,0.45,12,0.45,0*".to_string());
+        assert_code!(line, "20,1,0.9,0,0.45,12,0.45,0*");
     }
 
     #[test]
@@ -507,7 +567,7 @@ mod test {
             center: (Value(3.4), Value(0.6)),
             angle: Value(30.0),
         };
-        assert_eq!(line.to_code().unwrap(), "21,1,6.8,1.2,3.4,0.6,30*".to_string());
+        assert_code!(line, "21,1,6.8,1.2,3.4,0.6,30*");
     }
 
     #[test]
@@ -523,7 +583,7 @@ mod test {
             ],
             angle: Value(0.0),
         };
-        assert_eq!(line.to_code().unwrap(), "4,1,4,\n0.1,0.1,\n0.5,0.1,\n0.5,0.5,\n0.1,0.5,\n0.1,0.1,\n0*".to_string());
+        assert_code!(line, "4,1,4,\n0.1,0.1,\n0.5,0.1,\n0.5,0.5,\n0.1,0.5,\n0.1,0.1,\n0*");
     }
 
     #[test]
@@ -535,7 +595,7 @@ mod test {
             diameter: Value(8.0),
             angle: Value(0.0),
         };
-        assert_eq!(line.to_code().unwrap(), "5,1,8,1.5,2,8,0*".to_string());
+        assert_code!(line, "5,1,8,1.5,2,8,0*");
     }
 
     #[test]
@@ -550,7 +610,7 @@ mod test {
             cross_hair_length: Value(6.0),
             angle: Value(0.0),
         };
-        assert_eq!(line.to_code().unwrap(), "6,0,0,5,0.5,0.5,2,0.1,6,0*".to_string());
+        assert_code!(line, "6,0,0,5,0.5,0.5,2,0.1,6,0*");
     }
 
     #[test]
@@ -562,7 +622,7 @@ mod test {
             gap: Value(1.0),
             angle: Value(45.0),
         };
-        assert_eq!(line.to_code().unwrap(), "7,0,0,8,6.5,1,45*".to_string());
+        assert_code!(line, "7,0,0,8,6.5,1,45*");
     }
 
     #[test]
@@ -591,7 +651,7 @@ mod test {
                 }
             )
         );
-        assert_eq!(am.to_code().unwrap(), "AMCRAZY*\n7,0,0,0.08,0.055,0.0125,45*\n6,0,0,0.125,0.01,0.01,3,0.003,0.15,0*".to_string());
+        assert_code!(am, "AMCRAZY*\n7,0,0,0.08,0.055,0.0125,45*\n6,0,0,0.125,0.01,0.01,3,0.003,0.15,0*");
     }
 
     #[test]
@@ -603,7 +663,7 @@ mod test {
             end: (Value(12.), Variable(2)),
             angle: Variable(3),
         };
-        assert_eq!(line.to_code().unwrap(), "20,1,$0,$1,0.45,12,$2,$3*".to_string());
+        assert_code!(line, "20,1,$0,$1,0.45,12,$2,$3*");
     }
 
     #[test]
@@ -619,7 +679,7 @@ mod test {
     #[test]
     fn test_comment_codegen() {
         let comment = MacroContent::Comment("hello world".to_string());
-        assert_eq!(&comment.to_code().unwrap(), "0 hello world*");
+        assert_code!(comment, "0 hello world*");
     }
 
     #[test]
@@ -628,7 +688,7 @@ mod test {
             number: 17,
             expression: "$40+2".to_string(),
         };
-        assert_eq!(&var.to_code().unwrap(), "$17=$40+2*");
+        assert_code!(var, "$17=$40+2*");
     }
 
     #[test]
