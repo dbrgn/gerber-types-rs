@@ -30,7 +30,7 @@ impl ApertureMacro {
 }
 
 impl<W: Write> GerberCode<W> for ApertureMacro {
-    fn to_code(&self, mut writer: &mut W) -> GerberResult<()> {
+    fn to_code(&self, writer: &mut W) -> GerberResult<()> {
         if self.content.len() == 0 {
             return Err(GerberError::MissingDataError("There must be at least 1 content element in an aperture macro".into()));
         }
@@ -42,7 +42,7 @@ impl<W: Write> GerberCode<W> for ApertureMacro {
             } else {
                 write!(writer, "\n")?;
             }
-            content.to_code(&mut writer)?;
+            content.to_code(writer)?;
         }
         Ok(())
     }
@@ -79,7 +79,7 @@ impl From<f64> for MacroDecimal {
 }
 
 impl<W: Write> GerberCode<W> for MacroDecimal {
-    fn to_code(&self, mut writer: &mut W) -> GerberResult<()> {
+    fn to_code(&self, writer: &mut W) -> GerberResult<()> {
         match *self {
             MacroDecimal::Value(ref v) => write!(writer, "{}", v)?,
             MacroDecimal::Variable(ref v) => write!(writer, "${}", v)?,
@@ -107,17 +107,17 @@ pub enum MacroContent {
 }
 
 impl<W: Write> GerberCode<W> for MacroContent {
-    fn to_code(&self, mut writer: &mut W) -> GerberResult<()> {
+    fn to_code(&self, writer: &mut W) -> GerberResult<()> {
         match *self {
-            MacroContent::Circle(ref c) => c.to_code(&mut writer)?,
-            MacroContent::VectorLine(ref vl) => vl.to_code(&mut writer)?,
-            MacroContent::CenterLine(ref cl) => cl.to_code(&mut writer)?,
-            MacroContent::Outline(ref o) => o.to_code(&mut writer)?,
-            MacroContent::Polygon(ref p) => p.to_code(&mut writer)?,
-            MacroContent::Moire(ref m) => m.to_code(&mut writer)?,
-            MacroContent::Thermal(ref t) => t.to_code(&mut writer)?,
+            MacroContent::Circle(ref c) => c.to_code(writer)?,
+            MacroContent::VectorLine(ref vl) => vl.to_code(writer)?,
+            MacroContent::CenterLine(ref cl) => cl.to_code(writer)?,
+            MacroContent::Outline(ref o) => o.to_code(writer)?,
+            MacroContent::Polygon(ref p) => p.to_code(writer)?,
+            MacroContent::Moire(ref m) => m.to_code(writer)?,
+            MacroContent::Thermal(ref t) => t.to_code(writer)?,
             MacroContent::Comment(ref s) => write!(writer, "0 {}*", &s)?,
-            MacroContent::VariableDefinition(ref v) => v.to_code(&mut writer)?,
+            MacroContent::VariableDefinition(ref v) => v.to_code(writer)?,
         };
         Ok(())
     }
@@ -171,18 +171,18 @@ pub struct CirclePrimitive {
 }
 
 impl<W: Write> GerberCode<W> for CirclePrimitive {
-    fn to_code(&self, mut writer: &mut W) -> GerberResult<()> {
+    fn to_code(&self, writer: &mut W) -> GerberResult<()> {
         write!(writer, "1,")?;
-        self.exposure.to_code(&mut writer)?;
+        self.exposure.to_code(writer)?;
         write!(writer, ",")?;
-        self.diameter.to_code(&mut writer)?;
+        self.diameter.to_code(writer)?;
         write!(writer, ",")?;
-        self.center.0.to_code(&mut writer)?;
+        self.center.0.to_code(writer)?;
         write!(writer, ",")?;
-        self.center.1.to_code(&mut writer)?;
+        self.center.1.to_code(writer)?;
         if let Some(ref a) = self.angle {
             write!(writer, ",")?;
-            a.to_code(&mut writer)?;
+            a.to_code(writer)?;
         }
         write!(writer, "*")?;
         Ok(())
@@ -212,21 +212,21 @@ pub struct VectorLinePrimitive {
 }
 
 impl<W: Write> GerberCode<W> for VectorLinePrimitive {
-    fn to_code(&self, mut writer: &mut W) -> GerberResult<()> {
+    fn to_code(&self, writer: &mut W) -> GerberResult<()> {
         write!(writer, "20,")?;
-        self.exposure.to_code(&mut writer)?;
+        self.exposure.to_code(writer)?;
         write!(writer, ",")?;
-        self.width.to_code(&mut writer)?;
+        self.width.to_code(writer)?;
         write!(writer, ",")?;
-        self.start.0.to_code(&mut writer)?;
+        self.start.0.to_code(writer)?;
         write!(writer, ",")?;
-        self.start.1.to_code(&mut writer)?;
+        self.start.1.to_code(writer)?;
         write!(writer, ",")?;
-        self.end.0.to_code(&mut writer)?;
+        self.end.0.to_code(writer)?;
         write!(writer, ",")?;
-        self.end.1.to_code(&mut writer)?;
+        self.end.1.to_code(writer)?;
         write!(writer, ",")?;
-        self.angle.to_code(&mut writer)?;
+        self.angle.to_code(writer)?;
         write!(writer, "*")?;
         Ok(())
     }
@@ -252,19 +252,19 @@ pub struct CenterLinePrimitive {
 }
 
 impl<W: Write> GerberCode<W> for CenterLinePrimitive {
-    fn to_code(&self, mut writer: &mut W) -> GerberResult<()> {
+    fn to_code(&self, writer: &mut W) -> GerberResult<()> {
         write!(writer, "21,")?;
-        self.exposure.to_code(&mut writer)?;
+        self.exposure.to_code(writer)?;
         write!(writer, ",")?;
-        self.dimensions.0.to_code(&mut writer)?;
+        self.dimensions.0.to_code(writer)?;
         write!(writer, ",")?;
-        self.dimensions.1.to_code(&mut writer)?;
+        self.dimensions.1.to_code(writer)?;
         write!(writer, ",")?;
-        self.center.0.to_code(&mut writer)?;
+        self.center.0.to_code(writer)?;
         write!(writer, ",")?;
-        self.center.1.to_code(&mut writer)?;
+        self.center.1.to_code(writer)?;
         write!(writer, ",")?;
-        self.angle.to_code(&mut writer)?;
+        self.angle.to_code(writer)?;
         write!(writer, "*")?;
         Ok(())
     }
@@ -289,7 +289,7 @@ pub struct OutlinePrimitive {
 }
 
 impl<W: Write> GerberCode<W> for OutlinePrimitive {
-    fn to_code(&self, mut writer: &mut W) -> GerberResult<()> {
+    fn to_code(&self, writer: &mut W) -> GerberResult<()> {
         // Points invariants
         if self.points.len() < 2 {
             return Err(GerberError::MissingDataError("There must be at least 1 subsequent point in an outline".into()));
@@ -302,16 +302,16 @@ impl<W: Write> GerberCode<W> for OutlinePrimitive {
         }
 
         write!(writer, "4,")?;
-        self.exposure.to_code(&mut writer)?;
+        self.exposure.to_code(writer)?;
         writeln!(writer, ",{},", self.points.len() - 1)?;
 
         for &(ref x, ref y) in self.points.iter() {
-            x.to_code(&mut writer)?;
+            x.to_code(writer)?;
             write!(writer, ",")?;
-            y.to_code(&mut writer)?;
+            y.to_code(writer)?;
             writeln!(writer, ",")?;
         }
-        self.angle.to_code(&mut writer)?;
+        self.angle.to_code(writer)?;
         write!(writer, "*")?;
         Ok(())
     }
@@ -346,7 +346,7 @@ pub struct PolygonPrimitive {
 }
 
 impl<W: Write> GerberCode<W> for PolygonPrimitive {
-    fn to_code(&self, mut writer: &mut W) -> GerberResult<()> {
+    fn to_code(&self, writer: &mut W) -> GerberResult<()> {
         // Vertice count invariants
         if self.vertices < 3 {
             return Err(GerberError::MissingDataError("There must be at least 3 vertices in a polygon".into()));
@@ -358,15 +358,15 @@ impl<W: Write> GerberCode<W> for PolygonPrimitive {
             return Err(GerberError::RangeError("The diameter must not be negative".into()));
         }
         write!(writer, "5,")?;
-        self.exposure.to_code(&mut writer)?;
+        self.exposure.to_code(writer)?;
         write!(writer, ",{},", self.vertices)?;
-        self.center.0.to_code(&mut writer)?;
+        self.center.0.to_code(writer)?;
         write!(writer, ",")?;
-        self.center.1.to_code(&mut writer)?;
+        self.center.1.to_code(writer)?;
         write!(writer, ",")?;
-        self.diameter.to_code(&mut writer)?;
+        self.diameter.to_code(writer)?;
         write!(writer, ",")?;
-        self.angle.to_code(&mut writer)?;
+        self.angle.to_code(writer)?;
         write!(writer, "*")?;
         Ok(())
     }
@@ -409,7 +409,7 @@ pub struct MoirePrimitive {
 }
 
 impl<W: Write> GerberCode<W> for MoirePrimitive {
-    fn to_code(&self, mut writer: &mut W) -> GerberResult<()> {
+    fn to_code(&self, writer: &mut W) -> GerberResult<()> {
         // Decimal invariants
         if self.diameter.is_negative() {
             return Err(GerberError::RangeError("Outer diameter of a moiré may not be negative".into()));
@@ -427,21 +427,21 @@ impl<W: Write> GerberCode<W> for MoirePrimitive {
             return Err(GerberError::RangeError("Cross hair length of a moiré may not be negative".into()));
         }
         write!(writer, "6,")?;
-        self.center.0.to_code(&mut writer)?;
+        self.center.0.to_code(writer)?;
         write!(writer, ",")?;
-        self.center.1.to_code(&mut writer)?;
+        self.center.1.to_code(writer)?;
         write!(writer, ",")?;
-        self.diameter.to_code(&mut writer)?;
+        self.diameter.to_code(writer)?;
         write!(writer, ",")?;
-        self.ring_thickness.to_code(&mut writer)?;
+        self.ring_thickness.to_code(writer)?;
         write!(writer, ",")?;
-        self.gap.to_code(&mut writer)?;
+        self.gap.to_code(writer)?;
         write!(writer, ",{},", self.max_rings)?;
-        self.cross_hair_thickness.to_code(&mut writer)?;
+        self.cross_hair_thickness.to_code(writer)?;
         write!(writer, ",")?;
-        self.cross_hair_length.to_code(&mut writer)?;
+        self.cross_hair_length.to_code(writer)?;
         write!(writer, ",")?;
-        self.angle.to_code(&mut writer)?;
+        self.angle.to_code(writer)?;
         write!(writer, "*")?;
         Ok(())
     }
@@ -476,23 +476,23 @@ pub struct ThermalPrimitive {
 }
 
 impl<W: Write> GerberCode<W> for ThermalPrimitive {
-    fn to_code(&self, mut writer: &mut W) -> GerberResult<()> {
+    fn to_code(&self, writer: &mut W) -> GerberResult<()> {
         // Decimal invariants
         if self.inner_diameter.is_negative() {
             return Err(GerberError::RangeError("Inner diameter of a thermal may not be negative".into()));
         }
         write!(writer, "7,")?;
-        self.center.0.to_code(&mut writer)?;
+        self.center.0.to_code(writer)?;
         write!(writer, ",")?;
-        self.center.1.to_code(&mut writer)?;
+        self.center.1.to_code(writer)?;
         write!(writer, ",")?;
-        self.outer_diameter.to_code(&mut writer)?;
+        self.outer_diameter.to_code(writer)?;
         write!(writer, ",")?;
-        self.inner_diameter.to_code(&mut writer)?;
+        self.inner_diameter.to_code(writer)?;
         write!(writer, ",")?;
-        self.gap.to_code(&mut writer)?;
+        self.gap.to_code(writer)?;
         write!(writer, ",")?;
-        self.angle.to_code(&mut writer)?;
+        self.angle.to_code(writer)?;
         write!(writer, "*")?;
         Ok(())
     }
@@ -505,7 +505,7 @@ pub struct VariableDefinition {
 }
 
 impl<W: Write> GerberCode<W> for VariableDefinition {
-    fn to_code(&self, mut writer: &mut W) -> GerberResult<()> {
+    fn to_code(&self, writer: &mut W) -> GerberResult<()> {
         write!(writer, "${}={}*", self.number, self.expression)?;
         Ok(())
     }

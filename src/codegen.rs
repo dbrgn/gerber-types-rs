@@ -11,7 +11,7 @@ pub trait GerberCode<W: Write> {
 
 /// Implement GerberCode for booleans
 impl<W: Write> GerberCode<W> for bool {
-    fn to_code(&self, mut writer: &mut W) -> GerberResult<()> {
+    fn to_code(&self, writer: &mut W) -> GerberResult<()> {
         match *self {
             true => write!(writer, "1")?,
             false => write!(writer, "0")?,
@@ -22,7 +22,7 @@ impl<W: Write> GerberCode<W> for bool {
 
 /// Implement GerberCode for Vectors of commands.
 impl<W: Write> GerberCode<W> for Vec<Command> {
-    fn to_code(&self, mut writer: &mut W) -> GerberResult<()> {
+    fn to_code(&self, writer: &mut W) -> GerberResult<()> {
         let mut first = true;
         for item in self.iter() {
             if first {
@@ -30,7 +30,7 @@ impl<W: Write> GerberCode<W> for Vec<Command> {
             } else {
                 write!(writer, "\n")?;
             }
-            item.to_code(&mut writer)?;
+            item.to_code(writer)?;
         }
         Ok(())
     }
@@ -38,9 +38,9 @@ impl<W: Write> GerberCode<W> for Vec<Command> {
 
 /// Implement GerberCode for Option<T: GerberCode>
 impl<T: GerberCode<W>, W: Write> GerberCode<W> for Option<T> {
-    fn to_code(&self, mut writer: &mut W) -> GerberResult<()> {
+    fn to_code(&self, writer: &mut W) -> GerberResult<()> {
         if let Some(ref val) = *self {
-            val.to_code(&mut writer)?;
+            val.to_code(writer)?;
         }
         Ok(())
     }
@@ -51,7 +51,7 @@ impl<T: GerberCode<W>, W: Write> GerberCode<W> for Option<T> {
 macro_rules! impl_xy_gerbercode {
     ($class:ty, $x:expr, $y: expr) => {
         impl<W: Write> GerberCode<W> for $class {
-            fn to_code(&self, mut writer: &mut W) -> GerberResult<()> {
+            fn to_code(&self, writer: &mut W) -> GerberResult<()> {
                 if let Some(x) = self.x {
                     write!(writer, "{}{}", $x, x.gerber(&self.format)?)?;
                 }
@@ -69,19 +69,19 @@ impl_xy_gerbercode!(Coordinates, "X", "Y");
 impl_xy_gerbercode!(CoordinateOffset, "I", "J");
 
 impl<W: Write> GerberCode<W> for Operation {
-    fn to_code(&self, mut writer: &mut W) -> GerberResult<()> {
+    fn to_code(&self, writer: &mut W) -> GerberResult<()> {
         match *self {
             Operation::Interpolate(ref coords, ref offset) => {
-                coords.to_code(&mut writer)?;
-                offset.to_code(&mut writer)?;
+                coords.to_code(writer)?;
+                offset.to_code(writer)?;
                 write!(writer, "D01*")?;
             },
             Operation::Move(ref coords) => {
-                coords.to_code(&mut writer)?;
+                coords.to_code(writer)?;
                 write!(writer, "D02*")?;
             },
             Operation::Flash(ref coords) => {
-                coords.to_code(&mut writer)?;
+                coords.to_code(writer)?;
                 write!(writer, "D03*")?;
             }
         };
@@ -90,9 +90,9 @@ impl<W: Write> GerberCode<W> for Operation {
 }
 
 impl<W: Write> GerberCode<W> for DCode {
-    fn to_code(&self, mut writer: &mut W) -> GerberResult<()> {
+    fn to_code(&self, writer: &mut W) -> GerberResult<()> {
         match *self {
-            DCode::Operation(ref operation) => operation.to_code(&mut writer)?,
+            DCode::Operation(ref operation) => operation.to_code(writer)?,
             DCode::SelectAperture(code) => write!(writer, "D{}*", code)?,
         };
         Ok(())
@@ -100,7 +100,7 @@ impl<W: Write> GerberCode<W> for DCode {
 }
 
 impl<W: Write> GerberCode<W> for InterpolationMode {
-    fn to_code(&self, mut writer: &mut W) -> GerberResult<()> {
+    fn to_code(&self, writer: &mut W) -> GerberResult<()> {
         match *self {
             InterpolationMode::Linear => write!(writer, "G01*")?,
             InterpolationMode::ClockwiseCircular => write!(writer, "G02*")?,
@@ -111,7 +111,7 @@ impl<W: Write> GerberCode<W> for InterpolationMode {
 }
 
 impl<W: Write> GerberCode<W> for QuadrantMode {
-    fn to_code(&self, mut writer: &mut W) -> GerberResult<()> {
+    fn to_code(&self, writer: &mut W) -> GerberResult<()> {
         match *self {
             QuadrantMode::Single => write!(writer, "G74*")?,
             QuadrantMode::Multi => write!(writer, "G75*")?,
@@ -121,15 +121,15 @@ impl<W: Write> GerberCode<W> for QuadrantMode {
 }
 
 impl<W: Write> GerberCode<W> for GCode {
-    fn to_code(&self, mut writer: &mut W) -> GerberResult<()> {
+    fn to_code(&self, writer: &mut W) -> GerberResult<()> {
         match *self {
-            GCode::InterpolationMode(ref mode) => mode.to_code(&mut writer)?,
+            GCode::InterpolationMode(ref mode) => mode.to_code(writer)?,
             GCode::RegionMode(enabled) => if enabled {
                 write!(writer, "G36*")?;
             } else {
                 write!(writer, "G37*")?;
             },
-            GCode::QuadrantMode(ref mode) => mode.to_code(&mut writer)?,
+            GCode::QuadrantMode(ref mode) => mode.to_code(writer)?,
             GCode::Comment(ref comment) => write!(writer, "G04 {} *", comment)?,
         };
         Ok(())
@@ -137,7 +137,7 @@ impl<W: Write> GerberCode<W> for GCode {
 }
 
 impl<W: Write> GerberCode<W> for MCode {
-    fn to_code(&self, mut writer: &mut W) -> GerberResult<()> {
+    fn to_code(&self, writer: &mut W) -> GerberResult<()> {
         match *self {
             MCode::EndOfFile => write!(writer, "M02*")?,
         };
@@ -146,7 +146,7 @@ impl<W: Write> GerberCode<W> for MCode {
 }
 
 impl<W: Write> GerberCode<W> for Unit {
-    fn to_code(&self, mut writer: &mut W) -> GerberResult<()> {
+    fn to_code(&self, writer: &mut W) -> GerberResult<()> {
         match *self {
             Unit::Millimeters => write!(writer, "MM")?,
             Unit::Inches => write!(writer, "IN")?,
@@ -156,60 +156,60 @@ impl<W: Write> GerberCode<W> for Unit {
 }
 
 impl<W: Write> GerberCode<W> for Command {
-    fn to_code(&self, mut writer: &mut W) -> GerberResult<()> {
+    fn to_code(&self, writer: &mut W) -> GerberResult<()> {
         match *self {
-            Command::FunctionCode(ref code) => code.to_code(&mut writer)?,
-            Command::ExtendedCode(ref code) => code.to_code(&mut writer)?,
+            Command::FunctionCode(ref code) => code.to_code(writer)?,
+            Command::ExtendedCode(ref code) => code.to_code(writer)?,
         };
         Ok(())
     }
 }
 
 impl<W: Write> GerberCode<W> for FunctionCode {
-    fn to_code(&self, mut writer: &mut W) -> GerberResult<()> {
+    fn to_code(&self, writer: &mut W) -> GerberResult<()> {
         match *self {
-            FunctionCode::DCode(ref code) => code.to_code(&mut writer)?,
-            FunctionCode::GCode(ref code) => code.to_code(&mut writer)?,
-            FunctionCode::MCode(ref code) => code.to_code(&mut writer)?,
+            FunctionCode::DCode(ref code) => code.to_code(writer)?,
+            FunctionCode::GCode(ref code) => code.to_code(writer)?,
+            FunctionCode::MCode(ref code) => code.to_code(writer)?,
         };
         Ok(())
     }
 }
 
 impl<W: Write> GerberCode<W> for ExtendedCode {
-    fn to_code(&self, mut writer: &mut W) -> GerberResult<()> {
+    fn to_code(&self, writer: &mut W) -> GerberResult<()> {
         match *self {
             ExtendedCode::CoordinateFormat(ref cf) => {
                 write!(writer, "%FSLAX{0}{1}Y{0}{1}*%", cf.integer, cf.decimal)?;
             }
             ExtendedCode::Unit(ref unit) => {
                 write!(writer, "%MO")?;
-                unit.to_code(&mut writer)?;
+                unit.to_code(writer)?;
                 write!(writer, "*%")?;
             },
             ExtendedCode::ApertureDefinition(ref def) => {
                 write!(writer, "%ADD")?;
-                def.to_code(&mut writer)?;
+                def.to_code(writer)?;
                 write!(writer, "*%")?;
             },
             ExtendedCode::ApertureMacro(ref am) => {
                 write!(writer, "%")?;
-                am.to_code(&mut writer)?;
+                am.to_code(writer)?;
                 write!(writer, "%")?;
             },
             ExtendedCode::LoadPolarity(ref polarity) => {
                 write!(writer, "%LP")?;
-                polarity.to_code(&mut writer)?;
+                polarity.to_code(writer)?;
                 write!(writer, "*%")?;
             },
             ExtendedCode::StepAndRepeat(ref sar) => {
                 write!(writer, "%SR")?;
-                sar.to_code(&mut writer)?;
+                sar.to_code(writer)?;
                 write!(writer, "*%")?;
             },
             ExtendedCode::FileAttribute(ref attr) => {
                 write!(writer, "%TF.")?;
-                attr.to_code(&mut writer)?;
+                attr.to_code(writer)?;
                 write!(writer, "*%")?;
             },
             ExtendedCode::DeleteAttribute(ref attr) => {
@@ -222,15 +222,15 @@ impl<W: Write> GerberCode<W> for ExtendedCode {
 }
 
 impl<W: Write> GerberCode<W> for ApertureDefinition {
-    fn to_code(&self, mut writer: &mut W) -> GerberResult<()> {
+    fn to_code(&self, writer: &mut W) -> GerberResult<()> {
         write!(writer, "{}", self.code)?;
-        self.aperture.to_code(&mut writer)?;
+        self.aperture.to_code(writer)?;
         Ok(())
     }
 }
 
 impl<W: Write> GerberCode<W> for Circle {
-    fn to_code(&self, mut writer: &mut W) -> GerberResult<()> {
+    fn to_code(&self, writer: &mut W) -> GerberResult<()> {
         match self.hole_diameter {
             Some(hole_diameter) => {
                 write!(writer, "{}X{}", self.diameter, hole_diameter)?;
@@ -242,7 +242,7 @@ impl<W: Write> GerberCode<W> for Circle {
 }
 
 impl<W: Write> GerberCode<W> for Rectangular {
-    fn to_code(&self, mut writer: &mut W) -> GerberResult<()> {
+    fn to_code(&self, writer: &mut W) -> GerberResult<()> {
         match self.hole_diameter {
             Some(hole_diameter) => write!(writer, "{}X{}X{}", self.x, self.y, hole_diameter)?,
             None => write!(writer, "{}X{}", self.x, self.y)?,
@@ -252,7 +252,7 @@ impl<W: Write> GerberCode<W> for Rectangular {
 }
 
 impl<W: Write> GerberCode<W> for Polygon {
-    fn to_code(&self, mut writer: &mut W) -> GerberResult<()> {
+    fn to_code(&self, writer: &mut W) -> GerberResult<()> {
         match (self.rotation, self.hole_diameter) {
             (Some(rot), Some(hd)) => write!(writer, "{}X{}X{}X{}", self.diameter, self.vertices, rot, hd)?,
             (Some(rot), None) => write!(writer, "{}X{}X{}", self.diameter, self.vertices, rot)?,
@@ -264,23 +264,23 @@ impl<W: Write> GerberCode<W> for Polygon {
 }
 
 impl<W: Write> GerberCode<W> for Aperture {
-    fn to_code(&self, mut writer: &mut W) -> GerberResult<()> {
+    fn to_code(&self, writer: &mut W) -> GerberResult<()> {
         match *self {
             Aperture::Circle(ref circle) => {
                 write!(writer, "C,")?;
-                circle.to_code(&mut writer)?;
+                circle.to_code(writer)?;
             },
             Aperture::Rectangle(ref rectangular) => {
                 write!(writer, "R,")?;
-                rectangular.to_code(&mut writer)?;
+                rectangular.to_code(writer)?;
             },
             Aperture::Obround(ref rectangular) => {
                 write!(writer, "O,")?;
-                rectangular.to_code(&mut writer)?;
+                rectangular.to_code(writer)?;
             },
             Aperture::Polygon(ref polygon) => {
                 write!(writer, "P,")?;
-                polygon.to_code(&mut writer)?;
+                polygon.to_code(writer)?;
             },
             Aperture::Other(ref string) => write!(writer, "{}", string)?,
         };
@@ -289,7 +289,7 @@ impl<W: Write> GerberCode<W> for Aperture {
 }
 
 impl<W: Write> GerberCode<W> for Polarity {
-    fn to_code(&self, mut writer: &mut W) -> GerberResult<()> {
+    fn to_code(&self, writer: &mut W) -> GerberResult<()> {
         match *self {
             Polarity::Clear => write!(writer, "C")?,
             Polarity::Dark => write!(writer, "D")?,
@@ -299,7 +299,7 @@ impl<W: Write> GerberCode<W> for Polarity {
 }
 
 impl<W: Write> GerberCode<W> for StepAndRepeat {
-    fn to_code(&self, mut writer: &mut W) -> GerberResult<()> {
+    fn to_code(&self, writer: &mut W) -> GerberResult<()> {
         match *self {
             StepAndRepeat::Open { repeat_x: rx, repeat_y: ry, distance_x: dx, distance_y: dy } =>
                 write!(writer, "X{}Y{}I{}J{}", rx, ry, dx, dy)?,
@@ -310,7 +310,7 @@ impl<W: Write> GerberCode<W> for StepAndRepeat {
 }
 
 impl<W: Write> GerberCode<W> for Part {
-    fn to_code(&self, mut writer: &mut W) -> GerberResult<()> {
+    fn to_code(&self, writer: &mut W) -> GerberResult<()> {
         match *self {
             Part::Single => write!(writer, "Single")?,
             Part::Array => write!(writer, "Array")?,
@@ -323,7 +323,7 @@ impl<W: Write> GerberCode<W> for Part {
 }
 
 impl<W: Write> GerberCode<W> for GenerationSoftware {
-    fn to_code(&self, mut writer: &mut W) -> GerberResult<()> {
+    fn to_code(&self, writer: &mut W) -> GerberResult<()> {
         match self.version {
             Some(ref v) => write!(writer, "{},{},{}", self.vendor, self.application, v)?,
             None => write!(writer, "{},{}", self.vendor, self.application)?,
@@ -333,15 +333,15 @@ impl<W: Write> GerberCode<W> for GenerationSoftware {
 }
 
 impl<W: Write> GerberCode<W> for FileAttribute {
-    fn to_code(&self, mut writer: &mut W) -> GerberResult<()> {
+    fn to_code(&self, writer: &mut W) -> GerberResult<()> {
         match *self {
             FileAttribute::Part(ref part) => {
                 write!(writer, "Part,")?;
-                part.to_code(&mut writer)?;
+                part.to_code(writer)?;
             },
             FileAttribute::GenerationSoftware(ref gs) => {
                 write!(writer, "GenerationSoftware,")?;
-                gs.to_code(&mut writer)?;
+                gs.to_code(writer)?;
             },
             FileAttribute::Md5(ref hash) => write!(writer, "MD5,{}", hash)?,
             _ => unimplemented!(),
