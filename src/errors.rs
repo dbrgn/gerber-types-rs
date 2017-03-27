@@ -1,5 +1,7 @@
 //! Error types used in the gerber-types library.
 
+use std::io::Error as IoError;
+
 quick_error! {
     #[derive(Debug)]
     pub enum GerberError {
@@ -11,6 +13,11 @@ quick_error! {
         RangeError(msg: String) {}
         /// Required data is missing
         MissingDataError(msg: String) {}
+        /// I/O error during code generation
+        IoError(err: IoError) {
+            cause(err)
+            from()
+        }
     }
 }
 

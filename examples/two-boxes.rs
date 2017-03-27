@@ -2,6 +2,8 @@
 
 extern crate gerber_types;
 
+use std::io::{stdout, Write};
+
 use gerber_types::{Command};
 use gerber_types::{ExtendedCode, Unit, FileAttribute, GenerationSoftware, Part, Polarity,
                    ApertureDefinition, Aperture, Circle, CoordinateFormat};
@@ -130,5 +132,7 @@ fn main() {
         ),
         Command::FunctionCode(FunctionCode::MCode(MCode::EndOfFile)),
     ];
-    println!("{}", commands.to_code().unwrap());
+    let mut stdout = stdout();
+    commands.to_code(&mut stdout).unwrap();
+    write!(stdout, "\n").unwrap();
 }

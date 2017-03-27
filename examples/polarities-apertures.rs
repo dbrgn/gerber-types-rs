@@ -3,6 +3,7 @@
 extern crate gerber_types;
 extern crate conv;
 
+use std::io::{stdout, Write};
 use conv::TryFrom;
 
 use gerber_types::*;
@@ -630,5 +631,7 @@ fn main() {
             FunctionCode::MCode(MCode::EndOfFile)
         ),
     ];
-    println!("{}", commands.to_code().unwrap());
+    let mut stdout = stdout();
+    commands.to_code(&mut stdout).unwrap();
+    write!(stdout, "\n").unwrap();
 }
