@@ -9,18 +9,19 @@ pub trait GerberCode<W: Write> {
     fn to_code(&self, writer: &mut W) -> GerberResult<()>;
 }
 
-/// Implement GerberCode for booleans
+/// Implement `GerberCode` for booleans
 impl<W: Write> GerberCode<W> for bool {
     fn to_code(&self, writer: &mut W) -> GerberResult<()> {
-        match *self {
-            true => write!(writer, "1")?,
-            false => write!(writer, "0")?,
+        if *self {
+            write!(writer, "1")?;
+        } else {
+            write!(writer, "0")?;
         };
         Ok(())
     }
 }
 
-/// Implement GerberCode for Vectors of commands.
+/// Implement `GerberCode` for Vectors of commands.
 impl<W: Write> GerberCode<W> for Vec<Command> {
     fn to_code(&self, writer: &mut W) -> GerberResult<()> {
         let mut first = true;
@@ -36,7 +37,7 @@ impl<W: Write> GerberCode<W> for Vec<Command> {
     }
 }
 
-/// Implement GerberCode for Option<T: GerberCode>
+/// Implement `GerberCode` for `Option<T: GerberCode>`
 impl<T: GerberCode<W>, W: Write> GerberCode<W> for Option<T> {
     fn to_code(&self, writer: &mut W) -> GerberResult<()> {
         if let Some(ref val) = *self {
@@ -46,8 +47,8 @@ impl<T: GerberCode<W>, W: Write> GerberCode<W> for Option<T> {
     }
 }
 
-/// Automatically implement GerberCode trait for struct types
-/// that are based on x and y attributes.
+/// Automatically implement `GerberCode` trait for struct types
+/// that are based on `x` and `y` attributes.
 macro_rules! impl_xy_gerbercode {
     ($class:ty, $x:expr, $y: expr) => {
         impl<W: Write> GerberCode<W> for $class {

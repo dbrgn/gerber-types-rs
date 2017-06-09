@@ -31,12 +31,12 @@ impl ApertureMacro {
 
 impl<W: Write> GerberCode<W> for ApertureMacro {
     fn to_code(&self, writer: &mut W) -> GerberResult<()> {
-        if self.content.len() == 0 {
+        if self.content.is_empty() {
             return Err(GerberError::MissingDataError("There must be at least 1 content element in an aperture macro".into()));
         }
         writeln!(writer, "AM{}*", self.name)?;
         let mut first = true;
-        for content in self.content.iter() {
+        for content in &self.content {
             if first {
                 first = false;
             } else {
@@ -305,7 +305,7 @@ impl<W: Write> GerberCode<W> for OutlinePrimitive {
         self.exposure.to_code(writer)?;
         writeln!(writer, ",{},", self.points.len() - 1)?;
 
-        for &(ref x, ref y) in self.points.iter() {
+        for &(ref x, ref y) in &self.points {
             x.to_code(writer)?;
             write!(writer, ",")?;
             y.to_code(writer)?;
