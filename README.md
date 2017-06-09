@@ -4,7 +4,8 @@
 [![Coveralls][coveralls-badge]][coveralls]
 [![Crates.io][crates-io-badge]][crates-io]
 
-[Docs](https://dbrgn.github.io/gerber-types-rs/)
+- [Docs (master)](https://dbrgn.github.io/gerber-types-rs/)
+- [Docs (released)](https://docs.rs/gerber-types/)
 
 This crate implements the basic building blocks of Gerber X2 (compatible with
 Gerber RS-274X) code. It focusses on the low level types (to be used like an
