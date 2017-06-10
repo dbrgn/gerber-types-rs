@@ -4,7 +4,7 @@
 //! to render themselves. This means for example that each `Coordinates`
 //! instance contains a reference to the coordinate format to be used.
 
-use std::convert::Into;
+use std::convert::{From, Into};
 
 use ::{CoordinateFormat, CoordinateNumber};
 
@@ -66,6 +66,18 @@ impl CoordinateOffset {
 pub enum Command {
     FunctionCode(FunctionCode),
     ExtendedCode(ExtendedCode),
+}
+
+impl From<FunctionCode> for Command {
+    fn from(val: FunctionCode) -> Self {
+        Command::FunctionCode(val)
+    }
+}
+
+impl From<ExtendedCode> for Command {
+    fn from(val: ExtendedCode) -> Self {
+        Command::ExtendedCode(val)
+    }
 }
 
 
@@ -294,6 +306,22 @@ mod test {
         let r1 = Rectangular::with_hole(3.0, 2.0, 1.0);
         let r2 = Rectangular { x: 3.0, y: 2.0, hole_diameter: Some(1.0) };
         assert_eq!(r1, r2);
+    }
+
+    #[test]
+    fn test_command_from_function_code() {
+        let comment = FunctionCode::GCode(GCode::Comment("hello".into()));
+        let c1: Command = Command::FunctionCode(comment.clone());
+        let c2: Command = comment.into();
+        assert_eq!(c1, c2);
+    }
+
+    #[test]
+    fn test_command_from_extended_code() {
+        let delete_attr = ExtendedCode::DeleteAttribute("hello".into());
+        let c1: Command = Command::ExtendedCode(delete_attr.clone());
+        let c2: Command = delete_attr.into();
+        assert_eq!(c1, c2);
     }
 
 }
