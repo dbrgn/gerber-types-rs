@@ -3,7 +3,7 @@
 use std::io::Error as IoError;
 
 quick_error! {
-    #[derive(Debug, Clone)]
+    #[derive(Debug)]
     pub enum GerberError {
         /// Conversion between two types failed
         ConversionError(msg: String) {}
