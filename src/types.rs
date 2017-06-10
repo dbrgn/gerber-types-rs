@@ -13,7 +13,7 @@ use ::{CoordinateFormat, CoordinateNumber};
 ///
 /// Coordinates are modal. If an X is omitted, the X coordinate of the
 /// current point is used. Similar for Y.
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Coordinates {
     pub x: Option<CoordinateNumber>,
     pub y: Option<CoordinateNumber>,
@@ -37,7 +37,7 @@ impl Coordinates {
 
 /// Coordinate offsets can be used for interpolate operations in circular
 /// interpolation mode.
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct CoordinateOffset {
     pub x: Option<CoordinateNumber>,
     pub y: Option<CoordinateNumber>,
@@ -62,7 +62,7 @@ impl CoordinateOffset {
 
 // Root type
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Command {
     FunctionCode(FunctionCode),
     ExtendedCode(ExtendedCode),
@@ -71,14 +71,14 @@ pub enum Command {
 
 // Main categories
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum FunctionCode {
     DCode(DCode),
     GCode(GCode),
     MCode(MCode),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum ExtendedCode {
     /// FS
     CoordinateFormat(CoordinateFormat),
@@ -103,13 +103,13 @@ pub enum ExtendedCode {
 
 // Function codes
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum DCode {
     Operation(Operation),
     SelectAperture(i32),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum GCode {
     InterpolationMode(InterpolationMode),
     RegionMode(bool),
@@ -117,12 +117,12 @@ pub enum GCode {
     Comment(String),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum MCode {
     EndOfFile,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Operation {
     /// D01 Command
     Interpolate(Coordinates, Option<CoordinateOffset>),
@@ -132,14 +132,14 @@ pub enum Operation {
     Flash(Coordinates),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum InterpolationMode {
     Linear,
     ClockwiseCircular,
     CounterclockwiseCircular,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum QuadrantMode {
     Single,
     Multi,
@@ -148,19 +148,19 @@ pub enum QuadrantMode {
 
 // Extended codes
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Unit {
     Inches,
     Millimeters,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ApertureDefinition {
     pub code: i32,
     pub aperture: Aperture,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Aperture {
     Circle(Circle),
     Rectangle(Rectangular),
@@ -169,7 +169,7 @@ pub enum Aperture {
     Other(String),
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Circle {
     pub diameter: f64,
     pub hole_diameter: Option<f64>,
@@ -191,7 +191,7 @@ impl Circle {
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Rectangular {
     pub x: f64,
     pub y: f64,
@@ -216,7 +216,7 @@ impl Rectangular {
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Polygon {
     pub diameter: f64,
     pub vertices: u8, // 3--12
@@ -224,13 +224,13 @@ pub struct Polygon {
     pub hole_diameter: Option<f64>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Polarity {
     Clear,
     Dark,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum StepAndRepeat {
     Open { repeat_x: u32, repeat_y: u32, distance_x: f64, distance_y: f64 },
     Close,

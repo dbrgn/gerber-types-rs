@@ -3,7 +3,7 @@
 use chrono::{DateTime, UTC};
 use uuid::Uuid;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum FileAttribute {
     Part(Part),
     FileFunction(FileFunction),
@@ -19,7 +19,7 @@ pub enum FileAttribute {
     UserDefined { name: String, value: Vec<String> },
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum ApertureAttribute {
     ApertureFunction(ApertureFunction),
     DrillTolerance {
@@ -28,7 +28,7 @@ pub enum ApertureAttribute {
     },
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Part {
     /// Single PCB
     Single,
@@ -42,20 +42,20 @@ pub enum Part {
     Other(String),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Position {
     Top,
     Bottom,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum ExtendedPosition {
     Top,
     Inner,
     Bottom,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum CopperType {
     Plane,
     Signal,
@@ -63,27 +63,27 @@ pub enum CopperType {
     Hatched,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Drill {
     ThroughHole,
     Blind,
     Buried,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum DrillRouteType {
     Drill,
     Route,
     Mixed,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Profile {
     Plated,
     NonPlated,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum FileFunction {
     Copper { layer: i32, pos: ExtendedPosition, copper_type: Option<CopperType> },
     Soldermask { pos: Position, index: Option<i32> },
@@ -112,13 +112,13 @@ pub enum FileFunction {
     Other(String),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum FilePolarity {
     Positive,
     Negative,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct GenerationSoftware {
     pub vendor: String,
     pub application: String,
@@ -135,7 +135,7 @@ impl GenerationSoftware {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum ApertureFunction {
     // Only valid for layers with file function plated or non-plated
     ViaDrill,
@@ -181,20 +181,20 @@ pub enum ApertureFunction {
     Other(String),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum DrillFunction {
     BreakOut,
     Tooling,
     Other,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum SmdPadType {
     CopperDefined,
     SoldermaskDefined,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum FiducialScope{
     Global,
     Local,

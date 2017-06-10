@@ -37,7 +37,7 @@ impl CoordinateFormat {
 /// be encoded as `0`.
 ///
 /// The value is stored as a 64 bit integer with 6 decimal places.
-#[derive(Debug, PartialEq, Eq, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub struct CoordinateNumber {
     nano: i64,
 }

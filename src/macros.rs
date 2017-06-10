@@ -5,7 +5,7 @@ use std::io::Write;
 
 use ::{GerberCode, GerberError, GerberResult};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ApertureMacro {
     pub name: String,
     pub content: Vec<MacroContent>,
@@ -48,7 +48,7 @@ impl<W: Write> GerberCode<W> for ApertureMacro {
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 /// A macro decimal can either be an f64 or a variable placeholder.
 pub enum MacroDecimal {
     /// A decimal value.
@@ -88,7 +88,7 @@ impl<W: Write> GerberCode<W> for MacroDecimal {
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum MacroContent {
     // Primitives
     Circle(CirclePrimitive),
@@ -148,7 +148,7 @@ impl<T: Into<String>> From<T> for MacroContent {
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct CirclePrimitive {
     /// Exposure off/on
     pub exposure: bool,
@@ -189,7 +189,7 @@ impl<W: Write> GerberCode<W> for CirclePrimitive {
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct VectorLinePrimitive {
     /// Exposure off/on
     pub exposure: bool,
@@ -232,7 +232,7 @@ impl<W: Write> GerberCode<W> for VectorLinePrimitive {
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct CenterLinePrimitive {
     /// Exposure off/on (0/1)
     pub exposure: bool,
@@ -270,7 +270,7 @@ impl<W: Write> GerberCode<W> for CenterLinePrimitive {
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct OutlinePrimitive {
     /// Exposure off/on (0/1)
     pub exposure: bool,
@@ -317,7 +317,7 @@ impl<W: Write> GerberCode<W> for OutlinePrimitive {
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 /// A polygon primitive is a regular polygon defined by the number of vertices,
 /// the center point and the diameter of the circumscribed circle.
 pub struct PolygonPrimitive {
@@ -374,7 +374,7 @@ impl<W: Write> GerberCode<W> for PolygonPrimitive {
 
 /// The moiré primitive is a cross hair centered on concentric rings (annuli).
 /// Exposure is always on.
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct MoirePrimitive {
     /// X and Y coordinates of center point, decimals
     pub center: (MacroDecimal, MacroDecimal),
@@ -449,7 +449,7 @@ impl<W: Write> GerberCode<W> for MoirePrimitive {
 
 /// The thermal primitive is a ring (annulus) interrupted by four gaps.
 /// Exposure is always on.
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct ThermalPrimitive {
     /// X and Y coordinates of center point, decimals
     pub center: (MacroDecimal, MacroDecimal),
@@ -498,7 +498,7 @@ impl<W: Write> GerberCode<W> for ThermalPrimitive {
     }
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct VariableDefinition {
     number: u32,
     expression: String,
