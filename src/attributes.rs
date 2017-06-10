@@ -3,7 +3,7 @@
 use chrono::{DateTime, UTC};
 use uuid::Uuid;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum FileAttribute {
     Part(Part),
     FileFunction(FileFunction),
@@ -19,7 +19,7 @@ pub enum FileAttribute {
     UserDefined { name: String, value: Vec<String> },
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum ApertureAttribute {
     ApertureFunction(ApertureFunction),
     DrillTolerance {
@@ -28,7 +28,7 @@ pub enum ApertureAttribute {
     },
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Part {
     /// Single PCB
     Single,
@@ -42,20 +42,20 @@ pub enum Part {
     Other(String),
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Position {
     Top,
     Bottom,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ExtendedPosition {
     Top,
     Inner,
     Bottom,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum CopperType {
     Plane,
     Signal,
@@ -63,27 +63,27 @@ pub enum CopperType {
     Hatched,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Drill {
     ThroughHole,
     Blind,
     Buried,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum DrillRouteType {
     Drill,
     Route,
     Mixed,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Profile {
     Plated,
     NonPlated,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum FileFunction {
     Copper { layer: i32, pos: ExtendedPosition, copper_type: Option<CopperType> },
     Soldermask { pos: Position, index: Option<i32> },
@@ -112,13 +112,13 @@ pub enum FileFunction {
     Other(String),
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum FilePolarity {
     Positive,
     Negative,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct GenerationSoftware {
     pub vendor: String,
     pub application: String,
@@ -135,7 +135,7 @@ impl GenerationSoftware {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ApertureFunction {
     // Only valid for layers with file function plated or non-plated
     ViaDrill,
@@ -181,20 +181,20 @@ pub enum ApertureFunction {
     Other(String),
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum DrillFunction {
     BreakOut,
     Tooling,
     Other,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum SmdPadType {
     CopperDefined,
     SoldermaskDefined,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum FiducialScope{
     Global,
     Local,

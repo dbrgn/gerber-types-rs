@@ -62,7 +62,7 @@ impl CoordinateOffset {
 
 // Root type
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Command {
     FunctionCode(FunctionCode),
     ExtendedCode(ExtendedCode),
@@ -71,14 +71,14 @@ pub enum Command {
 
 // Main categories
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum FunctionCode {
     DCode(DCode),
     GCode(GCode),
     MCode(MCode),
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum ExtendedCode {
     /// FS
     CoordinateFormat(CoordinateFormat),
@@ -103,13 +103,13 @@ pub enum ExtendedCode {
 
 // Function codes
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum DCode {
     Operation(Operation),
     SelectAperture(i32),
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum GCode {
     InterpolationMode(InterpolationMode),
     RegionMode(bool),
@@ -117,12 +117,12 @@ pub enum GCode {
     Comment(String),
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum MCode {
     EndOfFile,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Operation {
     /// D01 Command
     Interpolate(Coordinates, Option<CoordinateOffset>),
@@ -132,14 +132,14 @@ pub enum Operation {
     Flash(Coordinates),
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum InterpolationMode {
     Linear,
     ClockwiseCircular,
     CounterclockwiseCircular,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum QuadrantMode {
     Single,
     Multi,
@@ -148,13 +148,13 @@ pub enum QuadrantMode {
 
 // Extended codes
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Unit {
     Inches,
     Millimeters,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct ApertureDefinition {
     pub code: i32,
     pub aperture: Aperture,
@@ -224,13 +224,13 @@ pub struct Polygon {
     pub hole_diameter: Option<f64>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Polarity {
     Clear,
     Dark,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum StepAndRepeat {
     Open { repeat_x: u32, repeat_y: u32, distance_x: f64, distance_y: f64 },
     Close,

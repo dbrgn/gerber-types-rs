@@ -5,7 +5,7 @@ use std::io::Write;
 
 use ::{GerberCode, GerberError, GerberResult};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct ApertureMacro {
     pub name: String,
     pub content: Vec<MacroContent>,
