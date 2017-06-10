@@ -160,7 +160,7 @@ pub struct ApertureDefinition {
     pub aperture: Aperture,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum Aperture {
     Circle(Circle),
     Rectangle(Rectangular),
@@ -169,20 +169,54 @@ pub enum Aperture {
     Other(String),
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct Circle {
     pub diameter: f64,
     pub hole_diameter: Option<f64>,
 }
 
-#[derive(Debug)]
+impl Circle {
+    pub fn new(diameter: f64) -> Self {
+        Circle {
+            diameter: diameter,
+            hole_diameter: None,
+        }
+    }
+
+    pub fn with_hole(diameter: f64, hole_diameter: f64) -> Self {
+        Circle {
+            diameter: diameter,
+            hole_diameter: Some(hole_diameter),
+        }
+    }
+}
+
+#[derive(Debug, PartialEq)]
 pub struct Rectangular {
     pub x: f64,
     pub y: f64,
     pub hole_diameter: Option<f64>,
 }
 
-#[derive(Debug)]
+impl Rectangular {
+    pub fn new(x: f64, y: f64) -> Self {
+        Rectangular {
+            x: x,
+            y: y,
+            hole_diameter: None,
+        }
+    }
+
+    pub fn with_hole(x: f64, y: f64, hole_diameter: f64) -> Self {
+        Rectangular {
+            x: x,
+            y: y,
+            hole_diameter: Some(hole_diameter),
+        }
+    }
+}
+
+#[derive(Debug, PartialEq)]
 pub struct Polygon {
     pub diameter: f64,
     pub vertices: u8, // 3--12
@@ -232,6 +266,34 @@ mod test {
         let c1 = Coordinates::new(CoordinateNumber::from(1), 2, cf);
         let c2 = Coordinates::new(1, 2, cf);
         assert_eq!(c1, c2);
+    }
+
+    #[test]
+    fn test_circle_new() {
+        let c1 = Circle::new(3.0);
+        let c2 = Circle { diameter: 3.0, hole_diameter: None };
+        assert_eq!(c1, c2);
+    }
+
+    #[test]
+    fn test_circle_with_hole() {
+        let c1 = Circle::with_hole(3.0, 1.0);
+        let c2 = Circle { diameter: 3.0, hole_diameter: Some(1.0) };
+        assert_eq!(c1, c2);
+    }
+
+    #[test]
+    fn test_rectangular_new() {
+        let r1 = Rectangular::new(2.0, 3.0);
+        let r2 = Rectangular { x: 2.0, y: 3.0, hole_diameter: None };
+        assert_eq!(r1, r2);
+    }
+
+    #[test]
+    fn test_rectangular_with_hole() {
+        let r1 = Rectangular::with_hole(3.0, 2.0, 1.0);
+        let r2 = Rectangular { x: 3.0, y: 2.0, hole_diameter: Some(1.0) };
+        assert_eq!(r1, r2);
     }
 
 }
