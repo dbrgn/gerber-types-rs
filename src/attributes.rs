@@ -1,7 +1,11 @@
 //! Attributes.
 
+use std::io::Write;
+
 use chrono::{DateTime, UTC};
 use uuid::Uuid;
+
+use ::{GerberCode, GerberResult};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum FileAttribute {
@@ -48,11 +52,32 @@ pub enum Position {
     Bottom,
 }
 
+impl<W: Write> GerberCode<W> for Position {
+    fn to_code(&self, writer: &mut W) -> GerberResult<()> {
+        match *self {
+            Position::Top => write!(writer, "Top")?,
+            Position::Bottom => write!(writer, "Bot")?,
+        };
+        Ok(())
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ExtendedPosition {
     Top,
     Inner,
     Bottom,
+}
+
+impl<W: Write> GerberCode<W> for ExtendedPosition {
+    fn to_code(&self, writer: &mut W) -> GerberResult<()> {
+        match *self {
+            ExtendedPosition::Top => write!(writer, "Top")?,
+            ExtendedPosition::Inner => write!(writer, "Inr")?,
+            ExtendedPosition::Bottom => write!(writer, "Bot")?,
+        };
+        Ok(())
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -61,6 +86,18 @@ pub enum CopperType {
     Signal,
     Mixed,
     Hatched,
+}
+
+impl<W: Write> GerberCode<W> for CopperType {
+    fn to_code(&self, writer: &mut W) -> GerberResult<()> {
+        match *self {
+            CopperType::Plane => write!(writer, "Plane")?,
+            CopperType::Signal => write!(writer, "Signal")?,
+            CopperType::Mixed => write!(writer, "Mixed")?,
+            CopperType::Hatched => write!(writer, "Hatched")?,
+        };
+        Ok(())
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]

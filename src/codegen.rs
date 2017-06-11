@@ -340,6 +340,20 @@ impl<W: Write> GerberCode<W> for FileAttribute {
                 write!(writer, "Part,")?;
                 part.to_code(writer)?;
             },
+            FileAttribute::FileFunction(ref function) => {
+                write!(writer, "FileFunction,")?;
+                match function {
+                    &FileFunction::Copper { ref layer, ref pos, ref copper_type } => {
+                        write!(writer, "Copper,L{},", layer)?;
+                        pos.to_code(writer)?;
+                        if let Some(ref t) = *copper_type {
+                            write!(writer, ",")?;
+                            t.to_code(writer)?;
+                        }
+                    },
+                    _ => unimplemented!(),
+                }
+            },
             FileAttribute::GenerationSoftware(ref gs) => {
                 write!(writer, "GenerationSoftware,")?;
                 gs.to_code(writer)?;
