@@ -63,8 +63,8 @@ impl CoordinateOffset {
 // Helper macros
 
 macro_rules! impl_from {
-    ($from:ty, $for:ty, $variant:expr) => {
-        impl From<$from> for $for {
+    ($from:ty, $target:ty, $variant:expr) => {
+        impl From<$from> for $target {
             fn from(val: $from) -> Self {
                 $variant(val)
             }
