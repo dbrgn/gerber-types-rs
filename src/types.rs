@@ -60,6 +60,19 @@ impl CoordinateOffset {
 }
 
 
+// Helper macros
+
+macro_rules! impl_from {
+    ($from:ty, $for:ty, $variant:expr) => {
+        impl From<$from> for $for {
+            fn from(val: $from) -> Self {
+                $variant(val)
+            }
+        }
+    }
+}
+
+
 // Root type
 
 #[derive(Debug, Clone, PartialEq)]
@@ -68,17 +81,8 @@ pub enum Command {
     ExtendedCode(ExtendedCode),
 }
 
-impl From<FunctionCode> for Command {
-    fn from(val: FunctionCode) -> Self {
-        Command::FunctionCode(val)
-    }
-}
-
-impl From<ExtendedCode> for Command {
-    fn from(val: ExtendedCode) -> Self {
-        Command::ExtendedCode(val)
-    }
-}
+impl_from!(FunctionCode, Command, Command::FunctionCode);
+impl_from!(ExtendedCode, Command, Command::ExtendedCode);
 
 
 // Main categories
@@ -89,6 +93,10 @@ pub enum FunctionCode {
     GCode(GCode),
     MCode(MCode),
 }
+
+impl_from!(DCode, FunctionCode, FunctionCode::DCode);
+impl_from!(GCode, FunctionCode, FunctionCode::GCode);
+impl_from!(MCode, FunctionCode, FunctionCode::MCode);
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum ExtendedCode {
@@ -111,6 +119,15 @@ pub enum ExtendedCode {
     /// TD
     DeleteAttribute(String),
 }
+
+impl_from!(CoordinateFormat, ExtendedCode, ExtendedCode::CoordinateFormat);
+impl_from!(Unit, ExtendedCode, ExtendedCode::Unit);
+impl_from!(ApertureDefinition, ExtendedCode, ExtendedCode::ApertureDefinition);
+impl_from!(::macros::ApertureMacro, ExtendedCode, ExtendedCode::ApertureMacro);
+impl_from!(Polarity, ExtendedCode, ExtendedCode::LoadPolarity);
+impl_from!(StepAndRepeat, ExtendedCode, ExtendedCode::StepAndRepeat);
+impl_from!(::attributes::FileAttribute, ExtendedCode, ExtendedCode::FileAttribute);
+impl_from!(::attributes::ApertureAttribute, ExtendedCode, ExtendedCode::ApertureAttribute);
 
 
 // Function codes
@@ -322,6 +339,21 @@ mod test {
         let c1: Command = Command::ExtendedCode(delete_attr.clone());
         let c2: Command = delete_attr.into();
         assert_eq!(c1, c2);
+    }
+
+    #[test]
+    fn test_function_code_from_gcode() {
+        let comment = GCode::Comment("hello".into());
+        let f1: FunctionCode = FunctionCode::GCode(comment.clone());
+        let f2: FunctionCode = comment.into();
+        assert_eq!(f1, f2);
+    }
+
+    #[test]
+    fn test_extended_code_from_polarity() {
+        let e1: ExtendedCode = ExtendedCode::LoadPolarity(Polarity::Dark);
+        let e2: ExtendedCode = Polarity::Dark.into();
+        assert_eq!(e1, e2);
     }
 
 }
