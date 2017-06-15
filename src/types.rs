@@ -161,14 +161,14 @@ pub enum Operation {
     Flash(Coordinates),
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum InterpolationMode {
     Linear,
     ClockwiseCircular,
     CounterclockwiseCircular,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum QuadrantMode {
     Single,
     Multi,
@@ -177,7 +177,7 @@ pub enum QuadrantMode {
 
 // Extended codes
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Unit {
     Inches,
     Millimeters,
@@ -253,7 +253,7 @@ pub struct Polygon {
     pub hole_diameter: Option<f64>,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Polarity {
     Clear,
     Dark,
