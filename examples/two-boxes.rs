@@ -2,7 +2,7 @@
 
 extern crate gerber_types;
 
-use std::io::{stdout, Write};
+use std::io::stdout;
 
 use gerber_types::{Command};
 use gerber_types::{ExtendedCode, Unit, FileAttribute, GenerationSoftware, Part, Polarity,
@@ -99,6 +99,5 @@ fn main() {
         FunctionCode::MCode(MCode::EndOfFile).into(),
     ];
     let mut stdout = stdout();
-    commands.to_code(&mut stdout).unwrap();
-    write!(stdout, "\n").unwrap();
+    commands.serialize(&mut stdout).unwrap();
 }

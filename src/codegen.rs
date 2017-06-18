@@ -4,14 +4,21 @@ use types::*;
 use attributes::*;
 use ::GerberResult;
 
-/// All types that implement this trait can be converted to Gerber Code.
+/// All types that implement this trait can be converted to a complete Gerber
+/// Code line. Generated code should end with a newline.
 pub trait GerberCode<W: Write> {
-    fn to_code(&self, writer: &mut W) -> GerberResult<()>;
+    fn serialize(&self, writer: &mut W) -> GerberResult<()>;
 }
 
-/// Implement `GerberCode` for booleans
-impl<W: Write> GerberCode<W> for bool {
-    fn to_code(&self, writer: &mut W) -> GerberResult<()> {
+/// All types that implement this trait can be converted to a Gerber Code
+/// representation.
+pub trait PartialGerberCode<W: Write> {
+    fn serialize_partial(&self, writer: &mut W) -> GerberResult<()>;
+}
+
+/// Implement `PartialGerberCode` for booleans
+impl<W: Write> PartialGerberCode<W> for bool {
+    fn serialize_partial(&self, writer: &mut W) -> GerberResult<()> {
         if *self {
             write!(writer, "1")?;
         } else {
@@ -21,38 +28,32 @@ impl<W: Write> GerberCode<W> for bool {
     }
 }
 
-/// Implement `GerberCode` for Vectors of commands.
-impl<W: Write> GerberCode<W> for Vec<Command> {
-    fn to_code(&self, writer: &mut W) -> GerberResult<()> {
-        let mut first = true;
+/// Implement `GerberCode` for Vectors of types that are `GerberCode`.
+impl<W: Write, G: GerberCode<W>> GerberCode<W> for Vec<G> {
+    fn serialize(&self, writer: &mut W) -> GerberResult<()> {
         for item in self.iter() {
-            if first {
-                first = false;
-            } else {
-                write!(writer, "\n")?;
-            }
-            item.to_code(writer)?;
+            item.serialize(writer)?;
         }
         Ok(())
     }
 }
 
-/// Implement `GerberCode` for `Option<T: GerberCode>`
-impl<T: GerberCode<W>, W: Write> GerberCode<W> for Option<T> {
-    fn to_code(&self, writer: &mut W) -> GerberResult<()> {
+/// Implement `PartialGerberCode` for `Option<T: PartialGerberCode>`
+impl<T: PartialGerberCode<W>, W: Write> PartialGerberCode<W> for Option<T> {
+    fn serialize_partial(&self, writer: &mut W) -> GerberResult<()> {
         if let Some(ref val) = *self {
-            val.to_code(writer)?;
+            val.serialize_partial(writer)?;
         }
         Ok(())
     }
 }
 
-/// Automatically implement `GerberCode` trait for struct types
+/// Automatically implement `PartialGerberCode` trait for struct types
 /// that are based on `x` and `y` attributes.
-macro_rules! impl_xy_gerbercode {
+macro_rules! impl_xy_partial_gerbercode {
     ($class:ty, $x:expr, $y: expr) => {
-        impl<W: Write> GerberCode<W> for $class {
-            fn to_code(&self, writer: &mut W) -> GerberResult<()> {
+        impl<W: Write> PartialGerberCode<W> for $class {
+            fn serialize_partial(&self, writer: &mut W) -> GerberResult<()> {
                 if let Some(x) = self.x {
                     write!(writer, "{}{}", $x, x.gerber(&self.format)?)?;
                 }
@@ -65,25 +66,25 @@ macro_rules! impl_xy_gerbercode {
     }
 }
 
-impl_xy_gerbercode!(Coordinates, "X", "Y");
+impl_xy_partial_gerbercode!(Coordinates, "X", "Y");
 
-impl_xy_gerbercode!(CoordinateOffset, "I", "J");
+impl_xy_partial_gerbercode!(CoordinateOffset, "I", "J");
 
 impl<W: Write> GerberCode<W> for Operation {
-    fn to_code(&self, writer: &mut W) -> GerberResult<()> {
+    fn serialize(&self, writer: &mut W) -> GerberResult<()> {
         match *self {
             Operation::Interpolate(ref coords, ref offset) => {
-                coords.to_code(writer)?;
-                offset.to_code(writer)?;
-                write!(writer, "D01*")?;
+                coords.serialize_partial(writer)?;
+                offset.serialize_partial(writer)?;
+                write!(writer, "D01*\n")?;
             },
             Operation::Move(ref coords) => {
-                coords.to_code(writer)?;
-                write!(writer, "D02*")?;
+                coords.serialize_partial(writer)?;
+                write!(writer, "D02*\n")?;
             },
             Operation::Flash(ref coords) => {
-                coords.to_code(writer)?;
-                write!(writer, "D03*")?;
+                coords.serialize_partial(writer)?;
+                write!(writer, "D03*\n")?;
             }
         };
         Ok(())
@@ -91,63 +92,63 @@ impl<W: Write> GerberCode<W> for Operation {
 }
 
 impl<W: Write> GerberCode<W> for DCode {
-    fn to_code(&self, writer: &mut W) -> GerberResult<()> {
+    fn serialize(&self, writer: &mut W) -> GerberResult<()> {
         match *self {
-            DCode::Operation(ref operation) => operation.to_code(writer)?,
-            DCode::SelectAperture(code) => write!(writer, "D{}*", code)?,
+            DCode::Operation(ref operation) => operation.serialize(writer)?,
+            DCode::SelectAperture(code) => write!(writer, "D{}*\n", code)?,
         };
         Ok(())
     }
 }
 
 impl<W: Write> GerberCode<W> for InterpolationMode {
-    fn to_code(&self, writer: &mut W) -> GerberResult<()> {
+    fn serialize(&self, writer: &mut W) -> GerberResult<()> {
         match *self {
-            InterpolationMode::Linear => write!(writer, "G01*")?,
-            InterpolationMode::ClockwiseCircular => write!(writer, "G02*")?,
-            InterpolationMode::CounterclockwiseCircular => write!(writer, "G03*")?,
+            InterpolationMode::Linear => write!(writer, "G01*\n")?,
+            InterpolationMode::ClockwiseCircular => write!(writer, "G02*\n")?,
+            InterpolationMode::CounterclockwiseCircular => write!(writer, "G03*\n")?,
         };
         Ok(())
     }
 }
 
 impl<W: Write> GerberCode<W> for QuadrantMode {
-    fn to_code(&self, writer: &mut W) -> GerberResult<()> {
+    fn serialize(&self, writer: &mut W) -> GerberResult<()> {
         match *self {
-            QuadrantMode::Single => write!(writer, "G74*")?,
-            QuadrantMode::Multi => write!(writer, "G75*")?,
+            QuadrantMode::Single => write!(writer, "G74*\n")?,
+            QuadrantMode::Multi => write!(writer, "G75*\n")?,
         };
         Ok(())
     }
 }
 
 impl<W: Write> GerberCode<W> for GCode {
-    fn to_code(&self, writer: &mut W) -> GerberResult<()> {
+    fn serialize(&self, writer: &mut W) -> GerberResult<()> {
         match *self {
-            GCode::InterpolationMode(ref mode) => mode.to_code(writer)?,
+            GCode::InterpolationMode(ref mode) => mode.serialize(writer)?,
             GCode::RegionMode(enabled) => if enabled {
-                write!(writer, "G36*")?;
+                write!(writer, "G36*\n")?;
             } else {
-                write!(writer, "G37*")?;
+                write!(writer, "G37*\n")?;
             },
-            GCode::QuadrantMode(ref mode) => mode.to_code(writer)?,
-            GCode::Comment(ref comment) => write!(writer, "G04 {} *", comment)?,
+            GCode::QuadrantMode(ref mode) => mode.serialize(writer)?,
+            GCode::Comment(ref comment) => write!(writer, "G04 {} *\n", comment)?,
         };
         Ok(())
     }
 }
 
 impl<W: Write> GerberCode<W> for MCode {
-    fn to_code(&self, writer: &mut W) -> GerberResult<()> {
+    fn serialize(&self, writer: &mut W) -> GerberResult<()> {
         match *self {
-            MCode::EndOfFile => write!(writer, "M02*")?,
+            MCode::EndOfFile => write!(writer, "M02*\n")?,
         };
         Ok(())
     }
 }
 
-impl<W: Write> GerberCode<W> for Unit {
-    fn to_code(&self, writer: &mut W) -> GerberResult<()> {
+impl<W: Write> PartialGerberCode<W> for Unit {
+    fn serialize_partial(&self, writer: &mut W) -> GerberResult<()> {
         match *self {
             Unit::Millimeters => write!(writer, "MM")?,
             Unit::Inches => write!(writer, "IN")?,
@@ -157,64 +158,64 @@ impl<W: Write> GerberCode<W> for Unit {
 }
 
 impl<W: Write> GerberCode<W> for Command {
-    fn to_code(&self, writer: &mut W) -> GerberResult<()> {
+    fn serialize(&self, writer: &mut W) -> GerberResult<()> {
         match *self {
-            Command::FunctionCode(ref code) => code.to_code(writer)?,
-            Command::ExtendedCode(ref code) => code.to_code(writer)?,
+            Command::FunctionCode(ref code) => code.serialize(writer)?,
+            Command::ExtendedCode(ref code) => code.serialize(writer)?,
         };
         Ok(())
     }
 }
 
 impl<W: Write> GerberCode<W> for FunctionCode {
-    fn to_code(&self, writer: &mut W) -> GerberResult<()> {
+    fn serialize(&self, writer: &mut W) -> GerberResult<()> {
         match *self {
-            FunctionCode::DCode(ref code) => code.to_code(writer)?,
-            FunctionCode::GCode(ref code) => code.to_code(writer)?,
-            FunctionCode::MCode(ref code) => code.to_code(writer)?,
+            FunctionCode::DCode(ref code) => code.serialize(writer)?,
+            FunctionCode::GCode(ref code) => code.serialize(writer)?,
+            FunctionCode::MCode(ref code) => code.serialize(writer)?,
         };
         Ok(())
     }
 }
 
 impl<W: Write> GerberCode<W> for ExtendedCode {
-    fn to_code(&self, writer: &mut W) -> GerberResult<()> {
+    fn serialize(&self, writer: &mut W) -> GerberResult<()> {
         match *self {
             ExtendedCode::CoordinateFormat(ref cf) => {
-                write!(writer, "%FSLAX{0}{1}Y{0}{1}*%", cf.integer, cf.decimal)?;
+                write!(writer, "%FSLAX{0}{1}Y{0}{1}*%\n", cf.integer, cf.decimal)?;
             }
             ExtendedCode::Unit(ref unit) => {
                 write!(writer, "%MO")?;
-                unit.to_code(writer)?;
-                write!(writer, "*%")?;
+                unit.serialize_partial(writer)?;
+                write!(writer, "*%\n")?;
             },
             ExtendedCode::ApertureDefinition(ref def) => {
                 write!(writer, "%ADD")?;
-                def.to_code(writer)?;
-                write!(writer, "*%")?;
+                def.serialize_partial(writer)?;
+                write!(writer, "*%\n")?;
             },
             ExtendedCode::ApertureMacro(ref am) => {
                 write!(writer, "%")?;
-                am.to_code(writer)?;
-                write!(writer, "%")?;
+                am.serialize_partial(writer)?;
+                write!(writer, "%\n")?;
             },
             ExtendedCode::LoadPolarity(ref polarity) => {
                 write!(writer, "%LP")?;
-                polarity.to_code(writer)?;
-                write!(writer, "*%")?;
+                polarity.serialize_partial(writer)?;
+                write!(writer, "*%\n")?;
             },
             ExtendedCode::StepAndRepeat(ref sar) => {
                 write!(writer, "%SR")?;
-                sar.to_code(writer)?;
-                write!(writer, "*%")?;
+                sar.serialize_partial(writer)?;
+                write!(writer, "*%\n")?;
             },
             ExtendedCode::FileAttribute(ref attr) => {
                 write!(writer, "%TF.")?;
-                attr.to_code(writer)?;
-                write!(writer, "*%")?;
+                attr.serialize_partial(writer)?;
+                write!(writer, "*%\n")?;
             },
             ExtendedCode::DeleteAttribute(ref attr) => {
-                write!(writer, "%TD{}*%", attr)?;
+                write!(writer, "%TD{}*%\n", attr)?;
             },
             _ => unimplemented!(),
         };
@@ -222,16 +223,16 @@ impl<W: Write> GerberCode<W> for ExtendedCode {
     }
 }
 
-impl<W: Write> GerberCode<W> for ApertureDefinition {
-    fn to_code(&self, writer: &mut W) -> GerberResult<()> {
+impl<W: Write> PartialGerberCode<W> for ApertureDefinition {
+    fn serialize_partial(&self, writer: &mut W) -> GerberResult<()> {
         write!(writer, "{}", self.code)?;
-        self.aperture.to_code(writer)?;
+        self.aperture.serialize_partial(writer)?;
         Ok(())
     }
 }
 
-impl<W: Write> GerberCode<W> for Circle {
-    fn to_code(&self, writer: &mut W) -> GerberResult<()> {
+impl<W: Write> PartialGerberCode<W> for Circle {
+    fn serialize_partial(&self, writer: &mut W) -> GerberResult<()> {
         match self.hole_diameter {
             Some(hole_diameter) => {
                 write!(writer, "{}X{}", self.diameter, hole_diameter)?;
@@ -242,8 +243,8 @@ impl<W: Write> GerberCode<W> for Circle {
     }
 }
 
-impl<W: Write> GerberCode<W> for Rectangular {
-    fn to_code(&self, writer: &mut W) -> GerberResult<()> {
+impl<W: Write> PartialGerberCode<W> for Rectangular {
+    fn serialize_partial(&self, writer: &mut W) -> GerberResult<()> {
         match self.hole_diameter {
             Some(hole_diameter) => write!(writer, "{}X{}X{}", self.x, self.y, hole_diameter)?,
             None => write!(writer, "{}X{}", self.x, self.y)?,
@@ -252,8 +253,8 @@ impl<W: Write> GerberCode<W> for Rectangular {
     }
 }
 
-impl<W: Write> GerberCode<W> for Polygon {
-    fn to_code(&self, writer: &mut W) -> GerberResult<()> {
+impl<W: Write> PartialGerberCode<W> for Polygon {
+    fn serialize_partial(&self, writer: &mut W) -> GerberResult<()> {
         match (self.rotation, self.hole_diameter) {
             (Some(rot), Some(hd)) => write!(writer, "{}X{}X{}X{}", self.diameter, self.vertices, rot, hd)?,
             (Some(rot), None) => write!(writer, "{}X{}X{}", self.diameter, self.vertices, rot)?,
@@ -264,24 +265,24 @@ impl<W: Write> GerberCode<W> for Polygon {
     }
 }
 
-impl<W: Write> GerberCode<W> for Aperture {
-    fn to_code(&self, writer: &mut W) -> GerberResult<()> {
+impl<W: Write> PartialGerberCode<W> for Aperture {
+    fn serialize_partial(&self, writer: &mut W) -> GerberResult<()> {
         match *self {
             Aperture::Circle(ref circle) => {
                 write!(writer, "C,")?;
-                circle.to_code(writer)?;
+                circle.serialize_partial(writer)?;
             },
             Aperture::Rectangle(ref rectangular) => {
                 write!(writer, "R,")?;
-                rectangular.to_code(writer)?;
+                rectangular.serialize_partial(writer)?;
             },
             Aperture::Obround(ref rectangular) => {
                 write!(writer, "O,")?;
-                rectangular.to_code(writer)?;
+                rectangular.serialize_partial(writer)?;
             },
             Aperture::Polygon(ref polygon) => {
                 write!(writer, "P,")?;
-                polygon.to_code(writer)?;
+                polygon.serialize_partial(writer)?;
             },
             Aperture::Other(ref string) => write!(writer, "{}", string)?,
         };
@@ -289,8 +290,8 @@ impl<W: Write> GerberCode<W> for Aperture {
     }
 }
 
-impl<W: Write> GerberCode<W> for Polarity {
-    fn to_code(&self, writer: &mut W) -> GerberResult<()> {
+impl<W: Write> PartialGerberCode<W> for Polarity {
+    fn serialize_partial(&self, writer: &mut W) -> GerberResult<()> {
         match *self {
             Polarity::Clear => write!(writer, "C")?,
             Polarity::Dark => write!(writer, "D")?,
@@ -299,8 +300,8 @@ impl<W: Write> GerberCode<W> for Polarity {
     }
 }
 
-impl<W: Write> GerberCode<W> for StepAndRepeat {
-    fn to_code(&self, writer: &mut W) -> GerberResult<()> {
+impl<W: Write> PartialGerberCode<W> for StepAndRepeat {
+    fn serialize_partial(&self, writer: &mut W) -> GerberResult<()> {
         match *self {
             StepAndRepeat::Open { repeat_x: rx, repeat_y: ry, distance_x: dx, distance_y: dy } =>
                 write!(writer, "X{}Y{}I{}J{}", rx, ry, dx, dy)?,
@@ -310,8 +311,8 @@ impl<W: Write> GerberCode<W> for StepAndRepeat {
     }
 }
 
-impl<W: Write> GerberCode<W> for Part {
-    fn to_code(&self, writer: &mut W) -> GerberResult<()> {
+impl<W: Write> PartialGerberCode<W> for Part {
+    fn serialize_partial(&self, writer: &mut W) -> GerberResult<()> {
         match *self {
             Part::Single => write!(writer, "Single")?,
             Part::Array => write!(writer, "Array")?,
@@ -323,8 +324,8 @@ impl<W: Write> GerberCode<W> for Part {
     }
 }
 
-impl<W: Write> GerberCode<W> for GenerationSoftware {
-    fn to_code(&self, writer: &mut W) -> GerberResult<()> {
+impl<W: Write> PartialGerberCode<W> for GenerationSoftware {
+    fn serialize_partial(&self, writer: &mut W) -> GerberResult<()> {
         match self.version {
             Some(ref v) => write!(writer, "{},{},{}", self.vendor, self.application, v)?,
             None => write!(writer, "{},{}", self.vendor, self.application)?,
@@ -333,22 +334,22 @@ impl<W: Write> GerberCode<W> for GenerationSoftware {
     }
 }
 
-impl<W: Write> GerberCode<W> for FileAttribute {
-    fn to_code(&self, writer: &mut W) -> GerberResult<()> {
+impl<W: Write> PartialGerberCode<W> for FileAttribute {
+    fn serialize_partial(&self, writer: &mut W) -> GerberResult<()> {
         match *self {
             FileAttribute::Part(ref part) => {
                 write!(writer, "Part,")?;
-                part.to_code(writer)?;
+                part.serialize_partial(writer)?;
             },
             FileAttribute::FileFunction(ref function) => {
                 write!(writer, "FileFunction,")?;
                 match function {
                     &FileFunction::Copper { ref layer, ref pos, ref copper_type } => {
                         write!(writer, "Copper,L{},", layer)?;
-                        pos.to_code(writer)?;
+                        pos.serialize_partial(writer)?;
                         if let Some(ref t) = *copper_type {
                             write!(writer, ",")?;
-                            t.to_code(writer)?;
+                            t.serialize_partial(writer)?;
                         }
                     },
                     _ => unimplemented!(),
@@ -356,7 +357,7 @@ impl<W: Write> GerberCode<W> for FileAttribute {
             },
             FileAttribute::GenerationSoftware(ref gs) => {
                 write!(writer, "GenerationSoftware,")?;
-                gs.to_code(writer)?;
+                gs.serialize_partial(writer)?;
             },
             FileAttribute::Md5(ref hash) => write!(writer, "MD5,{}", hash)?,
             _ => unimplemented!(),

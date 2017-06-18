@@ -3,7 +3,7 @@
 use std::convert::From;
 use std::io::Write;
 
-use ::{GerberCode, GerberError, GerberResult};
+use ::{PartialGerberCode, GerberError, GerberResult};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct ApertureMacro {
@@ -29,8 +29,8 @@ impl ApertureMacro {
     }
 }
 
-impl<W: Write> GerberCode<W> for ApertureMacro {
-    fn to_code(&self, writer: &mut W) -> GerberResult<()> {
+impl<W: Write> PartialGerberCode<W> for ApertureMacro {
+    fn serialize_partial(&self, writer: &mut W) -> GerberResult<()> {
         if self.content.is_empty() {
             return Err(GerberError::MissingDataError("There must be at least 1 content element in an aperture macro".into()));
         }
@@ -42,7 +42,7 @@ impl<W: Write> GerberCode<W> for ApertureMacro {
             } else {
                 write!(writer, "\n")?;
             }
-            content.to_code(writer)?;
+            content.serialize_partial(writer)?;
         }
         Ok(())
     }
@@ -78,8 +78,8 @@ impl From<f64> for MacroDecimal {
     }
 }
 
-impl<W: Write> GerberCode<W> for MacroDecimal {
-    fn to_code(&self, writer: &mut W) -> GerberResult<()> {
+impl<W: Write> PartialGerberCode<W> for MacroDecimal {
+    fn serialize_partial(&self, writer: &mut W) -> GerberResult<()> {
         match *self {
             MacroDecimal::Value(ref v) => write!(writer, "{}", v)?,
             MacroDecimal::Variable(ref v) => write!(writer, "${}", v)?,
@@ -106,18 +106,18 @@ pub enum MacroContent {
     Comment(String),
 }
 
-impl<W: Write> GerberCode<W> for MacroContent {
-    fn to_code(&self, writer: &mut W) -> GerberResult<()> {
+impl<W: Write> PartialGerberCode<W> for MacroContent {
+    fn serialize_partial(&self, writer: &mut W) -> GerberResult<()> {
         match *self {
-            MacroContent::Circle(ref c) => c.to_code(writer)?,
-            MacroContent::VectorLine(ref vl) => vl.to_code(writer)?,
-            MacroContent::CenterLine(ref cl) => cl.to_code(writer)?,
-            MacroContent::Outline(ref o) => o.to_code(writer)?,
-            MacroContent::Polygon(ref p) => p.to_code(writer)?,
-            MacroContent::Moire(ref m) => m.to_code(writer)?,
-            MacroContent::Thermal(ref t) => t.to_code(writer)?,
+            MacroContent::Circle(ref c) => c.serialize_partial(writer)?,
+            MacroContent::VectorLine(ref vl) => vl.serialize_partial(writer)?,
+            MacroContent::CenterLine(ref cl) => cl.serialize_partial(writer)?,
+            MacroContent::Outline(ref o) => o.serialize_partial(writer)?,
+            MacroContent::Polygon(ref p) => p.serialize_partial(writer)?,
+            MacroContent::Moire(ref m) => m.serialize_partial(writer)?,
+            MacroContent::Thermal(ref t) => t.serialize_partial(writer)?,
             MacroContent::Comment(ref s) => write!(writer, "0 {}*", &s)?,
-            MacroContent::VariableDefinition(ref v) => v.to_code(writer)?,
+            MacroContent::VariableDefinition(ref v) => v.serialize_partial(writer)?,
         };
         Ok(())
     }
@@ -170,19 +170,19 @@ pub struct CirclePrimitive {
     pub angle: Option<MacroDecimal>,
 }
 
-impl<W: Write> GerberCode<W> for CirclePrimitive {
-    fn to_code(&self, writer: &mut W) -> GerberResult<()> {
+impl<W: Write> PartialGerberCode<W> for CirclePrimitive {
+    fn serialize_partial(&self, writer: &mut W) -> GerberResult<()> {
         write!(writer, "1,")?;
-        self.exposure.to_code(writer)?;
+        self.exposure.serialize_partial(writer)?;
         write!(writer, ",")?;
-        self.diameter.to_code(writer)?;
+        self.diameter.serialize_partial(writer)?;
         write!(writer, ",")?;
-        self.center.0.to_code(writer)?;
+        self.center.0.serialize_partial(writer)?;
         write!(writer, ",")?;
-        self.center.1.to_code(writer)?;
+        self.center.1.serialize_partial(writer)?;
         if let Some(ref a) = self.angle {
             write!(writer, ",")?;
-            a.to_code(writer)?;
+            a.serialize_partial(writer)?;
         }
         write!(writer, "*")?;
         Ok(())
@@ -211,22 +211,22 @@ pub struct VectorLinePrimitive {
     pub angle: MacroDecimal,
 }
 
-impl<W: Write> GerberCode<W> for VectorLinePrimitive {
-    fn to_code(&self, writer: &mut W) -> GerberResult<()> {
+impl<W: Write> PartialGerberCode<W> for VectorLinePrimitive {
+    fn serialize_partial(&self, writer: &mut W) -> GerberResult<()> {
         write!(writer, "20,")?;
-        self.exposure.to_code(writer)?;
+        self.exposure.serialize_partial(writer)?;
         write!(writer, ",")?;
-        self.width.to_code(writer)?;
+        self.width.serialize_partial(writer)?;
         write!(writer, ",")?;
-        self.start.0.to_code(writer)?;
+        self.start.0.serialize_partial(writer)?;
         write!(writer, ",")?;
-        self.start.1.to_code(writer)?;
+        self.start.1.serialize_partial(writer)?;
         write!(writer, ",")?;
-        self.end.0.to_code(writer)?;
+        self.end.0.serialize_partial(writer)?;
         write!(writer, ",")?;
-        self.end.1.to_code(writer)?;
+        self.end.1.serialize_partial(writer)?;
         write!(writer, ",")?;
-        self.angle.to_code(writer)?;
+        self.angle.serialize_partial(writer)?;
         write!(writer, "*")?;
         Ok(())
     }
@@ -251,20 +251,20 @@ pub struct CenterLinePrimitive {
     pub angle: MacroDecimal,
 }
 
-impl<W: Write> GerberCode<W> for CenterLinePrimitive {
-    fn to_code(&self, writer: &mut W) -> GerberResult<()> {
+impl<W: Write> PartialGerberCode<W> for CenterLinePrimitive {
+    fn serialize_partial(&self, writer: &mut W) -> GerberResult<()> {
         write!(writer, "21,")?;
-        self.exposure.to_code(writer)?;
+        self.exposure.serialize_partial(writer)?;
         write!(writer, ",")?;
-        self.dimensions.0.to_code(writer)?;
+        self.dimensions.0.serialize_partial(writer)?;
         write!(writer, ",")?;
-        self.dimensions.1.to_code(writer)?;
+        self.dimensions.1.serialize_partial(writer)?;
         write!(writer, ",")?;
-        self.center.0.to_code(writer)?;
+        self.center.0.serialize_partial(writer)?;
         write!(writer, ",")?;
-        self.center.1.to_code(writer)?;
+        self.center.1.serialize_partial(writer)?;
         write!(writer, ",")?;
-        self.angle.to_code(writer)?;
+        self.angle.serialize_partial(writer)?;
         write!(writer, "*")?;
         Ok(())
     }
@@ -288,8 +288,8 @@ pub struct OutlinePrimitive {
     pub angle: MacroDecimal,
 }
 
-impl<W: Write> GerberCode<W> for OutlinePrimitive {
-    fn to_code(&self, writer: &mut W) -> GerberResult<()> {
+impl<W: Write> PartialGerberCode<W> for OutlinePrimitive {
+    fn serialize_partial(&self, writer: &mut W) -> GerberResult<()> {
         // Points invariants
         if self.points.len() < 2 {
             return Err(GerberError::MissingDataError("There must be at least 1 subsequent point in an outline".into()));
@@ -302,16 +302,16 @@ impl<W: Write> GerberCode<W> for OutlinePrimitive {
         }
 
         write!(writer, "4,")?;
-        self.exposure.to_code(writer)?;
+        self.exposure.serialize_partial(writer)?;
         writeln!(writer, ",{},", self.points.len() - 1)?;
 
         for &(ref x, ref y) in &self.points {
-            x.to_code(writer)?;
+            x.serialize_partial(writer)?;
             write!(writer, ",")?;
-            y.to_code(writer)?;
+            y.serialize_partial(writer)?;
             writeln!(writer, ",")?;
         }
-        self.angle.to_code(writer)?;
+        self.angle.serialize_partial(writer)?;
         write!(writer, "*")?;
         Ok(())
     }
@@ -345,8 +345,8 @@ pub struct PolygonPrimitive {
     pub angle: MacroDecimal,
 }
 
-impl<W: Write> GerberCode<W> for PolygonPrimitive {
-    fn to_code(&self, writer: &mut W) -> GerberResult<()> {
+impl<W: Write> PartialGerberCode<W> for PolygonPrimitive {
+    fn serialize_partial(&self, writer: &mut W) -> GerberResult<()> {
         // Vertice count invariants
         if self.vertices < 3 {
             return Err(GerberError::MissingDataError("There must be at least 3 vertices in a polygon".into()));
@@ -358,15 +358,15 @@ impl<W: Write> GerberCode<W> for PolygonPrimitive {
             return Err(GerberError::RangeError("The diameter must not be negative".into()));
         }
         write!(writer, "5,")?;
-        self.exposure.to_code(writer)?;
+        self.exposure.serialize_partial(writer)?;
         write!(writer, ",{},", self.vertices)?;
-        self.center.0.to_code(writer)?;
+        self.center.0.serialize_partial(writer)?;
         write!(writer, ",")?;
-        self.center.1.to_code(writer)?;
+        self.center.1.serialize_partial(writer)?;
         write!(writer, ",")?;
-        self.diameter.to_code(writer)?;
+        self.diameter.serialize_partial(writer)?;
         write!(writer, ",")?;
-        self.angle.to_code(writer)?;
+        self.angle.serialize_partial(writer)?;
         write!(writer, "*")?;
         Ok(())
     }
@@ -408,8 +408,8 @@ pub struct MoirePrimitive {
     pub angle: MacroDecimal,
 }
 
-impl<W: Write> GerberCode<W> for MoirePrimitive {
-    fn to_code(&self, writer: &mut W) -> GerberResult<()> {
+impl<W: Write> PartialGerberCode<W> for MoirePrimitive {
+    fn serialize_partial(&self, writer: &mut W) -> GerberResult<()> {
         // Decimal invariants
         if self.diameter.is_negative() {
             return Err(GerberError::RangeError("Outer diameter of a moiré may not be negative".into()));
@@ -427,21 +427,21 @@ impl<W: Write> GerberCode<W> for MoirePrimitive {
             return Err(GerberError::RangeError("Cross hair length of a moiré may not be negative".into()));
         }
         write!(writer, "6,")?;
-        self.center.0.to_code(writer)?;
+        self.center.0.serialize_partial(writer)?;
         write!(writer, ",")?;
-        self.center.1.to_code(writer)?;
+        self.center.1.serialize_partial(writer)?;
         write!(writer, ",")?;
-        self.diameter.to_code(writer)?;
+        self.diameter.serialize_partial(writer)?;
         write!(writer, ",")?;
-        self.ring_thickness.to_code(writer)?;
+        self.ring_thickness.serialize_partial(writer)?;
         write!(writer, ",")?;
-        self.gap.to_code(writer)?;
+        self.gap.serialize_partial(writer)?;
         write!(writer, ",{},", self.max_rings)?;
-        self.cross_hair_thickness.to_code(writer)?;
+        self.cross_hair_thickness.serialize_partial(writer)?;
         write!(writer, ",")?;
-        self.cross_hair_length.to_code(writer)?;
+        self.cross_hair_length.serialize_partial(writer)?;
         write!(writer, ",")?;
-        self.angle.to_code(writer)?;
+        self.angle.serialize_partial(writer)?;
         write!(writer, "*")?;
         Ok(())
     }
@@ -475,24 +475,24 @@ pub struct ThermalPrimitive {
     pub angle: MacroDecimal,
 }
 
-impl<W: Write> GerberCode<W> for ThermalPrimitive {
-    fn to_code(&self, writer: &mut W) -> GerberResult<()> {
+impl<W: Write> PartialGerberCode<W> for ThermalPrimitive {
+    fn serialize_partial(&self, writer: &mut W) -> GerberResult<()> {
         // Decimal invariants
         if self.inner_diameter.is_negative() {
             return Err(GerberError::RangeError("Inner diameter of a thermal may not be negative".into()));
         }
         write!(writer, "7,")?;
-        self.center.0.to_code(writer)?;
+        self.center.0.serialize_partial(writer)?;
         write!(writer, ",")?;
-        self.center.1.to_code(writer)?;
+        self.center.1.serialize_partial(writer)?;
         write!(writer, ",")?;
-        self.outer_diameter.to_code(writer)?;
+        self.outer_diameter.serialize_partial(writer)?;
         write!(writer, ",")?;
-        self.inner_diameter.to_code(writer)?;
+        self.inner_diameter.serialize_partial(writer)?;
         write!(writer, ",")?;
-        self.gap.to_code(writer)?;
+        self.gap.serialize_partial(writer)?;
         write!(writer, ",")?;
-        self.angle.to_code(writer)?;
+        self.angle.serialize_partial(writer)?;
         write!(writer, "*")?;
         Ok(())
     }
@@ -504,8 +504,8 @@ pub struct VariableDefinition {
     expression: String,
 }
 
-impl<W: Write> GerberCode<W> for VariableDefinition {
-    fn to_code(&self, writer: &mut W) -> GerberResult<()> {
+impl<W: Write> PartialGerberCode<W> for VariableDefinition {
+    fn serialize_partial(&self, writer: &mut W) -> GerberResult<()> {
         write!(writer, "${}={}*", self.number, self.expression)?;
         Ok(())
     }
@@ -517,12 +517,12 @@ mod test {
     use std::io::BufWriter;
     use super::*;
     use super::MacroDecimal::{Value, Variable};
-    use ::GerberCode;
+    use ::PartialGerberCode;
 
-    macro_rules! assert_code {
+    macro_rules! assert_partial_code {
         ($obj:expr, $expected:expr) => {
             let mut buf = BufWriter::new(Vec::new());
-            $obj.to_code(&mut buf).expect("Could not generate Gerber code");
+            $obj.serialize_partial(&mut buf).expect("Could not generate Gerber code");
             let bytes = buf.into_inner().unwrap();
             let code = String::from_utf8(bytes).unwrap();
             assert_eq!(&code, $expected);
@@ -537,14 +537,14 @@ mod test {
             center: (Value(0.), Value(0.)),
             angle: Some(Value(0.)),
         };
-        assert_code!(with_angle, "1,1,1.5,0,0,0*");
+        assert_partial_code!(with_angle, "1,1,1.5,0,0,0*");
         let no_angle = CirclePrimitive {
             exposure: false,
             diameter: Value(99.9),
             center: (Value(1.1), Value(2.2)),
             angle: None,
         };
-        assert_code!(no_angle, "1,0,99.9,1.1,2.2*");
+        assert_partial_code!(no_angle, "1,0,99.9,1.1,2.2*");
     }
 
     #[test]
@@ -556,7 +556,7 @@ mod test {
             end: (Value(12.), Value(0.45)),
             angle: Value(0.),
         };
-        assert_code!(line, "20,1,0.9,0,0.45,12,0.45,0*");
+        assert_partial_code!(line, "20,1,0.9,0,0.45,12,0.45,0*");
     }
 
     #[test]
@@ -567,7 +567,7 @@ mod test {
             center: (Value(3.4), Value(0.6)),
             angle: Value(30.0),
         };
-        assert_code!(line, "21,1,6.8,1.2,3.4,0.6,30*");
+        assert_partial_code!(line, "21,1,6.8,1.2,3.4,0.6,30*");
     }
 
     #[test]
@@ -583,7 +583,7 @@ mod test {
             ],
             angle: Value(0.0),
         };
-        assert_code!(line, "4,1,4,\n0.1,0.1,\n0.5,0.1,\n0.5,0.5,\n0.1,0.5,\n0.1,0.1,\n0*");
+        assert_partial_code!(line, "4,1,4,\n0.1,0.1,\n0.5,0.1,\n0.5,0.5,\n0.1,0.5,\n0.1,0.1,\n0*");
     }
 
     #[test]
@@ -595,7 +595,7 @@ mod test {
             diameter: Value(8.0),
             angle: Value(0.0),
         };
-        assert_code!(line, "5,1,8,1.5,2,8,0*");
+        assert_partial_code!(line, "5,1,8,1.5,2,8,0*");
     }
 
     #[test]
@@ -610,7 +610,7 @@ mod test {
             cross_hair_length: Value(6.0),
             angle: Value(0.0),
         };
-        assert_code!(line, "6,0,0,5,0.5,0.5,2,0.1,6,0*");
+        assert_partial_code!(line, "6,0,0,5,0.5,0.5,2,0.1,6,0*");
     }
 
     #[test]
@@ -622,7 +622,7 @@ mod test {
             gap: Value(1.0),
             angle: Value(45.0),
         };
-        assert_code!(line, "7,0,0,8,6.5,1,45*");
+        assert_partial_code!(line, "7,0,0,8,6.5,1,45*");
     }
 
     #[test]
@@ -651,7 +651,7 @@ mod test {
                 }
             )
         );
-        assert_code!(am, "AMCRAZY*\n7,0,0,0.08,0.055,0.0125,45*\n6,0,0,0.125,0.01,0.01,3,0.003,0.15,0*");
+        assert_partial_code!(am, "AMCRAZY*\n7,0,0,0.08,0.055,0.0125,45*\n6,0,0,0.125,0.01,0.01,3,0.003,0.15,0*");
     }
 
     #[test]
@@ -663,7 +663,7 @@ mod test {
             end: (Value(12.), Variable(2)),
             angle: Variable(3),
         };
-        assert_code!(line, "20,1,$0,$1,0.45,12,$2,$3*");
+        assert_partial_code!(line, "20,1,$0,$1,0.45,12,$2,$3*");
     }
 
     #[test]
@@ -679,7 +679,7 @@ mod test {
     #[test]
     fn test_comment_codegen() {
         let comment = MacroContent::Comment("hello world".to_string());
-        assert_code!(comment, "0 hello world*");
+        assert_partial_code!(comment, "0 hello world*");
     }
 
     #[test]
@@ -688,7 +688,7 @@ mod test {
             number: 17,
             expression: "$40+2".to_string(),
         };
-        assert_code!(var, "$17=$40+2*");
+        assert_partial_code!(var, "$17=$40+2*");
     }
 
     #[test]
