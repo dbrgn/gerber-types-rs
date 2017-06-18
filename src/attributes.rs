@@ -5,7 +5,9 @@ use std::io::Write;
 use chrono::{DateTime, UTC};
 use uuid::Uuid;
 
-use ::{GerberCode, GerberResult};
+use errors::GerberResult;
+use traits::PartialGerberCode;
+
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum FileAttribute {
@@ -52,8 +54,8 @@ pub enum Position {
     Bottom,
 }
 
-impl<W: Write> GerberCode<W> for Position {
-    fn to_code(&self, writer: &mut W) -> GerberResult<()> {
+impl<W: Write> PartialGerberCode<W> for Position {
+    fn serialize_partial(&self, writer: &mut W) -> GerberResult<()> {
         match *self {
             Position::Top => write!(writer, "Top")?,
             Position::Bottom => write!(writer, "Bot")?,
@@ -69,8 +71,8 @@ pub enum ExtendedPosition {
     Bottom,
 }
 
-impl<W: Write> GerberCode<W> for ExtendedPosition {
-    fn to_code(&self, writer: &mut W) -> GerberResult<()> {
+impl<W: Write> PartialGerberCode<W> for ExtendedPosition {
+    fn serialize_partial(&self, writer: &mut W) -> GerberResult<()> {
         match *self {
             ExtendedPosition::Top => write!(writer, "Top")?,
             ExtendedPosition::Inner => write!(writer, "Inr")?,
@@ -88,8 +90,8 @@ pub enum CopperType {
     Hatched,
 }
 
-impl<W: Write> GerberCode<W> for CopperType {
-    fn to_code(&self, writer: &mut W) -> GerberResult<()> {
+impl<W: Write> PartialGerberCode<W> for CopperType {
+    fn serialize_partial(&self, writer: &mut W) -> GerberResult<()> {
         match *self {
             CopperType::Plane => write!(writer, "Plane")?,
             CopperType::Signal => write!(writer, "Signal")?,
