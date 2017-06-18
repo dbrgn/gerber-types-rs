@@ -6,7 +6,7 @@
 
 use std::convert::{From, Into};
 
-use ::{CoordinateFormat, CoordinateNumber};
+use coordinates::{CoordinateFormat, CoordinateNumber};
 
 
 /// Coordinates are part of an operation.

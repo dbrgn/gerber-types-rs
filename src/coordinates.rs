@@ -1,11 +1,11 @@
 //! Custom data types used in the Gerber format.
 
 use std::convert::{From, Into};
-use std::num::FpCategory;
 use std::i64;
-use num::rational::Ratio;
+use std::num::FpCategory;
 
 use conv::TryFrom;
+use num::rational::Ratio;
 
 use ::GerberError;
 

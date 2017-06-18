@@ -20,26 +20,26 @@
 //!   value, but does not represent a full line of code.
 
 extern crate chrono;
-extern crate uuid;
 extern crate conv;
 extern crate num;
 #[macro_use] extern crate quick_error;
+extern crate uuid;
 
-mod types;
 mod attributes;
-mod macros;
 mod codegen;
 mod coordinates;
 mod errors;
+mod macros;
 mod traits;
+mod types;
 
-pub use types::*;
 pub use attributes::*;
-pub use macros::*;
 pub use codegen::*;
 pub use coordinates::*;
 pub use errors::*;
+pub use macros::*;
 pub use traits::GerberCode;
+pub use types::*;
 
 
 #[cfg(test)]
