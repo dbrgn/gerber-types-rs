@@ -72,7 +72,6 @@ macro_rules! impl_from {
     }
 }
 
-
 // Root type
 
 #[derive(Debug, Clone, PartialEq)]
@@ -83,6 +82,17 @@ pub enum Command {
 
 impl_from!(FunctionCode, Command, Command::FunctionCode);
 impl_from!(ExtendedCode, Command, Command::ExtendedCode);
+
+
+macro_rules! impl_command_fromfrom {
+    ($from:ty, $inner:path) => {
+        impl From<$from> for Command {
+            fn from(val: $from) -> Self {
+                Command::from($inner(val))
+            }
+        }
+    }
+}
 
 
 // Main categories
@@ -97,6 +107,11 @@ pub enum FunctionCode {
 impl_from!(DCode, FunctionCode, FunctionCode::DCode);
 impl_from!(GCode, FunctionCode, FunctionCode::GCode);
 impl_from!(MCode, FunctionCode, FunctionCode::MCode);
+
+impl_command_fromfrom!(DCode, FunctionCode::from);
+impl_command_fromfrom!(GCode, FunctionCode::from);
+impl_command_fromfrom!(MCode, FunctionCode::from);
+
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum ExtendedCode {
@@ -128,6 +143,15 @@ impl_from!(Polarity, ExtendedCode, ExtendedCode::LoadPolarity);
 impl_from!(StepAndRepeat, ExtendedCode, ExtendedCode::StepAndRepeat);
 impl_from!(::attributes::FileAttribute, ExtendedCode, ExtendedCode::FileAttribute);
 impl_from!(::attributes::ApertureAttribute, ExtendedCode, ExtendedCode::ApertureAttribute);
+
+impl_command_fromfrom!(CoordinateFormat, ExtendedCode::from);
+impl_command_fromfrom!(Unit, ExtendedCode::from);
+impl_command_fromfrom!(ApertureDefinition, ExtendedCode::from);
+impl_command_fromfrom!(::macros::ApertureMacro, ExtendedCode::from);
+impl_command_fromfrom!(Polarity, ExtendedCode::from);
+impl_command_fromfrom!(StepAndRepeat, ExtendedCode::from);
+impl_command_fromfrom!(::attributes::FileAttribute, ExtendedCode::from);
+impl_command_fromfrom!(::attributes::ApertureAttribute, ExtendedCode::from);
 
 
 // Function codes
