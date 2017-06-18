@@ -2,19 +2,8 @@ use std::io::Write;
 
 use types::*;
 use attributes::*;
-use ::GerberResult;
-
-/// All types that implement this trait can be converted to a complete Gerber
-/// Code line. Generated code should end with a newline.
-pub trait GerberCode<W: Write> {
-    fn serialize(&self, writer: &mut W) -> GerberResult<()>;
-}
-
-/// All types that implement this trait can be converted to a Gerber Code
-/// representation.
-pub trait PartialGerberCode<W: Write> {
-    fn serialize_partial(&self, writer: &mut W) -> GerberResult<()>;
-}
+use errors::GerberResult;
+use traits::{GerberCode, PartialGerberCode};
 
 /// Implement `PartialGerberCode` for booleans
 impl<W: Write> PartialGerberCode<W> for bool {

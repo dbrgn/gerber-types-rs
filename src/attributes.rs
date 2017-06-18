@@ -5,7 +5,9 @@ use std::io::Write;
 use chrono::{DateTime, UTC};
 use uuid::Uuid;
 
-use ::{PartialGerberCode, GerberResult};
+use errors::GerberResult;
+use traits::PartialGerberCode;
+
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum FileAttribute {

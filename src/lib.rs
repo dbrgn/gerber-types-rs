@@ -16,8 +16,8 @@
 //!
 //! - [`GerberCode`](trait.GerberCode.html) generates a full Gerber code line,
 //!   terminated with a newline character.
-//! - [`PartialGerberCode`](trait.PartialGerberCode.html) generates Gerber
-//!   representation of a value, but does not represent a full line of code.
+//! - `PartialGerberCode` (internal only) generates Gerber representation of a
+//!   value, but does not represent a full line of code.
 
 extern crate chrono;
 extern crate uuid;
@@ -31,6 +31,7 @@ mod macros;
 mod codegen;
 mod coordinates;
 mod errors;
+mod traits;
 
 pub use types::*;
 pub use attributes::*;
@@ -38,12 +39,14 @@ pub use macros::*;
 pub use codegen::*;
 pub use coordinates::*;
 pub use errors::*;
+pub use traits::GerberCode;
 
 
 #[cfg(test)]
 mod test {
     use super::*;
     use std::io::BufWriter;
+    use super::traits::PartialGerberCode;
 
     macro_rules! assert_code {
         ($obj:expr, $expected:expr) => {
