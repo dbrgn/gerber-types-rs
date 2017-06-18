@@ -3,7 +3,6 @@
 
 use std::io::Write;
 
-use attributes::*;
 use errors::GerberResult;
 use traits::{GerberCode, PartialGerberCode};
 use types::*;
@@ -100,61 +99,6 @@ impl<W: Write> GerberCode<W> for ExtendedCode {
             ExtendedCode::DeleteAttribute(ref attr) => {
                 write!(writer, "%TD{}*%\n", attr)?;
             },
-            _ => unimplemented!(),
-        };
-        Ok(())
-    }
-}
-
-impl<W: Write> PartialGerberCode<W> for Part {
-    fn serialize_partial(&self, writer: &mut W) -> GerberResult<()> {
-        match *self {
-            Part::Single => write!(writer, "Single")?,
-            Part::Array => write!(writer, "Array")?,
-            Part::FabricationPanel => write!(writer, "FabricationPanel")?,
-            Part::Coupon => write!(writer, "Coupon")?,
-            Part::Other(ref description) => write!(writer, "Other,{}", description)?,
-        };
-        Ok(())
-    }
-}
-
-impl<W: Write> PartialGerberCode<W> for GenerationSoftware {
-    fn serialize_partial(&self, writer: &mut W) -> GerberResult<()> {
-        match self.version {
-            Some(ref v) => write!(writer, "{},{},{}", self.vendor, self.application, v)?,
-            None => write!(writer, "{},{}", self.vendor, self.application)?,
-        };
-        Ok(())
-    }
-}
-
-impl<W: Write> PartialGerberCode<W> for FileAttribute {
-    fn serialize_partial(&self, writer: &mut W) -> GerberResult<()> {
-        match *self {
-            FileAttribute::Part(ref part) => {
-                write!(writer, "Part,")?;
-                part.serialize_partial(writer)?;
-            },
-            FileAttribute::FileFunction(ref function) => {
-                write!(writer, "FileFunction,")?;
-                match function {
-                    &FileFunction::Copper { ref layer, ref pos, ref copper_type } => {
-                        write!(writer, "Copper,L{},", layer)?;
-                        pos.serialize_partial(writer)?;
-                        if let Some(ref t) = *copper_type {
-                            write!(writer, ",")?;
-                            t.serialize_partial(writer)?;
-                        }
-                    },
-                    _ => unimplemented!(),
-                }
-            },
-            FileAttribute::GenerationSoftware(ref gs) => {
-                write!(writer, "GenerationSoftware,")?;
-                gs.serialize_partial(writer)?;
-            },
-            FileAttribute::Md5(ref hash) => write!(writer, "MD5,{}", hash)?,
             _ => unimplemented!(),
         };
         Ok(())

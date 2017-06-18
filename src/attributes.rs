@@ -9,6 +9,8 @@ use errors::GerberResult;
 use traits::PartialGerberCode;
 
 
+// FileAttribute
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum FileAttribute {
     Part(Part),
@@ -25,6 +27,41 @@ pub enum FileAttribute {
     UserDefined { name: String, value: Vec<String> },
 }
 
+impl<W: Write> PartialGerberCode<W> for FileAttribute {
+    fn serialize_partial(&self, writer: &mut W) -> GerberResult<()> {
+        match *self {
+            FileAttribute::Part(ref part) => {
+                write!(writer, "Part,")?;
+                part.serialize_partial(writer)?;
+            },
+            FileAttribute::FileFunction(ref function) => {
+                write!(writer, "FileFunction,")?;
+                match function {
+                    &FileFunction::Copper { ref layer, ref pos, ref copper_type } => {
+                        write!(writer, "Copper,L{},", layer)?;
+                        pos.serialize_partial(writer)?;
+                        if let Some(ref t) = *copper_type {
+                            write!(writer, ",")?;
+                            t.serialize_partial(writer)?;
+                        }
+                    },
+                    _ => unimplemented!(),
+                }
+            },
+            FileAttribute::GenerationSoftware(ref gs) => {
+                write!(writer, "GenerationSoftware,")?;
+                gs.serialize_partial(writer)?;
+            },
+            FileAttribute::Md5(ref hash) => write!(writer, "MD5,{}", hash)?,
+            _ => unimplemented!(),
+        };
+        Ok(())
+    }
+}
+
+
+// ApertureAttribute
+
 #[derive(Debug, Clone, PartialEq)]
 pub enum ApertureAttribute {
     ApertureFunction(ApertureFunction),
@@ -33,6 +70,9 @@ pub enum ApertureAttribute {
         minus: f64,
     },
 }
+
+
+// Part
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Part {
@@ -47,6 +87,22 @@ pub enum Part {
     /// None of the above
     Other(String),
 }
+
+impl<W: Write> PartialGerberCode<W> for Part {
+    fn serialize_partial(&self, writer: &mut W) -> GerberResult<()> {
+        match *self {
+            Part::Single => write!(writer, "Single")?,
+            Part::Array => write!(writer, "Array")?,
+            Part::FabricationPanel => write!(writer, "FabricationPanel")?,
+            Part::Coupon => write!(writer, "Coupon")?,
+            Part::Other(ref description) => write!(writer, "Other,{}", description)?,
+        };
+        Ok(())
+    }
+}
+
+
+// Position
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Position {
@@ -63,6 +119,9 @@ impl<W: Write> PartialGerberCode<W> for Position {
         Ok(())
     }
 }
+
+
+// ExtendedPosition
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ExtendedPosition {
@@ -81,6 +140,9 @@ impl<W: Write> PartialGerberCode<W> for ExtendedPosition {
         Ok(())
     }
 }
+
+
+// CopperType
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum CopperType {
@@ -102,12 +164,18 @@ impl<W: Write> PartialGerberCode<W> for CopperType {
     }
 }
 
+
+// Drill
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Drill {
     ThroughHole,
     Blind,
     Buried,
 }
+
+
+// DrillRouteType
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum DrillRouteType {
@@ -116,11 +184,17 @@ pub enum DrillRouteType {
     Mixed,
 }
 
+
+// Profile
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Profile {
     Plated,
     NonPlated,
 }
+
+
+// FileFunction
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum FileFunction {
@@ -151,11 +225,17 @@ pub enum FileFunction {
     Other(String),
 }
 
+
+// FilePolarity
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum FilePolarity {
     Positive,
     Negative,
 }
+
+
+// GenerationSoftware
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct GenerationSoftware {
@@ -173,6 +253,19 @@ impl GenerationSoftware {
         }
     }
 }
+
+impl<W: Write> PartialGerberCode<W> for GenerationSoftware {
+    fn serialize_partial(&self, writer: &mut W) -> GerberResult<()> {
+        match self.version {
+            Some(ref v) => write!(writer, "{},{},{}", self.vendor, self.application, v)?,
+            None => write!(writer, "{},{}", self.vendor, self.application)?,
+        };
+        Ok(())
+    }
+}
+
+
+// ApertureFunction
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ApertureFunction {
@@ -220,6 +313,9 @@ pub enum ApertureFunction {
     Other(String),
 }
 
+
+// DrillFunction
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum DrillFunction {
     BreakOut,
@@ -227,14 +323,20 @@ pub enum DrillFunction {
     Other,
 }
 
+
+// SmdPadType
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum SmdPadType {
     CopperDefined,
     SoldermaskDefined,
 }
 
+
+// FiducialScope
+
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum FiducialScope{
+pub enum FiducialScope {
     Global,
     Local,
 }
