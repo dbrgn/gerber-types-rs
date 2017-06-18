@@ -20,52 +20,40 @@
 //!   value, but does not represent a full line of code.
 
 extern crate chrono;
-extern crate uuid;
 extern crate conv;
 extern crate num;
 #[macro_use] extern crate quick_error;
+extern crate uuid;
 
-mod types;
 mod attributes;
-mod macros;
 mod codegen;
 mod coordinates;
 mod errors;
+mod extended_codes;
+mod function_codes;
+mod macros;
 mod traits;
+mod types;
 
-pub use types::*;
 pub use attributes::*;
-pub use macros::*;
 pub use codegen::*;
 pub use coordinates::*;
 pub use errors::*;
+pub use extended_codes::*;
+pub use function_codes::*;
+pub use macros::*;
 pub use traits::GerberCode;
+pub use types::*;
 
 
 #[cfg(test)]
 mod test {
-    use super::*;
     use std::io::BufWriter;
+
+    use super::*;
     use super::traits::PartialGerberCode;
 
-    macro_rules! assert_code {
-        ($obj:expr, $expected:expr) => {
-            let mut buf = BufWriter::new(Vec::new());
-            $obj.serialize(&mut buf).expect("Could not generate Gerber code");
-            let bytes = buf.into_inner().unwrap();
-            let code = String::from_utf8(bytes).unwrap();
-            assert_eq!(&code, $expected);
-        }
-    }
-    macro_rules! assert_partial_code {
-        ($obj:expr, $expected:expr) => {
-            let mut buf = BufWriter::new(Vec::new());
-            $obj.serialize_partial(&mut buf).expect("Could not generate Gerber code");
-            let bytes = buf.into_inner().unwrap();
-            let code = String::from_utf8(bytes).unwrap();
-            assert_eq!(&code, $expected);
-        }
-    }
+    include!("test_macros.rs");
 
     #[test]
     fn test_serialize() {
@@ -81,13 +69,6 @@ mod test {
         v.push(GCode::Comment("comment 1".to_string()));
         v.push(GCode::Comment("another one".to_string()));
         assert_code!(v, "G04 comment 1 *\nG04 another one *\n");
-    }
-
-    #[test]
-    fn test_function_code_serialize() {
-        //! A `FunctionCode` should implement `GerberCode`
-        let c = FunctionCode::GCode(GCode::Comment("comment".to_string()));
-        assert_code!(c, "G04 comment *\n");
     }
 
     #[test]
@@ -133,39 +114,6 @@ mod test {
     fn test_end_of_file() {
         let c = MCode::EndOfFile;
         assert_code!(c, "M02*\n");
-    }
-
-    #[test]
-    fn test_coordinates() {
-        macro_rules! assert_coords {
-            ($coords:expr, $result:expr) => {{
-                assert_partial_code!($coords, $result);
-            }}
-        }
-        let cf44 = CoordinateFormat::new(4, 4);
-        let cf46 = CoordinateFormat::new(4, 6);
-        assert_coords!(Coordinates::new(10, 20, cf44), "X100000Y200000");
-        assert_coords!(Coordinates { x: None, y: None, format: cf44 }, ""); // TODO should we catch this?
-        assert_coords!(Coordinates::at_x(10, cf44), "X100000");
-        assert_coords!(Coordinates::at_y(20, cf46), "Y20000000");
-        assert_coords!(Coordinates::new(0, -400, cf44), "X0Y-4000000");
-    }
-
-    #[test]
-    fn test_offset() {
-        macro_rules! assert_coords {
-            ($coords:expr, $result:expr) => {{
-                assert_partial_code!($coords, $result);
-            }}
-        }
-        let cf44 = CoordinateFormat::new(4, 4);
-        let cf55 = CoordinateFormat::new(5, 5);
-        let cf66 = CoordinateFormat::new(6, 6);
-        assert_coords!(CoordinateOffset::new(10, 20, cf44), "I100000J200000");
-        assert_coords!(CoordinateOffset { x: None, y: None, format: cf44 }, ""); // TODO should we catch this?
-        assert_coords!(CoordinateOffset::at_x(10, cf66), "I10000000");
-        assert_coords!(CoordinateOffset::at_y(20, cf55), "J2000000");
-        assert_coords!(CoordinateOffset::new(0, -400, cf44), "I0J-4000000");
     }
 
     #[test]
