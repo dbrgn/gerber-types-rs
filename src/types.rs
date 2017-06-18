@@ -4,60 +4,9 @@
 //! to render themselves. This means for example that each `Coordinates`
 //! instance contains a reference to the coordinate format to be used.
 
-use std::convert::{From, Into};
+use std::convert::From;
 
-use coordinates::{CoordinateFormat, CoordinateNumber};
-
-
-/// Coordinates are part of an operation.
-///
-/// Coordinates are modal. If an X is omitted, the X coordinate of the
-/// current point is used. Similar for Y.
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct Coordinates {
-    pub x: Option<CoordinateNumber>,
-    pub y: Option<CoordinateNumber>,
-    pub format: CoordinateFormat,
-}
-
-impl Coordinates {
-    pub fn new<T, U>(x: T, y: U, format: CoordinateFormat) -> Self
-            where T: Into<CoordinateNumber>, U: Into<CoordinateNumber> {
-        Coordinates { x: Some(x.into()), y: Some(y.into()), format: format }
-    }
-
-    pub fn at_x<T>(x: T, format: CoordinateFormat) -> Self where T: Into<CoordinateNumber> {
-        Coordinates { x: Some(x.into()), y: None, format: format }
-    }
-
-    pub fn at_y<T>(y: T, format: CoordinateFormat) -> Self where T: Into<CoordinateNumber> {
-        Coordinates { x: None, y: Some(y.into()), format: format }
-    }
-}
-
-/// Coordinate offsets can be used for interpolate operations in circular
-/// interpolation mode.
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct CoordinateOffset {
-    pub x: Option<CoordinateNumber>,
-    pub y: Option<CoordinateNumber>,
-    pub format: CoordinateFormat,
-}
-
-impl CoordinateOffset {
-    pub fn new<T, U>(x: T, y: U, format: CoordinateFormat) -> Self
-            where T: Into<CoordinateNumber>, U: Into<CoordinateNumber> {
-        CoordinateOffset { x: Some(x.into()), y: Some(y.into()), format: format }
-    }
-
-    pub fn at_x<T>(x: T, format: CoordinateFormat) -> Self where T: Into<CoordinateNumber> {
-        CoordinateOffset { x: Some(x.into()), y: None, format: format }
-    }
-
-    pub fn at_y<T>(y: T, format: CoordinateFormat) -> Self where T: Into<CoordinateNumber> {
-        CoordinateOffset { x: None, y: Some(y.into()), format: format }
-    }
-}
+use coordinates::{CoordinateFormat, Coordinates, CoordinateOffset};
 
 
 // Helper macros
@@ -294,7 +243,6 @@ pub enum StepAndRepeat {
 mod test {
     extern crate conv;
 
-    use ::{CoordinateNumber, CoordinateFormat};
     use super::*;
 
     #[test]
@@ -303,22 +251,6 @@ mod test {
         let c = Command::FunctionCode(FunctionCode::GCode(GCode::Comment("test".to_string())));
         let debug = format!("{:?}", c);
         assert_eq!(debug, "FunctionCode(GCode(Comment(\"test\")))");
-    }
-
-    #[test]
-    fn test_coordinates_into() {
-        let cf = CoordinateFormat::new(2, 4);
-        let c1 = Coordinates::new(CoordinateNumber::from(1), CoordinateNumber::from(2), cf);
-        let c2 = Coordinates::new(1, 2, cf);
-        assert_eq!(c1, c2);
-    }
-
-    #[test]
-    fn test_coordinates_into_mixed() {
-        let cf = CoordinateFormat::new(2, 4);
-        let c1 = Coordinates::new(CoordinateNumber::from(1), 2, cf);
-        let c2 = Coordinates::new(1, 2, cf);
-        assert_eq!(c1, c2);
     }
 
     #[test]

@@ -1,3 +1,6 @@
+//! Generic code generation, e.g. implementations of `PartialGerberCode` for
+//! bool or Vec<G: GerberCode>.
+
 use std::io::Write;
 
 use attributes::*;
@@ -36,28 +39,6 @@ impl<T: PartialGerberCode<W>, W: Write> PartialGerberCode<W> for Option<T> {
         Ok(())
     }
 }
-
-/// Automatically implement `PartialGerberCode` trait for struct types
-/// that are based on `x` and `y` attributes.
-macro_rules! impl_xy_partial_gerbercode {
-    ($class:ty, $x:expr, $y: expr) => {
-        impl<W: Write> PartialGerberCode<W> for $class {
-            fn serialize_partial(&self, writer: &mut W) -> GerberResult<()> {
-                if let Some(x) = self.x {
-                    write!(writer, "{}{}", $x, x.gerber(&self.format)?)?;
-                }
-                if let Some(y) = self.y {
-                    write!(writer, "{}{}", $y, y.gerber(&self.format)?)?;
-                }
-                Ok(())
-            }
-        }
-    }
-}
-
-impl_xy_partial_gerbercode!(Coordinates, "X", "Y");
-
-impl_xy_partial_gerbercode!(CoordinateOffset, "I", "J");
 
 impl<W: Write> GerberCode<W> for Operation {
     fn serialize(&self, writer: &mut W) -> GerberResult<()> {
