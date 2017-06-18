@@ -29,6 +29,8 @@ mod attributes;
 mod codegen;
 mod coordinates;
 mod errors;
+mod extended_codes;
+mod function_codes;
 mod macros;
 mod traits;
 mod types;
@@ -37,6 +39,8 @@ pub use attributes::*;
 pub use codegen::*;
 pub use coordinates::*;
 pub use errors::*;
+pub use extended_codes::*;
+pub use function_codes::*;
 pub use macros::*;
 pub use traits::GerberCode;
 pub use types::*;
@@ -65,13 +69,6 @@ mod test {
         v.push(GCode::Comment("comment 1".to_string()));
         v.push(GCode::Comment("another one".to_string()));
         assert_code!(v, "G04 comment 1 *\nG04 another one *\n");
-    }
-
-    #[test]
-    fn test_function_code_serialize() {
-        //! A `FunctionCode` should implement `GerberCode`
-        let c = FunctionCode::GCode(GCode::Comment("comment".to_string()));
-        assert_code!(c, "G04 comment *\n");
     }
 
     #[test]

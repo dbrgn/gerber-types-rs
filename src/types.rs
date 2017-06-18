@@ -6,7 +6,11 @@
 
 use std::convert::From;
 
-use coordinates::{CoordinateFormat, Coordinates, CoordinateOffset};
+use attributes;
+use coordinates;
+use extended_codes;
+use function_codes;
+use macros;
 
 
 // Helper macros
@@ -48,202 +52,74 @@ macro_rules! impl_command_fromfrom {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum FunctionCode {
-    DCode(DCode),
-    GCode(GCode),
-    MCode(MCode),
+    DCode(function_codes::DCode),
+    GCode(function_codes::GCode),
+    MCode(function_codes::MCode),
 }
 
-impl_from!(DCode, FunctionCode, FunctionCode::DCode);
-impl_from!(GCode, FunctionCode, FunctionCode::GCode);
-impl_from!(MCode, FunctionCode, FunctionCode::MCode);
+impl_from!(function_codes::DCode, FunctionCode, FunctionCode::DCode);
+impl_from!(function_codes::GCode, FunctionCode, FunctionCode::GCode);
+impl_from!(function_codes::MCode, FunctionCode, FunctionCode::MCode);
 
-impl_command_fromfrom!(DCode, FunctionCode::from);
-impl_command_fromfrom!(GCode, FunctionCode::from);
-impl_command_fromfrom!(MCode, FunctionCode::from);
+impl_command_fromfrom!(function_codes::DCode, FunctionCode::from);
+impl_command_fromfrom!(function_codes::GCode, FunctionCode::from);
+impl_command_fromfrom!(function_codes::MCode, FunctionCode::from);
 
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum ExtendedCode {
     /// FS
-    CoordinateFormat(CoordinateFormat),
+    CoordinateFormat(coordinates::CoordinateFormat),
     /// MO
-    Unit(Unit),
+    Unit(extended_codes::Unit),
     /// AD
-    ApertureDefinition(ApertureDefinition),
+    ApertureDefinition(extended_codes::ApertureDefinition),
     /// AM
-    ApertureMacro(::macros::ApertureMacro),
+    ApertureMacro(macros::ApertureMacro),
     /// LP
-    LoadPolarity(Polarity),
+    LoadPolarity(extended_codes::Polarity),
     /// SR
-    StepAndRepeat(StepAndRepeat),
+    StepAndRepeat(extended_codes::StepAndRepeat),
     /// TF
-    FileAttribute(::attributes::FileAttribute),
+    FileAttribute(attributes::FileAttribute),
     /// TA
-    ApertureAttribute(::attributes::ApertureAttribute),
+    ApertureAttribute(attributes::ApertureAttribute),
     /// TD
     DeleteAttribute(String),
 }
 
-impl_from!(CoordinateFormat, ExtendedCode, ExtendedCode::CoordinateFormat);
-impl_from!(Unit, ExtendedCode, ExtendedCode::Unit);
-impl_from!(ApertureDefinition, ExtendedCode, ExtendedCode::ApertureDefinition);
-impl_from!(::macros::ApertureMacro, ExtendedCode, ExtendedCode::ApertureMacro);
-impl_from!(Polarity, ExtendedCode, ExtendedCode::LoadPolarity);
-impl_from!(StepAndRepeat, ExtendedCode, ExtendedCode::StepAndRepeat);
-impl_from!(::attributes::FileAttribute, ExtendedCode, ExtendedCode::FileAttribute);
-impl_from!(::attributes::ApertureAttribute, ExtendedCode, ExtendedCode::ApertureAttribute);
+impl_from!(coordinates::CoordinateFormat, ExtendedCode, ExtendedCode::CoordinateFormat);
+impl_from!(extended_codes::Unit, ExtendedCode, ExtendedCode::Unit);
+impl_from!(extended_codes::ApertureDefinition, ExtendedCode, ExtendedCode::ApertureDefinition);
+impl_from!(macros::ApertureMacro, ExtendedCode, ExtendedCode::ApertureMacro);
+impl_from!(extended_codes::Polarity, ExtendedCode, ExtendedCode::LoadPolarity);
+impl_from!(extended_codes::StepAndRepeat, ExtendedCode, ExtendedCode::StepAndRepeat);
+impl_from!(attributes::FileAttribute, ExtendedCode, ExtendedCode::FileAttribute);
+impl_from!(attributes::ApertureAttribute, ExtendedCode, ExtendedCode::ApertureAttribute);
 
-impl_command_fromfrom!(CoordinateFormat, ExtendedCode::from);
-impl_command_fromfrom!(Unit, ExtendedCode::from);
-impl_command_fromfrom!(ApertureDefinition, ExtendedCode::from);
-impl_command_fromfrom!(::macros::ApertureMacro, ExtendedCode::from);
-impl_command_fromfrom!(Polarity, ExtendedCode::from);
-impl_command_fromfrom!(StepAndRepeat, ExtendedCode::from);
-impl_command_fromfrom!(::attributes::FileAttribute, ExtendedCode::from);
-impl_command_fromfrom!(::attributes::ApertureAttribute, ExtendedCode::from);
-
-
-// Function codes
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum DCode {
-    Operation(Operation),
-    SelectAperture(i32),
-}
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum GCode {
-    InterpolationMode(InterpolationMode),
-    RegionMode(bool),
-    QuadrantMode(QuadrantMode),
-    Comment(String),
-}
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum MCode {
-    EndOfFile,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum Operation {
-    /// D01 Command
-    Interpolate(Coordinates, Option<CoordinateOffset>),
-    /// D02 Command
-    Move(Coordinates),
-    /// D03 Command
-    Flash(Coordinates),
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum InterpolationMode {
-    Linear,
-    ClockwiseCircular,
-    CounterclockwiseCircular,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum QuadrantMode {
-    Single,
-    Multi,
-}
-
-
-// Extended codes
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum Unit {
-    Inches,
-    Millimeters,
-}
-
-#[derive(Debug, Clone, PartialEq)]
-pub struct ApertureDefinition {
-    pub code: i32,
-    pub aperture: Aperture,
-}
-
-#[derive(Debug, Clone, PartialEq)]
-pub enum Aperture {
-    Circle(Circle),
-    Rectangle(Rectangular),
-    Obround(Rectangular),
-    Polygon(Polygon),
-    Other(String),
-}
-
-#[derive(Debug, Clone, PartialEq)]
-pub struct Circle {
-    pub diameter: f64,
-    pub hole_diameter: Option<f64>,
-}
-
-impl Circle {
-    pub fn new(diameter: f64) -> Self {
-        Circle {
-            diameter: diameter,
-            hole_diameter: None,
-        }
-    }
-
-    pub fn with_hole(diameter: f64, hole_diameter: f64) -> Self {
-        Circle {
-            diameter: diameter,
-            hole_diameter: Some(hole_diameter),
-        }
-    }
-}
-
-#[derive(Debug, Clone, PartialEq)]
-pub struct Rectangular {
-    pub x: f64,
-    pub y: f64,
-    pub hole_diameter: Option<f64>,
-}
-
-impl Rectangular {
-    pub fn new(x: f64, y: f64) -> Self {
-        Rectangular {
-            x: x,
-            y: y,
-            hole_diameter: None,
-        }
-    }
-
-    pub fn with_hole(x: f64, y: f64, hole_diameter: f64) -> Self {
-        Rectangular {
-            x: x,
-            y: y,
-            hole_diameter: Some(hole_diameter),
-        }
-    }
-}
-
-#[derive(Debug, Clone, PartialEq)]
-pub struct Polygon {
-    pub diameter: f64,
-    pub vertices: u8, // 3--12
-    pub rotation: Option<f64>,
-    pub hole_diameter: Option<f64>,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum Polarity {
-    Clear,
-    Dark,
-}
-
-#[derive(Debug, Clone, PartialEq)]
-pub enum StepAndRepeat {
-    Open { repeat_x: u32, repeat_y: u32, distance_x: f64, distance_y: f64 },
-    Close,
-}
+impl_command_fromfrom!(coordinates::CoordinateFormat, ExtendedCode::from);
+impl_command_fromfrom!(extended_codes::Unit, ExtendedCode::from);
+impl_command_fromfrom!(extended_codes::ApertureDefinition, ExtendedCode::from);
+impl_command_fromfrom!(macros::ApertureMacro, ExtendedCode::from);
+impl_command_fromfrom!(extended_codes::Polarity, ExtendedCode::from);
+impl_command_fromfrom!(extended_codes::StepAndRepeat, ExtendedCode::from);
+impl_command_fromfrom!(attributes::FileAttribute, ExtendedCode::from);
+impl_command_fromfrom!(attributes::ApertureAttribute, ExtendedCode::from);
 
 
 #[cfg(test)]
 mod test {
     extern crate conv;
 
+    use std::io::BufWriter;
+
+    use extended_codes::Polarity;
+    use function_codes::GCode;
+
     use super::*;
+    use ::traits::GerberCode;
+
+    include!("test_macros.rs");
 
     #[test]
     fn test_debug() {
@@ -254,31 +130,18 @@ mod test {
     }
 
     #[test]
-    fn test_circle_new() {
-        let c1 = Circle::new(3.0);
-        let c2 = Circle { diameter: 3.0, hole_diameter: None };
-        assert_eq!(c1, c2);
+    fn test_function_code_serialize() {
+        //! A `FunctionCode` should implement `GerberCode`
+        let c = FunctionCode::GCode(GCode::Comment("comment".to_string()));
+        assert_code!(c, "G04 comment *\n");
     }
 
     #[test]
-    fn test_circle_with_hole() {
-        let c1 = Circle::with_hole(3.0, 1.0);
-        let c2 = Circle { diameter: 3.0, hole_diameter: Some(1.0) };
-        assert_eq!(c1, c2);
-    }
-
-    #[test]
-    fn test_rectangular_new() {
-        let r1 = Rectangular::new(2.0, 3.0);
-        let r2 = Rectangular { x: 2.0, y: 3.0, hole_diameter: None };
-        assert_eq!(r1, r2);
-    }
-
-    #[test]
-    fn test_rectangular_with_hole() {
-        let r1 = Rectangular::with_hole(3.0, 2.0, 1.0);
-        let r2 = Rectangular { x: 3.0, y: 2.0, hole_diameter: Some(1.0) };
-        assert_eq!(r1, r2);
+    fn test_function_code_from_gcode() {
+        let comment = GCode::Comment("hello".into());
+        let f1: FunctionCode = FunctionCode::GCode(comment.clone());
+        let f2: FunctionCode = comment.into();
+        assert_eq!(f1, f2);
     }
 
     #[test]
@@ -295,14 +158,6 @@ mod test {
         let c1: Command = Command::ExtendedCode(delete_attr.clone());
         let c2: Command = delete_attr.into();
         assert_eq!(c1, c2);
-    }
-
-    #[test]
-    fn test_function_code_from_gcode() {
-        let comment = GCode::Comment("hello".into());
-        let f1: FunctionCode = FunctionCode::GCode(comment.clone());
-        let f2: FunctionCode = comment.into();
-        assert_eq!(f1, f2);
     }
 
     #[test]
