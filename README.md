@@ -23,6 +23,18 @@ Minimal required Rust version: 1.13.
 
 Current Gerber X2 spec: https://www.ucamco.com/files/downloads/file/81/the_gerber_file_format_specification.pdf
 
+## Example
+
+You can find an example in the [`examples`
+directory](https://github.com/dbrgn/gerber-types-rs/blob/master/examples/polarities-apertures.rs).
+It's still quite verbose, the goal is to make the API a bit more ergonomic in
+the future. (This library has a low-level focus though, so it will never get a
+high-level API. That is the task of other libraries.)
+
+To generate Gerber code for that example:
+
+    $ cargo run --example polarities-apertures
+
 ## License
 
 Licensed under either of
