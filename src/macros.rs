@@ -173,7 +173,7 @@ pub struct CirclePrimitive {
 
 impl CirclePrimitive {
     pub fn new(diameter: MacroDecimal) -> Self {
-        Self {
+        CirclePrimitive {
             exposure: true,
             diameter: diameter,
             center: (MacroDecimal::Value(0.0), MacroDecimal::Value(0.0)),
@@ -240,7 +240,7 @@ pub struct VectorLinePrimitive {
 
 impl VectorLinePrimitive {
     pub fn new(start: (MacroDecimal, MacroDecimal), end: (MacroDecimal, MacroDecimal)) -> Self {
-        Self {
+        VectorLinePrimitive {
             exposure: true,
             width: MacroDecimal::Value(0.0),
             start: start,
@@ -307,7 +307,7 @@ pub struct CenterLinePrimitive {
 
 impl CenterLinePrimitive {
     pub fn new(dimensions: (MacroDecimal, MacroDecimal)) -> Self {
-        Self {
+        CenterLinePrimitive {
             exposure: true,
             dimensions: dimensions,
             center: (MacroDecimal::Value(0.0), MacroDecimal::Value(0.0)),
@@ -370,7 +370,7 @@ pub struct OutlinePrimitive {
 
 impl OutlinePrimitive {
     pub fn new() -> Self {
-        Self {
+        OutlinePrimitive {
             exposure: true,
             points: Vec::new(),
             angle: MacroDecimal::Value(0.0),
@@ -453,7 +453,7 @@ pub struct PolygonPrimitive {
 
 impl PolygonPrimitive {
     pub fn new(vertices: u8) -> Self {
-        Self {
+        PolygonPrimitive {
             exposure: true,
             vertices: vertices,
             center: (MacroDecimal::Value(0.0), MacroDecimal::Value(0.0)),
@@ -548,7 +548,7 @@ pub struct MoirePrimitive {
 
 impl MoirePrimitive {
     pub fn new() -> Self {
-        Self {
+        MoirePrimitive {
             center: (MacroDecimal::Value(0.0), MacroDecimal::Value(0.0)),
             diameter: MacroDecimal::Value(0.0),
             ring_thickness: MacroDecimal::Value(0.0),
@@ -670,7 +670,7 @@ pub struct ThermalPrimitive {
 
 impl ThermalPrimitive {
     pub fn new(inner: MacroDecimal, outer: MacroDecimal, gap: MacroDecimal) -> Self {
-        Self {
+        ThermalPrimitive {
             center: (MacroDecimal::Value(0.0), MacroDecimal::Value(0.0)),
             outer_diameter: outer,
             inner_diameter: inner,
@@ -721,7 +721,7 @@ pub struct VariableDefinition {
 
 impl VariableDefinition {
     pub fn new(number: u32, expr: &str) -> Self {
-        Self {
+        VariableDefinition {
             number: number,
             expression: expr.into(),
         }
