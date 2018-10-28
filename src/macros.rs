@@ -171,6 +171,32 @@ pub struct CirclePrimitive {
     pub angle: Option<MacroDecimal>,
 }
 
+impl CirclePrimitive {
+    pub fn new(diameter: MacroDecimal) -> Self {
+        CirclePrimitive {
+            exposure: true,
+            diameter: diameter,
+            center: (MacroDecimal::Value(0.0), MacroDecimal::Value(0.0)),
+            angle: None,
+        }
+    }
+
+    pub fn centered_at(mut self, center: (MacroDecimal, MacroDecimal)) -> Self {
+        self.center = center;
+        self
+    }
+
+    pub fn exposure_on(mut self, exposure: bool) -> Self {
+        self.exposure = exposure;
+        self
+    }
+
+    pub fn with_angle(mut self, angle: MacroDecimal) -> Self {
+        self.angle = Some(angle);
+        self
+    }
+}
+
 impl<W: Write> PartialGerberCode<W> for CirclePrimitive {
     fn serialize_partial(&self, writer: &mut W) -> GerberResult<()> {
         write!(writer, "1,")?;
@@ -210,6 +236,33 @@ pub struct VectorLinePrimitive {
     /// is rotated around the origin of the macro definition, i.e. the (0, 0)
     /// point of macro coordinates.
     pub angle: MacroDecimal,
+}
+
+impl VectorLinePrimitive {
+    pub fn new(start: (MacroDecimal, MacroDecimal), end: (MacroDecimal, MacroDecimal)) -> Self {
+        VectorLinePrimitive {
+            exposure: true,
+            width: MacroDecimal::Value(0.0),
+            start: start,
+            end: end,
+            angle: MacroDecimal::Value(0.0),
+        }
+    }
+
+    pub fn exposure_on(mut self, exposure: bool) -> Self {
+        self.exposure = exposure;
+        self
+    }
+
+    pub fn with_width(mut self, width: MacroDecimal) -> Self {
+        self.width = width;
+        self
+    }
+
+    pub fn with_angle(mut self, angle: MacroDecimal) -> Self {
+        self.angle = angle;
+        self
+    }
 }
 
 impl<W: Write> PartialGerberCode<W> for VectorLinePrimitive {
@@ -252,6 +305,32 @@ pub struct CenterLinePrimitive {
     pub angle: MacroDecimal,
 }
 
+impl CenterLinePrimitive {
+    pub fn new(dimensions: (MacroDecimal, MacroDecimal)) -> Self {
+        CenterLinePrimitive {
+            exposure: true,
+            dimensions: dimensions,
+            center: (MacroDecimal::Value(0.0), MacroDecimal::Value(0.0)),
+            angle: MacroDecimal::Value(0.0),
+        }
+    }
+
+    pub fn exposure_on(mut self, exposure: bool) -> Self {
+        self.exposure = exposure;
+        self
+    }
+
+    pub fn centered_at(mut self, center: (MacroDecimal, MacroDecimal)) -> Self {
+        self.center = center;
+        self
+    }
+
+    pub fn with_angle(mut self, angle: MacroDecimal) -> Self {
+        self.angle = angle;
+        self
+    }
+}
+
 impl<W: Write> PartialGerberCode<W> for CenterLinePrimitive {
     fn serialize_partial(&self, writer: &mut W) -> GerberResult<()> {
         write!(writer, "21,")?;
@@ -287,6 +366,32 @@ pub struct OutlinePrimitive {
     /// is rotated around the origin of the macro definition, i.e. the (0, 0)
     /// point of macro coordinates.
     pub angle: MacroDecimal,
+}
+
+impl OutlinePrimitive {
+    pub fn new() -> Self {
+        OutlinePrimitive {
+            exposure: true,
+            points: Vec::new(),
+            angle: MacroDecimal::Value(0.0),
+        }
+    }
+
+    pub fn from_points(points: Vec<(MacroDecimal, MacroDecimal)>) -> Self {
+        let mut outline_prim = Self::new();
+        outline_prim.points = points;
+        outline_prim
+    }
+
+    pub fn add_point(mut self, point: (MacroDecimal, MacroDecimal)) -> Self {
+        self.points.push(point);
+        self
+    }
+
+    pub fn with_angle(mut self, angle: MacroDecimal) -> Self {
+        self.angle = angle;
+        self
+    }
 }
 
 impl<W: Write> PartialGerberCode<W> for OutlinePrimitive {
@@ -344,6 +449,38 @@ pub struct PolygonPrimitive {
     /// Note: Rotation is only allowed if the primitive center point coincides
     /// with the origin of the macro definition.
     pub angle: MacroDecimal,
+}
+
+impl PolygonPrimitive {
+    pub fn new(vertices: u8) -> Self {
+        PolygonPrimitive {
+            exposure: true,
+            vertices: vertices,
+            center: (MacroDecimal::Value(0.0), MacroDecimal::Value(0.0)),
+            diameter: MacroDecimal::Value(0.0),
+            angle: MacroDecimal::Value(0.0),
+        }
+    }
+
+    pub fn exposure_on(mut self, exposure: bool) -> Self {
+        self.exposure = exposure;
+        self
+    }
+
+    pub fn centered_at(mut self, center: (MacroDecimal, MacroDecimal)) -> Self {
+        self.center = center;
+        self
+    }
+
+    pub fn with_diameter(mut self, diameter: MacroDecimal) -> Self {
+        self.diameter = diameter;
+        self
+    }
+
+    pub fn with_angle(mut self, angle: MacroDecimal) -> Self {
+        self.angle = angle;
+        self
+    }
 }
 
 impl<W: Write> PartialGerberCode<W> for PolygonPrimitive {
@@ -407,6 +544,61 @@ pub struct MoirePrimitive {
     /// Note: Rotation is only allowed if the primitive center point coincides
     /// with the origin of the macro definition.
     pub angle: MacroDecimal,
+}
+
+impl MoirePrimitive {
+    pub fn new() -> Self {
+        MoirePrimitive {
+            center: (MacroDecimal::Value(0.0), MacroDecimal::Value(0.0)),
+            diameter: MacroDecimal::Value(0.0),
+            ring_thickness: MacroDecimal::Value(0.0),
+            gap: MacroDecimal::Value(0.0),
+            max_rings: 1,
+            cross_hair_thickness: MacroDecimal::Value(0.0),
+            cross_hair_length: MacroDecimal::Value(0.0),
+            angle: MacroDecimal::Value(0.0),
+        }
+    }
+
+    pub fn centered_at(mut self, center: (MacroDecimal, MacroDecimal)) -> Self {
+        self.center = center;
+        self
+    }
+
+    pub fn with_diameter(mut self, diameter: MacroDecimal) -> Self {
+        self.diameter = diameter;
+        self
+    }
+
+    pub fn with_rings_max(mut self, max_rings: u32) -> Self {
+        self.max_rings = max_rings;
+        self
+    }
+
+    pub fn with_ring_thickness(mut self, thickness: MacroDecimal) -> Self {
+        self.ring_thickness = thickness;
+        self
+    }
+
+    pub fn with_gap(mut self, gap: MacroDecimal) -> Self {
+        self.gap = gap;
+        self
+    }
+
+    pub fn with_cross_thickness(mut self, thickness: MacroDecimal) -> Self {
+        self.cross_hair_thickness = thickness;
+        self
+    }
+
+    pub fn with_cross_length(mut self, length: MacroDecimal) -> Self {
+        self.cross_hair_length = length;
+        self
+    }
+
+    pub fn with_angle(mut self, angle: MacroDecimal) -> Self {
+        self.angle = angle;
+        self
+    }
 }
 
 impl<W: Write> PartialGerberCode<W> for MoirePrimitive {
@@ -476,6 +668,28 @@ pub struct ThermalPrimitive {
     pub angle: MacroDecimal,
 }
 
+impl ThermalPrimitive {
+    pub fn new(inner: MacroDecimal, outer: MacroDecimal, gap: MacroDecimal) -> Self {
+        ThermalPrimitive {
+            center: (MacroDecimal::Value(0.0), MacroDecimal::Value(0.0)),
+            outer_diameter: outer,
+            inner_diameter: inner,
+            gap: gap,
+            angle: MacroDecimal::Value(0.0),
+        }
+    }
+
+    pub fn centered_at(mut self, center: (MacroDecimal, MacroDecimal)) -> Self {
+        self.center = center;
+        self
+    }
+
+    pub fn with_angle(mut self, angle: MacroDecimal) -> Self {
+        self.angle = angle;
+        self
+    }
+}
+
 impl<W: Write> PartialGerberCode<W> for ThermalPrimitive {
     fn serialize_partial(&self, writer: &mut W) -> GerberResult<()> {
         // Decimal invariants
@@ -503,6 +717,15 @@ impl<W: Write> PartialGerberCode<W> for ThermalPrimitive {
 pub struct VariableDefinition {
     number: u32,
     expression: String,
+}
+
+impl VariableDefinition {
+    pub fn new(number: u32, expr: &str) -> Self {
+        VariableDefinition {
+            number: number,
+            expression: expr.into(),
+        }
+    }
 }
 
 impl<W: Write> PartialGerberCode<W> for VariableDefinition {
@@ -701,5 +924,94 @@ mod test {
         let c: MacroContent = "hello".into();
         assert_eq!(a, b);
         assert_eq!(b, c);
+    }
+
+    #[test]
+    fn test_circle_primitive_new() {
+        let c1 = CirclePrimitive::new(Value(3.0))
+            .centered_at((Value(5.0), Value(0.0)));
+        let c2 = CirclePrimitive { exposure: true, diameter: Value(3.0), center: (Value(5.0), Value(0.0)), angle: None };
+        assert_eq!(c1, c2);
+    }
+
+    #[test]
+    fn test_vectorline_primitive_new() {
+        let vl1 = VectorLinePrimitive::new((Value(0.0), Value(5.3)), (Value(3.9), Value(8.5)))
+            .with_angle(Value(38.0));
+        let vl2 = VectorLinePrimitive { exposure: true, width: Value(0.0), start: (Value(0.0), Value(5.3)), end: (Value(3.9), Value(8.5)), angle: Value(38.0) };
+        assert_eq!(vl1, vl2);
+    }
+
+    #[test]
+    fn test_centerline_primitive_new() {
+        let cl1 = CenterLinePrimitive::new((Value(3.0), Value(4.5)))
+            .exposure_on(false);
+        let cl2 = CenterLinePrimitive { exposure: false, dimensions: (Value(3.0), Value(4.5)), center: (Value(0.0), Value(0.0)), angle: Value(0.0) };
+        assert_eq!(cl1, cl2);
+    }
+
+    #[test]
+    fn test_outline_primitive_new() {
+        let op1 = OutlinePrimitive::new()
+            .add_point((Value(0.0), Value(0.0)))
+            .add_point((Value(2.0), Value(2.0)))
+            .add_point((Value(-2.0), Value(-2.0)))
+            .add_point((Value(0.0), Value(0.0)));
+
+        let pts = vec![
+            (Value(0.0), Value(0.0)),
+            (Value(2.0), Value(2.0)),
+            (Value(-2.0), Value(-2.0)),
+            (Value(0.0), Value(0.0))
+        ];
+
+        let op2 = OutlinePrimitive { exposure: true, points: pts, angle: Value(0.0) };
+        assert_eq!(op1, op2);
+    }
+
+    #[test]
+    fn test_polygon_primitive_new() {
+        let pp1 = PolygonPrimitive::new(5)
+            .with_angle(Value(98.0))
+            .with_diameter(Value(5.3))
+            .centered_at((Value(1.0), Value(1.0)));
+        let pp2 = PolygonPrimitive { exposure: true, vertices: 5, angle: Value(98.0), diameter: Value(5.3), center: (Value(1.0), Value(1.0)) };
+        assert_eq!(pp1, pp2);
+    }
+
+    #[test]
+    fn test_moire_primitive_new() {
+        let mp1 = MoirePrimitive::new()
+            .with_diameter(Value(3.0))
+            .with_ring_thickness(Value(0.05))
+            .with_cross_thickness(Value(0.01))
+            .with_cross_length(Value(0.5))
+            .with_rings_max(3);
+        let mp2 = MoirePrimitive {
+            center: (MacroDecimal::Value(0.0), MacroDecimal::Value(0.0)),
+            diameter: MacroDecimal::Value(3.0),
+            ring_thickness: MacroDecimal::Value(0.05),
+            gap: MacroDecimal::Value(0.0),
+            max_rings: 3,
+            cross_hair_thickness: MacroDecimal::Value(0.01),
+            cross_hair_length: MacroDecimal::Value(0.5),
+            angle: MacroDecimal::Value(0.0),
+        };
+        assert_eq!(mp1, mp2);
+    }
+
+    #[test]
+    fn test_thermal_primitive_new() {
+        let tp1 = ThermalPrimitive::new(Value(1.0), Value(2.0), Value(1.5))
+            .with_angle(Value(87.3));
+        let tp2 =  ThermalPrimitive { inner_diameter: Value(1.0), outer_diameter: Value(2.0), gap: Value(1.5), angle: Value(87.3), center: (Value(0.0), Value(0.0)) };
+        assert_eq!(tp1, tp2);
+    }
+
+    #[test]
+    fn test_variabledefinition_new() {
+        let vd1 = VariableDefinition::new(3, "Test!");
+        let vd2 = VariableDefinition { number: 3, expression: "Test!".into() };
+        assert_eq!(vd1, vd2);
     }
 }

@@ -67,6 +67,14 @@ pub struct CoordinateNumber {
     nano: i64,
 }
 
+impl CoordinateNumber {
+    pub fn new(nano: i64) -> Self {
+        CoordinateNumber {
+            nano: nano,
+        }
+    }
+}
+
 const DECIMAL_PLACES_CHARS: u8 = 6;
 const DECIMAL_PLACES_FACTOR: i64 = 1_000_000;
 
@@ -272,6 +280,15 @@ mod test {
         let e: f64 = CoordinateNumber { nano: 0i64 }.into();
         let f = 0f64;
         assert_eq!(e, f);
+    }
+
+    #[test]
+    /// Test the coordinate number constructor creates correct
+    /// coordinate numbers.
+    fn test_coordinate_number_new() {
+        let nano = 5;
+        let cn1 = CoordinateNumber::new(nano);
+        assert_eq!(cn1.nano, nano);
     }
 
     #[test]

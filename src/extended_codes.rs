@@ -33,6 +33,15 @@ pub struct ApertureDefinition {
     pub aperture: Aperture,
 }
 
+impl ApertureDefinition {
+    pub fn new(code: i32, aperture: Aperture) -> Self {
+        ApertureDefinition {
+            code: code,
+            aperture: aperture,
+        }
+    }
+}
+
 impl<W: Write> PartialGerberCode<W> for ApertureDefinition {
     fn serialize_partial(&self, writer: &mut W) -> GerberResult<()> {
         write!(writer, "{}", self.code)?;
@@ -164,6 +173,27 @@ pub struct Polygon {
     pub hole_diameter: Option<f64>,
 }
 
+impl Polygon {
+    pub fn new(diameter: f64, vertices: u8) -> Self {
+        Polygon {
+            diameter: diameter,
+            vertices: vertices,
+            rotation: None,
+            hole_diameter: None,
+        }
+    }
+
+    pub fn with_rotation(mut self, angle: f64) -> Self {
+        self.rotation = Some(angle);
+        self
+    }
+
+    pub fn with_diameter(mut self, diameter: f64) -> Self {
+        self.diameter = diameter;
+        self
+    }
+}
+
 impl<W: Write> PartialGerberCode<W> for Polygon {
     fn serialize_partial(&self, writer: &mut W) -> GerberResult<()> {
         match (self.rotation, self.hole_diameter) {
@@ -175,7 +205,6 @@ impl<W: Write> PartialGerberCode<W> for Polygon {
         Ok(())
     }
 }
-
 
 // Polarity
 
@@ -221,6 +250,13 @@ mod test {
     use super::*;
 
     #[test]
+    fn test_aperture_definition_new() {
+        let ad1 = ApertureDefinition::new(10, Aperture::Circle(Circle::new(3.0)));
+        let ad2 = ApertureDefinition { code: 10, aperture: Aperture::Circle(Circle::new(3.0)) };
+        assert_eq!(ad1, ad2);
+    }
+
+    #[test]
     fn test_rectangular_new() {
         let r1 = Rectangular::new(2.0, 3.0);
         let r2 = Rectangular { x: 2.0, y: 3.0, hole_diameter: None };
@@ -248,4 +284,11 @@ mod test {
         assert_eq!(c1, c2);
     }
 
+    #[test]
+    fn test_polygon_new() {
+        let p1 = Polygon::new(3.0, 4)
+            .with_rotation(45.0);
+        let p2 = Polygon { diameter: 3.0, vertices: 4, rotation: Some(45.0), hole_diameter: None };
+        assert_eq!(p1, p2);
+    }
 }
