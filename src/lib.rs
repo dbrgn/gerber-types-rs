@@ -8,7 +8,7 @@
 //! generate syntactically valid but semantially invalid Gerber code, but this
 //! module won't complain.
 //!
-//! Minimal required Rust version: 1.13.
+//! Minimal required Rust version: 1.31.
 //!
 //! ## Traits: GerberCode and PartialGerberCode
 //!
