@@ -70,35 +70,35 @@ impl<W: Write> GerberCode<W> for ExtendedCode {
                 write!(writer, "%MO")?;
                 unit.serialize_partial(writer)?;
                 write!(writer, "*%\n")?;
-            },
+            }
             ExtendedCode::ApertureDefinition(ref def) => {
                 write!(writer, "%ADD")?;
                 def.serialize_partial(writer)?;
                 write!(writer, "*%\n")?;
-            },
+            }
             ExtendedCode::ApertureMacro(ref am) => {
                 write!(writer, "%")?;
                 am.serialize_partial(writer)?;
                 write!(writer, "%\n")?;
-            },
+            }
             ExtendedCode::LoadPolarity(ref polarity) => {
                 write!(writer, "%LP")?;
                 polarity.serialize_partial(writer)?;
                 write!(writer, "*%\n")?;
-            },
+            }
             ExtendedCode::StepAndRepeat(ref sar) => {
                 write!(writer, "%SR")?;
                 sar.serialize_partial(writer)?;
                 write!(writer, "*%\n")?;
-            },
+            }
             ExtendedCode::FileAttribute(ref attr) => {
                 write!(writer, "%TF.")?;
                 attr.serialize_partial(writer)?;
                 write!(writer, "*%\n")?;
-            },
+            }
             ExtendedCode::DeleteAttribute(ref attr) => {
                 write!(writer, "%TD{}*%\n", attr)?;
-            },
+            }
             _ => unimplemented!(),
         };
         Ok(())

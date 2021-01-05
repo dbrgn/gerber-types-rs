@@ -2,10 +2,9 @@
 
 use std::io::Write;
 
+use crate::coordinates::{CoordinateOffset, Coordinates};
 use crate::errors::GerberResult;
 use crate::traits::{GerberCode, PartialGerberCode};
-use crate::coordinates::{Coordinates, CoordinateOffset};
-
 
 // DCode
 
@@ -25,7 +24,6 @@ impl<W: Write> GerberCode<W> for DCode {
     }
 }
 
-
 // GCode
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -40,18 +38,19 @@ impl<W: Write> GerberCode<W> for GCode {
     fn serialize(&self, writer: &mut W) -> GerberResult<()> {
         match *self {
             GCode::InterpolationMode(ref mode) => mode.serialize(writer)?,
-            GCode::RegionMode(enabled) => if enabled {
-                write!(writer, "G36*\n")?;
-            } else {
-                write!(writer, "G37*\n")?;
-            },
+            GCode::RegionMode(enabled) => {
+                if enabled {
+                    write!(writer, "G36*\n")?;
+                } else {
+                    write!(writer, "G37*\n")?;
+                }
+            }
             GCode::QuadrantMode(ref mode) => mode.serialize(writer)?,
             GCode::Comment(ref comment) => write!(writer, "G04 {} *\n", comment)?,
         };
         Ok(())
     }
 }
-
 
 // MCode
 
@@ -68,7 +67,6 @@ impl<W: Write> GerberCode<W> for MCode {
         Ok(())
     }
 }
-
 
 // Operation
 
@@ -89,11 +87,11 @@ impl<W: Write> GerberCode<W> for Operation {
                 coords.serialize_partial(writer)?;
                 offset.serialize_partial(writer)?;
                 write!(writer, "D01*\n")?;
-            },
+            }
             Operation::Move(ref coords) => {
                 coords.serialize_partial(writer)?;
                 write!(writer, "D02*\n")?;
-            },
+            }
             Operation::Flash(ref coords) => {
                 coords.serialize_partial(writer)?;
                 write!(writer, "D03*\n")?;
@@ -102,7 +100,6 @@ impl<W: Write> GerberCode<W> for Operation {
         Ok(())
     }
 }
-
 
 // InterpolationMode
 
@@ -124,7 +121,6 @@ impl<W: Write> GerberCode<W> for InterpolationMode {
     }
 }
 
-
 // QuadrantMode
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -143,7 +139,5 @@ impl<W: Write> GerberCode<W> for QuadrantMode {
     }
 }
 
-
 #[cfg(test)]
-mod test {
-}
+mod test {}

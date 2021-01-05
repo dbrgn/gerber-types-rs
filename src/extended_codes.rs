@@ -5,7 +5,6 @@ use std::io::Write;
 use crate::errors::GerberResult;
 use crate::traits::PartialGerberCode;
 
-
 // Unit
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -23,7 +22,6 @@ impl<W: Write> PartialGerberCode<W> for Unit {
         Ok(())
     }
 }
-
 
 // ApertureDefinition
 
@@ -50,7 +48,6 @@ impl<W: Write> PartialGerberCode<W> for ApertureDefinition {
     }
 }
 
-
 // Aperture
 
 #[derive(Debug, Clone, PartialEq)]
@@ -68,25 +65,24 @@ impl<W: Write> PartialGerberCode<W> for Aperture {
             Aperture::Circle(ref circle) => {
                 write!(writer, "C,")?;
                 circle.serialize_partial(writer)?;
-            },
+            }
             Aperture::Rectangle(ref rectangular) => {
                 write!(writer, "R,")?;
                 rectangular.serialize_partial(writer)?;
-            },
+            }
             Aperture::Obround(ref rectangular) => {
                 write!(writer, "O,")?;
                 rectangular.serialize_partial(writer)?;
-            },
+            }
             Aperture::Polygon(ref polygon) => {
                 write!(writer, "P,")?;
                 polygon.serialize_partial(writer)?;
-            },
+            }
             Aperture::Other(ref string) => write!(writer, "{}", string)?,
         };
         Ok(())
     }
 }
-
 
 // Circle
 
@@ -117,13 +113,12 @@ impl<W: Write> PartialGerberCode<W> for Circle {
         match self.hole_diameter {
             Some(hole_diameter) => {
                 write!(writer, "{}X{}", self.diameter, hole_diameter)?;
-            },
+            }
             None => write!(writer, "{}", self.diameter)?,
         };
         Ok(())
     }
 }
-
 
 // Rectangular
 
@@ -162,7 +157,6 @@ impl<W: Write> PartialGerberCode<W> for Rectangular {
     }
 }
 
-
 // Polygon
 
 #[derive(Debug, Clone, PartialEq)]
@@ -197,7 +191,9 @@ impl Polygon {
 impl<W: Write> PartialGerberCode<W> for Polygon {
     fn serialize_partial(&self, writer: &mut W) -> GerberResult<()> {
         match (self.rotation, self.hole_diameter) {
-            (Some(rot), Some(hd)) => write!(writer, "{}X{}X{}X{}", self.diameter, self.vertices, rot, hd)?,
+            (Some(rot), Some(hd)) => {
+                write!(writer, "{}X{}X{}X{}", self.diameter, self.vertices, rot, hd)?
+            }
             (Some(rot), None) => write!(writer, "{}X{}X{}", self.diameter, self.vertices, rot)?,
             (None, Some(hd)) => write!(writer, "{}X{}X0X{}", self.diameter, self.vertices, hd)?,
             (None, None) => write!(writer, "{}X{}", self.diameter, self.vertices)?,
@@ -224,26 +220,33 @@ impl<W: Write> PartialGerberCode<W> for Polarity {
     }
 }
 
-
 // StepAndRepeat
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum StepAndRepeat {
-    Open { repeat_x: u32, repeat_y: u32, distance_x: f64, distance_y: f64 },
+    Open {
+        repeat_x: u32,
+        repeat_y: u32,
+        distance_x: f64,
+        distance_y: f64,
+    },
     Close,
 }
 
 impl<W: Write> PartialGerberCode<W> for StepAndRepeat {
     fn serialize_partial(&self, writer: &mut W) -> GerberResult<()> {
         match *self {
-            StepAndRepeat::Open { repeat_x: rx, repeat_y: ry, distance_x: dx, distance_y: dy } =>
-                write!(writer, "X{}Y{}I{}J{}", rx, ry, dx, dy)?,
-            StepAndRepeat::Close => {},
+            StepAndRepeat::Open {
+                repeat_x: rx,
+                repeat_y: ry,
+                distance_x: dx,
+                distance_y: dy,
+            } => write!(writer, "X{}Y{}I{}J{}", rx, ry, dx, dy)?,
+            StepAndRepeat::Close => {}
         };
         Ok(())
     }
 }
-
 
 #[cfg(test)]
 mod test {
@@ -252,43 +255,64 @@ mod test {
     #[test]
     fn test_aperture_definition_new() {
         let ad1 = ApertureDefinition::new(10, Aperture::Circle(Circle::new(3.0)));
-        let ad2 = ApertureDefinition { code: 10, aperture: Aperture::Circle(Circle::new(3.0)) };
+        let ad2 = ApertureDefinition {
+            code: 10,
+            aperture: Aperture::Circle(Circle::new(3.0)),
+        };
         assert_eq!(ad1, ad2);
     }
 
     #[test]
     fn test_rectangular_new() {
         let r1 = Rectangular::new(2.0, 3.0);
-        let r2 = Rectangular { x: 2.0, y: 3.0, hole_diameter: None };
+        let r2 = Rectangular {
+            x: 2.0,
+            y: 3.0,
+            hole_diameter: None,
+        };
         assert_eq!(r1, r2);
     }
 
     #[test]
     fn test_rectangular_with_hole() {
         let r1 = Rectangular::with_hole(3.0, 2.0, 1.0);
-        let r2 = Rectangular { x: 3.0, y: 2.0, hole_diameter: Some(1.0) };
+        let r2 = Rectangular {
+            x: 3.0,
+            y: 2.0,
+            hole_diameter: Some(1.0),
+        };
         assert_eq!(r1, r2);
     }
 
     #[test]
     fn test_circle_new() {
         let c1 = Circle::new(3.0);
-        let c2 = Circle { diameter: 3.0, hole_diameter: None };
+        let c2 = Circle {
+            diameter: 3.0,
+            hole_diameter: None,
+        };
         assert_eq!(c1, c2);
     }
 
     #[test]
     fn test_circle_with_hole() {
         let c1 = Circle::with_hole(3.0, 1.0);
-        let c2 = Circle { diameter: 3.0, hole_diameter: Some(1.0) };
+        let c2 = Circle {
+            diameter: 3.0,
+            hole_diameter: Some(1.0),
+        };
         assert_eq!(c1, c2);
     }
 
     #[test]
     fn test_polygon_new() {
-        let p1 = Polygon::new(3.0, 4)
-            .with_rotation(45.0);
-        let p2 = Polygon { diameter: 3.0, vertices: 4, rotation: Some(45.0), hole_diameter: None };
+        let p1 = Polygon::new(3.0, 4).with_rotation(45.0);
+        let p2 = Polygon {
+            diameter: 3.0,
+            vertices: 4,
+            rotation: Some(45.0),
+            hole_diameter: None,
+        };
         assert_eq!(p1, p2);
     }
 }
