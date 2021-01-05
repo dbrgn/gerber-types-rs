@@ -2,8 +2,8 @@
 
 use std::io::Write;
 
-use errors::GerberResult;
-use traits::PartialGerberCode;
+use crate::errors::GerberResult;
+use crate::traits::PartialGerberCode;
 
 
 // Unit

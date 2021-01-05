@@ -3,8 +3,8 @@
 use std::convert::From;
 use std::io::Write;
 
-use errors::{GerberError, GerberResult};
-use traits::PartialGerberCode;
+use crate::errors::{GerberError, GerberResult};
+use crate::traits::PartialGerberCode;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct ApertureMacro {
@@ -740,7 +740,7 @@ impl<W: Write> PartialGerberCode<W> for VariableDefinition {
 mod test {
     use std::io::BufWriter;
 
-    use ::traits::PartialGerberCode;
+    use crate::traits::PartialGerberCode;
 
     use super::*;
     use super::MacroDecimal::{Value, Variable};

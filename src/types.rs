@@ -6,11 +6,11 @@
 
 use std::convert::From;
 
-use attributes;
-use coordinates;
-use extended_codes;
-use function_codes;
-use macros;
+use crate::attributes;
+use crate::coordinates;
+use crate::extended_codes;
+use crate::function_codes;
+use crate::macros;
 
 
 // Helper macros
@@ -113,11 +113,11 @@ mod test {
 
     use std::io::BufWriter;
 
-    use extended_codes::Polarity;
-    use function_codes::GCode;
+    use crate::extended_codes::Polarity;
+    use crate::function_codes::GCode;
 
     use super::*;
-    use ::traits::GerberCode;
+    use crate::traits::GerberCode;
 
     include!("test_macros.rs");
 

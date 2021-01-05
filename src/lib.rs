@@ -35,15 +35,15 @@ mod macros;
 mod traits;
 mod types;
 
-pub use attributes::*;
-pub use codegen::*;
-pub use coordinates::*;
-pub use errors::*;
-pub use extended_codes::*;
-pub use function_codes::*;
-pub use macros::*;
-pub use traits::GerberCode;
-pub use types::*;
+pub use crate::attributes::*;
+pub use crate::codegen::*;
+pub use crate::coordinates::*;
+pub use crate::errors::*;
+pub use crate::extended_codes::*;
+pub use crate::function_codes::*;
+pub use crate::macros::*;
+pub use crate::traits::GerberCode;
+pub use crate::types::*;
 
 
 #[cfg(test)]

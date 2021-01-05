@@ -8,8 +8,8 @@ use std::num::FpCategory;
 use conv::TryFrom;
 use num::rational::Ratio;
 
-use errors::{GerberResult, GerberError};
-use traits::PartialGerberCode;
+use crate::errors::{GerberResult, GerberError};
+use crate::traits::PartialGerberCode;
 
 
 // Helper macros
@@ -200,7 +200,7 @@ mod test {
 
     use conv::TryFrom;
 
-    use ::traits::PartialGerberCode;
+    use crate::traits::PartialGerberCode;
 
     use super::*;
 

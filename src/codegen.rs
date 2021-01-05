@@ -3,9 +3,9 @@
 
 use std::io::Write;
 
-use errors::GerberResult;
-use traits::{GerberCode, PartialGerberCode};
-use types::*;
+use crate::errors::GerberResult;
+use crate::traits::{GerberCode, PartialGerberCode};
+use crate::types::*;
 
 /// Implement `PartialGerberCode` for booleans
 impl<W: Write> PartialGerberCode<W> for bool {
