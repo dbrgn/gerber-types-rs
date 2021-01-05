@@ -8,9 +8,8 @@ use std::num::FpCategory;
 use conv::TryFrom;
 use num::rational::Ratio;
 
-use crate::errors::{GerberResult, GerberError};
+use crate::errors::{GerberError, GerberResult};
 use crate::traits::PartialGerberCode;
-
 
 // Helper macros
 
@@ -29,9 +28,8 @@ macro_rules! impl_xy_partial_gerbercode {
                 Ok(())
             }
         }
-    }
+    };
 }
-
 
 // Types
 
@@ -48,10 +46,12 @@ pub struct CoordinateFormat {
 
 impl CoordinateFormat {
     pub fn new(integer: u8, decimal: u8) -> Self {
-        CoordinateFormat { integer: integer, decimal: decimal }
+        CoordinateFormat {
+            integer: integer,
+            decimal: decimal,
+        }
     }
 }
-
 
 /// Coordinate numbers are integers conforming to the rules set by the FS
 /// command.
@@ -69,9 +69,7 @@ pub struct CoordinateNumber {
 
 impl CoordinateNumber {
     pub fn new(nano: i64) -> Self {
-        CoordinateNumber {
-            nano: nano,
-        }
+        CoordinateNumber { nano: nano }
     }
 }
 
@@ -88,9 +86,13 @@ impl TryFrom<f64> for CoordinateNumber {
             FpCategory::Normal => {
                 let multiplied = val * DECIMAL_PLACES_FACTOR as f64;
                 if (multiplied > i64::MAX as f64) || (multiplied < i64::MIN as f64) {
-                    Err(GerberError::ConversionError("Value is out of bounds".into()))
+                    Err(GerberError::ConversionError(
+                        "Value is out of bounds".into(),
+                    ))
                 } else {
-                    Ok(CoordinateNumber { nano: multiplied as i64 })
+                    Ok(CoordinateNumber {
+                        nano: multiplied as i64,
+                    })
                 }
             }
         }
@@ -107,10 +109,12 @@ macro_rules! impl_from_integer {
     ($class:ty) => {
         impl From<$class> for CoordinateNumber {
             fn from(val: $class) -> Self {
-                CoordinateNumber { nano: val as i64 * DECIMAL_PLACES_FACTOR }
+                CoordinateNumber {
+                    nano: val as i64 * DECIMAL_PLACES_FACTOR,
+                }
             }
         }
-    }
+    };
 }
 
 // These are the types we can safely multiply with DECIMAL_PLACES_FACTOR
@@ -124,10 +128,14 @@ impl_from_integer!(u16);
 impl CoordinateNumber {
     pub fn gerber(&self, format: &CoordinateFormat) -> Result<String, GerberError> {
         if format.decimal > DECIMAL_PLACES_CHARS {
-            return Err(GerberError::CoordinateFormatError("Invalid precision: Too high!".into()))
+            return Err(GerberError::CoordinateFormatError(
+                "Invalid precision: Too high!".into(),
+            ));
         }
         if self.nano.abs() >= 10_i64.pow((format.integer + DECIMAL_PLACES_CHARS) as u32) {
-            return Err(GerberError::CoordinateFormatError("Number is too large for chosen format!".into()));
+            return Err(GerberError::CoordinateFormatError(
+                "Number is too large for chosen format!".into(),
+            ));
         }
 
         let divisor: i64 = 10_i64.pow((DECIMAL_PLACES_CHARS - format.decimal) as u32);
@@ -135,7 +143,6 @@ impl CoordinateNumber {
         Ok(number.to_string())
     }
 }
-
 
 /// Coordinates are part of an operation.
 ///
@@ -150,21 +157,41 @@ pub struct Coordinates {
 
 impl Coordinates {
     pub fn new<T, U>(x: T, y: U, format: CoordinateFormat) -> Self
-            where T: Into<CoordinateNumber>, U: Into<CoordinateNumber> {
-        Coordinates { x: Some(x.into()), y: Some(y.into()), format: format }
+    where
+        T: Into<CoordinateNumber>,
+        U: Into<CoordinateNumber>,
+    {
+        Coordinates {
+            x: Some(x.into()),
+            y: Some(y.into()),
+            format: format,
+        }
     }
 
-    pub fn at_x<T>(x: T, format: CoordinateFormat) -> Self where T: Into<CoordinateNumber> {
-        Coordinates { x: Some(x.into()), y: None, format: format }
+    pub fn at_x<T>(x: T, format: CoordinateFormat) -> Self
+    where
+        T: Into<CoordinateNumber>,
+    {
+        Coordinates {
+            x: Some(x.into()),
+            y: None,
+            format: format,
+        }
     }
 
-    pub fn at_y<T>(y: T, format: CoordinateFormat) -> Self where T: Into<CoordinateNumber> {
-        Coordinates { x: None, y: Some(y.into()), format: format }
+    pub fn at_y<T>(y: T, format: CoordinateFormat) -> Self
+    where
+        T: Into<CoordinateNumber>,
+    {
+        Coordinates {
+            x: None,
+            y: Some(y.into()),
+            format: format,
+        }
     }
 }
 
 impl_xy_partial_gerbercode!(Coordinates, "X", "Y");
-
 
 /// Coordinate offsets can be used for interpolate operations in circular
 /// interpolation mode.
@@ -177,21 +204,41 @@ pub struct CoordinateOffset {
 
 impl CoordinateOffset {
     pub fn new<T, U>(x: T, y: U, format: CoordinateFormat) -> Self
-            where T: Into<CoordinateNumber>, U: Into<CoordinateNumber> {
-        CoordinateOffset { x: Some(x.into()), y: Some(y.into()), format: format }
+    where
+        T: Into<CoordinateNumber>,
+        U: Into<CoordinateNumber>,
+    {
+        CoordinateOffset {
+            x: Some(x.into()),
+            y: Some(y.into()),
+            format: format,
+        }
     }
 
-    pub fn at_x<T>(x: T, format: CoordinateFormat) -> Self where T: Into<CoordinateNumber> {
-        CoordinateOffset { x: Some(x.into()), y: None, format: format }
+    pub fn at_x<T>(x: T, format: CoordinateFormat) -> Self
+    where
+        T: Into<CoordinateNumber>,
+    {
+        CoordinateOffset {
+            x: Some(x.into()),
+            y: None,
+            format: format,
+        }
     }
 
-    pub fn at_y<T>(y: T, format: CoordinateFormat) -> Self where T: Into<CoordinateNumber> {
-        CoordinateOffset { x: None, y: Some(y.into()), format: format }
+    pub fn at_y<T>(y: T, format: CoordinateFormat) -> Self
+    where
+        T: Into<CoordinateNumber>,
+    {
+        CoordinateOffset {
+            x: None,
+            y: Some(y.into()),
+            format: format,
+        }
     }
 }
 
 impl_xy_partial_gerbercode!(CoordinateOffset, "I", "J");
-
 
 #[cfg(test)]
 mod test {
@@ -235,7 +282,9 @@ mod test {
         let b = CoordinateNumber::try_from(1.375f64).unwrap();
         assert_eq!(a, b);
 
-        let c = CoordinateNumber { nano: 123456888888i64 };
+        let c = CoordinateNumber {
+            nano: 123456888888i64,
+        };
         let d = CoordinateNumber::try_from(123456.888888f64).unwrap();
         assert_eq!(c, d);
 
@@ -271,7 +320,10 @@ mod test {
         let b = 1.375f64;
         assert_eq!(a, b);
 
-        let c: f64 = CoordinateNumber { nano: 123456888888i64 }.into();
+        let c: f64 = CoordinateNumber {
+            nano: 123456888888i64,
+        }
+        .into();
         let d = 123456.888888f64;
         assert_eq!(c, d);
 
@@ -336,7 +388,7 @@ mod test {
         let d = CoordinateNumber { nano: 12345000000 }.gerber(&cf);
         assert!(d.is_err());
     }
-    
+
     #[test]
     /// Test coordinate number to string conversion failure
     fn test_formatted_negative_number_too_large() {
@@ -357,7 +409,11 @@ mod test {
     /// Test negative coordinate number to string conversion
     fn test_formatted_negative_rounding() {
         let cf = CoordinateFormat::new(6, 4);
-        let d = CoordinateNumber { nano: -123456789099 }.gerber(&cf).unwrap();
+        let d = CoordinateNumber {
+            nano: -123456789099,
+        }
+        .gerber(&cf)
+        .unwrap();
         assert_eq!(d, "-1234567891".to_string());
     }
 
@@ -382,12 +438,19 @@ mod test {
         macro_rules! assert_coords {
             ($coords:expr, $result:expr) => {{
                 assert_partial_code!($coords, $result);
-            }}
+            }};
         }
         let cf44 = CoordinateFormat::new(4, 4);
         let cf46 = CoordinateFormat::new(4, 6);
         assert_coords!(Coordinates::new(10, 20, cf44), "X100000Y200000");
-        assert_coords!(Coordinates { x: None, y: None, format: cf44 }, ""); // TODO should we catch this?
+        assert_coords!(
+            Coordinates {
+                x: None,
+                y: None,
+                format: cf44
+            },
+            ""
+        ); // TODO should we catch this?
         assert_coords!(Coordinates::at_x(10, cf44), "X100000");
         assert_coords!(Coordinates::at_y(20, cf46), "Y20000000");
         assert_coords!(Coordinates::new(0, -400, cf44), "X0Y-4000000");
@@ -398,16 +461,22 @@ mod test {
         macro_rules! assert_coords {
             ($coords:expr, $result:expr) => {{
                 assert_partial_code!($coords, $result);
-            }}
+            }};
         }
         let cf44 = CoordinateFormat::new(4, 4);
         let cf55 = CoordinateFormat::new(5, 5);
         let cf66 = CoordinateFormat::new(6, 6);
         assert_coords!(CoordinateOffset::new(10, 20, cf44), "I100000J200000");
-        assert_coords!(CoordinateOffset { x: None, y: None, format: cf44 }, ""); // TODO should we catch this?
+        assert_coords!(
+            CoordinateOffset {
+                x: None,
+                y: None,
+                format: cf44
+            },
+            ""
+        ); // TODO should we catch this?
         assert_coords!(CoordinateOffset::at_x(10, cf66), "I10000000");
         assert_coords!(CoordinateOffset::at_y(20, cf55), "J2000000");
         assert_coords!(CoordinateOffset::new(0, -400, cf44), "I0J-4000000");
     }
-
 }

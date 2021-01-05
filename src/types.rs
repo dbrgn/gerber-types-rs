@@ -12,7 +12,6 @@ use crate::extended_codes;
 use crate::function_codes;
 use crate::macros;
 
-
 // Helper macros
 
 macro_rules! impl_from {
@@ -22,7 +21,7 @@ macro_rules! impl_from {
                 $variant(val)
             }
         }
-    }
+    };
 }
 
 // Root type
@@ -36,7 +35,6 @@ pub enum Command {
 impl_from!(FunctionCode, Command, Command::FunctionCode);
 impl_from!(ExtendedCode, Command, Command::ExtendedCode);
 
-
 macro_rules! impl_command_fromfrom {
     ($from:ty, $inner:path) => {
         impl From<$from> for Command {
@@ -44,9 +42,8 @@ macro_rules! impl_command_fromfrom {
                 Command::from($inner(val))
             }
         }
-    }
+    };
 }
-
 
 // Main categories
 
@@ -64,7 +61,6 @@ impl_from!(function_codes::MCode, FunctionCode, FunctionCode::MCode);
 impl_command_fromfrom!(function_codes::DCode, FunctionCode::from);
 impl_command_fromfrom!(function_codes::GCode, FunctionCode::from);
 impl_command_fromfrom!(function_codes::MCode, FunctionCode::from);
-
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum ExtendedCode {
@@ -88,14 +84,42 @@ pub enum ExtendedCode {
     DeleteAttribute(String),
 }
 
-impl_from!(coordinates::CoordinateFormat, ExtendedCode, ExtendedCode::CoordinateFormat);
+impl_from!(
+    coordinates::CoordinateFormat,
+    ExtendedCode,
+    ExtendedCode::CoordinateFormat
+);
 impl_from!(extended_codes::Unit, ExtendedCode, ExtendedCode::Unit);
-impl_from!(extended_codes::ApertureDefinition, ExtendedCode, ExtendedCode::ApertureDefinition);
-impl_from!(macros::ApertureMacro, ExtendedCode, ExtendedCode::ApertureMacro);
-impl_from!(extended_codes::Polarity, ExtendedCode, ExtendedCode::LoadPolarity);
-impl_from!(extended_codes::StepAndRepeat, ExtendedCode, ExtendedCode::StepAndRepeat);
-impl_from!(attributes::FileAttribute, ExtendedCode, ExtendedCode::FileAttribute);
-impl_from!(attributes::ApertureAttribute, ExtendedCode, ExtendedCode::ApertureAttribute);
+impl_from!(
+    extended_codes::ApertureDefinition,
+    ExtendedCode,
+    ExtendedCode::ApertureDefinition
+);
+impl_from!(
+    macros::ApertureMacro,
+    ExtendedCode,
+    ExtendedCode::ApertureMacro
+);
+impl_from!(
+    extended_codes::Polarity,
+    ExtendedCode,
+    ExtendedCode::LoadPolarity
+);
+impl_from!(
+    extended_codes::StepAndRepeat,
+    ExtendedCode,
+    ExtendedCode::StepAndRepeat
+);
+impl_from!(
+    attributes::FileAttribute,
+    ExtendedCode,
+    ExtendedCode::FileAttribute
+);
+impl_from!(
+    attributes::ApertureAttribute,
+    ExtendedCode,
+    ExtendedCode::ApertureAttribute
+);
 
 impl_command_fromfrom!(coordinates::CoordinateFormat, ExtendedCode::from);
 impl_command_fromfrom!(extended_codes::Unit, ExtendedCode::from);
@@ -105,7 +129,6 @@ impl_command_fromfrom!(extended_codes::Polarity, ExtendedCode::from);
 impl_command_fromfrom!(extended_codes::StepAndRepeat, ExtendedCode::from);
 impl_command_fromfrom!(attributes::FileAttribute, ExtendedCode::from);
 impl_command_fromfrom!(attributes::ApertureAttribute, ExtendedCode::from);
-
 
 #[cfg(test)]
 mod test {
@@ -162,5 +185,4 @@ mod test {
         let e2: ExtendedCode = Polarity::Dark.into();
         assert_eq!(e1, e2);
     }
-
 }

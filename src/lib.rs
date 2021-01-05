@@ -18,8 +18,11 @@
 //!   terminated with a newline character.
 //! - `PartialGerberCode` (internal only) generates Gerber representation of a
 //!   value, but does not represent a full line of code.
-#[macro_use] extern crate quick_error;
-#[cfg(test)] #[macro_use] mod test_macros;
+#[macro_use]
+extern crate quick_error;
+#[cfg(test)]
+#[macro_use]
+mod test_macros;
 
 mod attributes;
 mod codegen;
@@ -45,8 +48,8 @@ pub use crate::types::*;
 mod test {
     use std::io::BufWriter;
 
-    use super::*;
     use super::traits::PartialGerberCode;
+    use super::*;
 
     #[test]
     fn test_serialize() {
@@ -67,11 +70,7 @@ mod test {
     #[test]
     fn test_command_serialize() {
         //! A `Command` should implement `GerberCode`
-        let c = Command::FunctionCode(
-            FunctionCode::GCode(
-                GCode::Comment("comment".to_string())
-            )
-        );
+        let c = Command::FunctionCode(FunctionCode::GCode(GCode::Comment("comment".to_string())));
         assert_code!(c, "G04 comment *\n");
     }
 
@@ -114,22 +113,18 @@ mod test {
         let cf = CoordinateFormat::new(2, 5);
         let c1 = Operation::Interpolate(
             Coordinates::new(1, 2, cf),
-            Some(CoordinateOffset::new(5, 10, cf))
+            Some(CoordinateOffset::new(5, 10, cf)),
         );
         assert_code!(c1, "X100000Y200000I500000J1000000D01*\n");
-        let c2 = Operation::Interpolate(
-            Coordinates::at_y(-2, CoordinateFormat::new(4, 4)),
-            None
-        );
+        let c2 = Operation::Interpolate(Coordinates::at_y(-2, CoordinateFormat::new(4, 4)), None);
         assert_code!(c2, "Y-20000D01*\n");
         let cf = CoordinateFormat::new(4, 4);
         let c3 = Operation::Interpolate(
             Coordinates::at_x(1, cf),
-            Some(CoordinateOffset::at_y(2, cf))
+            Some(CoordinateOffset::at_y(2, cf)),
         );
         assert_code!(c3, "X10000J20000D01*\n");
     }
-
 
     #[test]
     fn test_operation_move() {
@@ -169,11 +164,17 @@ mod test {
     fn test_aperture_circle_definition() {
         let ad1 = ApertureDefinition {
             code: 10,
-            aperture: Aperture::Circle(Circle { diameter: 4.0, hole_diameter: Some(2.0) }),
+            aperture: Aperture::Circle(Circle {
+                diameter: 4.0,
+                hole_diameter: Some(2.0),
+            }),
         };
         let ad2 = ApertureDefinition {
             code: 11,
-            aperture: Aperture::Circle(Circle { diameter: 4.5, hole_diameter: None }),
+            aperture: Aperture::Circle(Circle {
+                diameter: 4.5,
+                hole_diameter: None,
+            }),
         };
         assert_partial_code!(ad1, "10C,4X2");
         assert_partial_code!(ad2, "11C,4.5");
@@ -183,15 +184,27 @@ mod test {
     fn test_aperture_rectangular_definition() {
         let ad1 = ApertureDefinition {
             code: 12,
-            aperture: Aperture::Rectangle(Rectangular { x: 1.5, y: 2.25, hole_diameter: Some(3.8) }),
+            aperture: Aperture::Rectangle(Rectangular {
+                x: 1.5,
+                y: 2.25,
+                hole_diameter: Some(3.8),
+            }),
         };
         let ad2 = ApertureDefinition {
             code: 13,
-            aperture: Aperture::Rectangle(Rectangular { x: 1.0, y: 1.0, hole_diameter: None }),
+            aperture: Aperture::Rectangle(Rectangular {
+                x: 1.0,
+                y: 1.0,
+                hole_diameter: None,
+            }),
         };
         let ad3 = ApertureDefinition {
             code: 14,
-            aperture: Aperture::Obround(Rectangular { x: 2.0, y: 4.5, hole_diameter: None }),
+            aperture: Aperture::Obround(Rectangular {
+                x: 2.0,
+                y: 4.5,
+                hole_diameter: None,
+            }),
         };
         assert_partial_code!(ad1, "12R,1.5X2.25X3.8");
         assert_partial_code!(ad2, "13R,1X1");
@@ -202,15 +215,30 @@ mod test {
     fn test_aperture_polygon_definition() {
         let ad1 = ApertureDefinition {
             code: 15,
-            aperture: Aperture::Polygon(Polygon { diameter: 4.5, vertices: 3, rotation: None, hole_diameter: None }),
+            aperture: Aperture::Polygon(Polygon {
+                diameter: 4.5,
+                vertices: 3,
+                rotation: None,
+                hole_diameter: None,
+            }),
         };
         let ad2 = ApertureDefinition {
             code: 16,
-            aperture: Aperture::Polygon(Polygon { diameter: 5.0, vertices: 4, rotation: Some(30.6), hole_diameter: None }),
+            aperture: Aperture::Polygon(Polygon {
+                diameter: 5.0,
+                vertices: 4,
+                rotation: Some(30.6),
+                hole_diameter: None,
+            }),
         };
         let ad3 = ApertureDefinition {
             code: 17,
-            aperture: Aperture::Polygon(Polygon { diameter: 5.5, vertices: 5, rotation: None, hole_diameter: Some(1.8) }),
+            aperture: Aperture::Polygon(Polygon {
+                diameter: 5.5,
+                vertices: 5,
+                rotation: None,
+                hole_diameter: Some(1.8),
+            }),
         };
         assert_partial_code!(ad1, "15P,4.5X3");
         assert_partial_code!(ad2, "16P,5X4X30.6");
@@ -228,7 +256,10 @@ mod test {
     #[test]
     fn test_step_and_repeat_serialize() {
         let o = ExtendedCode::StepAndRepeat(StepAndRepeat::Open {
-            repeat_x: 2, repeat_y: 3, distance_x: 2.0, distance_y: 3.0,
+            repeat_x: 2,
+            repeat_y: 3,
+            distance_x: 2.0,
+            distance_y: 3.0,
         });
         let c = ExtendedCode::StepAndRepeat(StepAndRepeat::Close);
         assert_code!(o, "%SRX2Y3I2J3*%\n");
@@ -243,20 +274,17 @@ mod test {
 
     #[test]
     fn test_file_attribute_serialize() {
-        let part = ExtendedCode::FileAttribute(FileAttribute::Part(
-            Part::Other("foo".into())
-        ));
+        let part = ExtendedCode::FileAttribute(FileAttribute::Part(Part::Other("foo".into())));
         assert_code!(part, "%TF.Part,Other,foo*%\n");
 
         let gensw1 = ExtendedCode::FileAttribute(FileAttribute::GenerationSoftware(
-            GenerationSoftware::new("Vend0r", "superpcb", None)
+            GenerationSoftware::new("Vend0r", "superpcb", None),
         ));
         assert_code!(gensw1, "%TF.GenerationSoftware,Vend0r,superpcb*%\n");
 
         let gensw2 = ExtendedCode::FileAttribute(FileAttribute::GenerationSoftware(
-            GenerationSoftware::new("Vend0r", "superpcb", Some("1.2.3"))
+            GenerationSoftware::new("Vend0r", "superpcb", Some("1.2.3")),
         ));
         assert_code!(gensw2, "%TF.GenerationSoftware,Vend0r,superpcb,1.2.3*%\n");
     }
-
 }

@@ -8,7 +8,6 @@ use uuid::Uuid;
 use crate::errors::GerberResult;
 use crate::traits::PartialGerberCode;
 
-
 // FileAttribute
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -24,7 +23,10 @@ pub enum FileAttribute {
         revision: String,
     },
     Md5(String),
-    UserDefined { name: String, value: Vec<String> },
+    UserDefined {
+        name: String,
+        value: Vec<String>,
+    },
 }
 
 impl<W: Write> PartialGerberCode<W> for FileAttribute {
@@ -33,36 +35,40 @@ impl<W: Write> PartialGerberCode<W> for FileAttribute {
             FileAttribute::Part(ref part) => {
                 write!(writer, "Part,")?;
                 part.serialize_partial(writer)?;
-            },
+            }
             FileAttribute::FileFunction(ref function) => {
                 write!(writer, "FileFunction,")?;
                 match function {
-                    &FileFunction::Copper { ref layer, ref pos, ref copper_type } => {
+                    &FileFunction::Copper {
+                        ref layer,
+                        ref pos,
+                        ref copper_type,
+                    } => {
                         write!(writer, "Copper,L{},", layer)?;
                         pos.serialize_partial(writer)?;
                         if let Some(ref t) = *copper_type {
                             write!(writer, ",")?;
                             t.serialize_partial(writer)?;
                         }
-                    },
+                    }
                     &FileFunction::Profile(ref plating) => {
                         write!(writer, "Profile,")?;
                         plating.serialize_partial(writer)?;
-                    },
+                    }
                     &FileFunction::Soldermask { ref pos, ref index } => {
                         write!(writer, "Soldermask,")?;
                         pos.serialize_partial(writer)?;
                         if let Some(ref i) = index {
                             write!(writer, ",{}", *i)?;
                         }
-                    },
+                    }
                     _ => unimplemented!(),
                 }
-            },
+            }
             FileAttribute::GenerationSoftware(ref gs) => {
                 write!(writer, "GenerationSoftware,")?;
                 gs.serialize_partial(writer)?;
-            },
+            }
             FileAttribute::Md5(ref hash) => write!(writer, "MD5,{}", hash)?,
             _ => unimplemented!(),
         };
@@ -70,18 +76,13 @@ impl<W: Write> PartialGerberCode<W> for FileAttribute {
     }
 }
 
-
 // ApertureAttribute
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum ApertureAttribute {
     ApertureFunction(ApertureFunction),
-    DrillTolerance {
-        plus: f64,
-        minus: f64,
-    },
+    DrillTolerance { plus: f64, minus: f64 },
 }
-
 
 // Part
 
@@ -112,7 +113,6 @@ impl<W: Write> PartialGerberCode<W> for Part {
     }
 }
 
-
 // Position
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -130,7 +130,6 @@ impl<W: Write> PartialGerberCode<W> for Position {
         Ok(())
     }
 }
-
 
 // ExtendedPosition
 
@@ -151,7 +150,6 @@ impl<W: Write> PartialGerberCode<W> for ExtendedPosition {
         Ok(())
     }
 }
-
 
 // CopperType
 
@@ -175,7 +173,6 @@ impl<W: Write> PartialGerberCode<W> for CopperType {
     }
 }
 
-
 // Drill
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -185,7 +182,6 @@ pub enum Drill {
     Buried,
 }
 
-
 // DrillRouteType
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -194,7 +190,6 @@ pub enum DrillRouteType {
     Route,
     Mixed,
 }
-
 
 // Profile
 
@@ -218,15 +213,43 @@ impl<W: Write> PartialGerberCode<W> for Profile {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum FileFunction {
-    Copper { layer: i32, pos: ExtendedPosition, copper_type: Option<CopperType> },
-    Soldermask { pos: Position, index: Option<i32> },
-    Legend { pos: Position, index: Option<i32> },
-    Goldmask { pos: Position, index: Option<i32> },
-    Silvermask { pos: Position, index: Option<i32> },
-    Tinmask { pos: Position, index: Option<i32> },
-    Carbonmask { pos: Position, index: Option<i32> },
-    Peelablesoldermask { pos: Position, index: Option<i32> },
-    Glue { pos: Position, index: Option<i32> },
+    Copper {
+        layer: i32,
+        pos: ExtendedPosition,
+        copper_type: Option<CopperType>,
+    },
+    Soldermask {
+        pos: Position,
+        index: Option<i32>,
+    },
+    Legend {
+        pos: Position,
+        index: Option<i32>,
+    },
+    Goldmask {
+        pos: Position,
+        index: Option<i32>,
+    },
+    Silvermask {
+        pos: Position,
+        index: Option<i32>,
+    },
+    Tinmask {
+        pos: Position,
+        index: Option<i32>,
+    },
+    Carbonmask {
+        pos: Position,
+        index: Option<i32>,
+    },
+    Peelablesoldermask {
+        pos: Position,
+        index: Option<i32>,
+    },
+    Glue {
+        pos: Position,
+        index: Option<i32>,
+    },
     Viatenting(Position),
     Viafill,
     Heatsink(Position),
@@ -234,8 +257,18 @@ pub enum FileFunction {
     KeepOut(Position),
     Pads(Position),
     Scoring(Position),
-    Plated { from_layer: i32, to_layer: i32, drill: Drill, label: Option<DrillRouteType> },
-    NonPlated { from_layer: i32, to_layer: i32, drill: Drill, label: Option<DrillRouteType> },
+    Plated {
+        from_layer: i32,
+        to_layer: i32,
+        drill: Drill,
+        label: Option<DrillRouteType>,
+    },
+    NonPlated {
+        from_layer: i32,
+        to_layer: i32,
+        drill: Drill,
+        label: Option<DrillRouteType>,
+    },
     Profile(Profile),
     Drillmap,
     FabricationDrawing,
@@ -245,7 +278,6 @@ pub enum FileFunction {
     Other(String),
 }
 
-
 // FilePolarity
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -253,7 +285,6 @@ pub enum FilePolarity {
     Positive,
     Negative,
 }
-
 
 // GenerationSoftware
 
@@ -283,7 +314,6 @@ impl<W: Write> PartialGerberCode<W> for GenerationSoftware {
         Ok(())
     }
 }
-
 
 // ApertureFunction
 
@@ -333,7 +363,6 @@ pub enum ApertureFunction {
     Other(String),
 }
 
-
 // DrillFunction
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -343,7 +372,6 @@ pub enum DrillFunction {
     Other,
 }
 
-
 // SmdPadType
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -351,7 +379,6 @@ pub enum SmdPadType {
     CopperDefined,
     SoldermaskDefined,
 }
-
 
 // FiducialScope
 

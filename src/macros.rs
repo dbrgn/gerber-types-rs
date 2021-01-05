@@ -20,12 +20,18 @@ impl ApertureMacro {
         }
     }
 
-    pub fn add_content<C>(mut self, c: C) -> Self where C: Into<MacroContent>{
+    pub fn add_content<C>(mut self, c: C) -> Self
+    where
+        C: Into<MacroContent>,
+    {
         self.content.push(c.into());
         self
     }
 
-    pub fn add_content_mut<C>(&mut self, c: C) where C: Into<MacroContent> {
+    pub fn add_content_mut<C>(&mut self, c: C)
+    where
+        C: Into<MacroContent>,
+    {
         self.content.push(c.into());
     }
 }
@@ -33,7 +39,9 @@ impl ApertureMacro {
 impl<W: Write> PartialGerberCode<W> for ApertureMacro {
     fn serialize_partial(&self, writer: &mut W) -> GerberResult<()> {
         if self.content.is_empty() {
-            return Err(GerberError::MissingDataError("There must be at least 1 content element in an aperture macro".into()));
+            return Err(GerberError::MissingDataError(
+                "There must be at least 1 content element in an aperture macro".into(),
+            ));
         }
         writeln!(writer, "AM{}*", self.name)?;
         let mut first = true;
@@ -131,7 +139,7 @@ macro_rules! impl_into {
                 $choice(val)
             }
         }
-    }
+    };
 }
 
 impl_into!(MacroContent, CirclePrimitive, MacroContent::Circle);
@@ -141,7 +149,11 @@ impl_into!(MacroContent, OutlinePrimitive, MacroContent::Outline);
 impl_into!(MacroContent, PolygonPrimitive, MacroContent::Polygon);
 impl_into!(MacroContent, MoirePrimitive, MacroContent::Moire);
 impl_into!(MacroContent, ThermalPrimitive, MacroContent::Thermal);
-impl_into!(MacroContent, VariableDefinition, MacroContent::VariableDefinition);
+impl_into!(
+    MacroContent,
+    VariableDefinition,
+    MacroContent::VariableDefinition
+);
 
 impl<T: Into<String>> From<T> for MacroContent {
     fn from(val: T) -> Self {
@@ -398,13 +410,19 @@ impl<W: Write> PartialGerberCode<W> for OutlinePrimitive {
     fn serialize_partial(&self, writer: &mut W) -> GerberResult<()> {
         // Points invariants
         if self.points.len() < 2 {
-            return Err(GerberError::MissingDataError("There must be at least 1 subsequent point in an outline".into()));
+            return Err(GerberError::MissingDataError(
+                "There must be at least 1 subsequent point in an outline".into(),
+            ));
         }
         if self.points.len() > 5001 {
-            return Err(GerberError::RangeError("The maximum number of subsequent points in an outline is 5000".into()));
+            return Err(GerberError::RangeError(
+                "The maximum number of subsequent points in an outline is 5000".into(),
+            ));
         }
         if self.points[0] != self.points[self.points.len() - 1] {
-            return Err(GerberError::RangeError("The last point must be equal to the first point".into()));
+            return Err(GerberError::RangeError(
+                "The last point must be equal to the first point".into(),
+            ));
         }
 
         write!(writer, "4,")?;
@@ -487,13 +505,19 @@ impl<W: Write> PartialGerberCode<W> for PolygonPrimitive {
     fn serialize_partial(&self, writer: &mut W) -> GerberResult<()> {
         // Vertice count invariants
         if self.vertices < 3 {
-            return Err(GerberError::MissingDataError("There must be at least 3 vertices in a polygon".into()));
+            return Err(GerberError::MissingDataError(
+                "There must be at least 3 vertices in a polygon".into(),
+            ));
         }
         if self.vertices > 12 {
-            return Err(GerberError::RangeError("The maximum number of vertices in a polygon is 12".into()));
+            return Err(GerberError::RangeError(
+                "The maximum number of vertices in a polygon is 12".into(),
+            ));
         }
         if self.diameter.is_negative() {
-            return Err(GerberError::RangeError("The diameter must not be negative".into()));
+            return Err(GerberError::RangeError(
+                "The diameter must not be negative".into(),
+            ));
         }
         write!(writer, "5,")?;
         self.exposure.serialize_partial(writer)?;
@@ -605,19 +629,29 @@ impl<W: Write> PartialGerberCode<W> for MoirePrimitive {
     fn serialize_partial(&self, writer: &mut W) -> GerberResult<()> {
         // Decimal invariants
         if self.diameter.is_negative() {
-            return Err(GerberError::RangeError("Outer diameter of a moiré may not be negative".into()));
+            return Err(GerberError::RangeError(
+                "Outer diameter of a moiré may not be negative".into(),
+            ));
         }
         if self.ring_thickness.is_negative() {
-            return Err(GerberError::RangeError("Ring thickness of a moiré may not be negative".into()));
+            return Err(GerberError::RangeError(
+                "Ring thickness of a moiré may not be negative".into(),
+            ));
         }
         if self.gap.is_negative() {
-            return Err(GerberError::RangeError("Gap of a moiré may not be negative".into()));
+            return Err(GerberError::RangeError(
+                "Gap of a moiré may not be negative".into(),
+            ));
         }
         if self.cross_hair_thickness.is_negative() {
-            return Err(GerberError::RangeError("Cross hair thickness of a moiré may not be negative".into()));
+            return Err(GerberError::RangeError(
+                "Cross hair thickness of a moiré may not be negative".into(),
+            ));
         }
         if self.cross_hair_length.is_negative() {
-            return Err(GerberError::RangeError("Cross hair length of a moiré may not be negative".into()));
+            return Err(GerberError::RangeError(
+                "Cross hair length of a moiré may not be negative".into(),
+            ));
         }
         write!(writer, "6,")?;
         self.center.0.serialize_partial(writer)?;
@@ -694,7 +728,9 @@ impl<W: Write> PartialGerberCode<W> for ThermalPrimitive {
     fn serialize_partial(&self, writer: &mut W) -> GerberResult<()> {
         // Decimal invariants
         if self.inner_diameter.is_negative() {
-            return Err(GerberError::RangeError("Inner diameter of a thermal may not be negative".into()));
+            return Err(GerberError::RangeError(
+                "Inner diameter of a thermal may not be negative".into(),
+            ));
         }
         write!(writer, "7,")?;
         self.center.0.serialize_partial(writer)?;
@@ -735,24 +771,24 @@ impl<W: Write> PartialGerberCode<W> for VariableDefinition {
     }
 }
 
-
 #[cfg(test)]
 mod test {
     use std::io::BufWriter;
 
     use crate::traits::PartialGerberCode;
 
-    use super::*;
     use super::MacroDecimal::{Value, Variable};
+    use super::*;
 
     macro_rules! assert_partial_code {
         ($obj:expr, $expected:expr) => {
             let mut buf = BufWriter::new(Vec::new());
-            $obj.serialize_partial(&mut buf).expect("Could not generate Gerber code");
+            $obj.serialize_partial(&mut buf)
+                .expect("Could not generate Gerber code");
             let bytes = buf.into_inner().unwrap();
             let code = String::from_utf8(bytes).unwrap();
             assert_eq!(&code, $expected);
-        }
+        };
     }
 
     #[test]
@@ -809,7 +845,10 @@ mod test {
             ],
             angle: Value(0.0),
         };
-        assert_partial_code!(line, "4,1,4,\n0.1,0.1,\n0.5,0.1,\n0.5,0.5,\n0.1,0.5,\n0.1,0.1,\n0*");
+        assert_partial_code!(
+            line,
+            "4,1,4,\n0.1,0.1,\n0.5,0.1,\n0.5,0.5,\n0.1,0.5,\n0.1,0.1,\n0*"
+        );
     }
 
     #[test]
@@ -853,31 +892,28 @@ mod test {
 
     #[test]
     fn test_aperture_macro_codegen() {
-        let am = ApertureMacro::new("CRAZY").add_content(
-            MacroContent::Thermal(
-                ThermalPrimitive {
-                    center: (Value(0.0), Value(0.0)),
-                    outer_diameter: Value(0.08),
-                    inner_diameter: Value(0.055),
-                    gap: Value(0.0125),
-                    angle: Value(45.0),
-                }
-            )
-        ).add_content(
-            MacroContent::Moire(
-                MoirePrimitive {
-                    center: (Value(0.0), Value(0.0)),
-                    diameter: Value(0.125),
-                    ring_thickness: Value(0.01),
-                    gap: Value(0.01),
-                    max_rings: 3,
-                    cross_hair_thickness: Value(0.003),
-                    cross_hair_length: Value(0.150),
-                    angle: Value(0.0),
-                }
-            )
+        let am = ApertureMacro::new("CRAZY")
+            .add_content(MacroContent::Thermal(ThermalPrimitive {
+                center: (Value(0.0), Value(0.0)),
+                outer_diameter: Value(0.08),
+                inner_diameter: Value(0.055),
+                gap: Value(0.0125),
+                angle: Value(45.0),
+            }))
+            .add_content(MacroContent::Moire(MoirePrimitive {
+                center: (Value(0.0), Value(0.0)),
+                diameter: Value(0.125),
+                ring_thickness: Value(0.01),
+                gap: Value(0.01),
+                max_rings: 3,
+                cross_hair_thickness: Value(0.003),
+                cross_hair_length: Value(0.150),
+                angle: Value(0.0),
+            }));
+        assert_partial_code!(
+            am,
+            "AMCRAZY*\n7,0,0,0.08,0.055,0.0125,45*\n6,0,0,0.125,0.01,0.01,3,0.003,0.15,0*"
         );
-        assert_partial_code!(am, "AMCRAZY*\n7,0,0,0.08,0.055,0.0125,45*\n6,0,0,0.125,0.01,0.01,3,0.003,0.15,0*");
     }
 
     #[test]
@@ -928,9 +964,13 @@ mod test {
 
     #[test]
     fn test_circle_primitive_new() {
-        let c1 = CirclePrimitive::new(Value(3.0))
-            .centered_at((Value(5.0), Value(0.0)));
-        let c2 = CirclePrimitive { exposure: true, diameter: Value(3.0), center: (Value(5.0), Value(0.0)), angle: None };
+        let c1 = CirclePrimitive::new(Value(3.0)).centered_at((Value(5.0), Value(0.0)));
+        let c2 = CirclePrimitive {
+            exposure: true,
+            diameter: Value(3.0),
+            center: (Value(5.0), Value(0.0)),
+            angle: None,
+        };
         assert_eq!(c1, c2);
     }
 
@@ -938,15 +978,25 @@ mod test {
     fn test_vectorline_primitive_new() {
         let vl1 = VectorLinePrimitive::new((Value(0.0), Value(5.3)), (Value(3.9), Value(8.5)))
             .with_angle(Value(38.0));
-        let vl2 = VectorLinePrimitive { exposure: true, width: Value(0.0), start: (Value(0.0), Value(5.3)), end: (Value(3.9), Value(8.5)), angle: Value(38.0) };
+        let vl2 = VectorLinePrimitive {
+            exposure: true,
+            width: Value(0.0),
+            start: (Value(0.0), Value(5.3)),
+            end: (Value(3.9), Value(8.5)),
+            angle: Value(38.0),
+        };
         assert_eq!(vl1, vl2);
     }
 
     #[test]
     fn test_centerline_primitive_new() {
-        let cl1 = CenterLinePrimitive::new((Value(3.0), Value(4.5)))
-            .exposure_on(false);
-        let cl2 = CenterLinePrimitive { exposure: false, dimensions: (Value(3.0), Value(4.5)), center: (Value(0.0), Value(0.0)), angle: Value(0.0) };
+        let cl1 = CenterLinePrimitive::new((Value(3.0), Value(4.5))).exposure_on(false);
+        let cl2 = CenterLinePrimitive {
+            exposure: false,
+            dimensions: (Value(3.0), Value(4.5)),
+            center: (Value(0.0), Value(0.0)),
+            angle: Value(0.0),
+        };
         assert_eq!(cl1, cl2);
     }
 
@@ -962,10 +1012,14 @@ mod test {
             (Value(0.0), Value(0.0)),
             (Value(2.0), Value(2.0)),
             (Value(-2.0), Value(-2.0)),
-            (Value(0.0), Value(0.0))
+            (Value(0.0), Value(0.0)),
         ];
 
-        let op2 = OutlinePrimitive { exposure: true, points: pts, angle: Value(0.0) };
+        let op2 = OutlinePrimitive {
+            exposure: true,
+            points: pts,
+            angle: Value(0.0),
+        };
         assert_eq!(op1, op2);
     }
 
@@ -975,7 +1029,13 @@ mod test {
             .with_angle(Value(98.0))
             .with_diameter(Value(5.3))
             .centered_at((Value(1.0), Value(1.0)));
-        let pp2 = PolygonPrimitive { exposure: true, vertices: 5, angle: Value(98.0), diameter: Value(5.3), center: (Value(1.0), Value(1.0)) };
+        let pp2 = PolygonPrimitive {
+            exposure: true,
+            vertices: 5,
+            angle: Value(98.0),
+            diameter: Value(5.3),
+            center: (Value(1.0), Value(1.0)),
+        };
         assert_eq!(pp1, pp2);
     }
 
@@ -1002,16 +1062,24 @@ mod test {
 
     #[test]
     fn test_thermal_primitive_new() {
-        let tp1 = ThermalPrimitive::new(Value(1.0), Value(2.0), Value(1.5))
-            .with_angle(Value(87.3));
-        let tp2 =  ThermalPrimitive { inner_diameter: Value(1.0), outer_diameter: Value(2.0), gap: Value(1.5), angle: Value(87.3), center: (Value(0.0), Value(0.0)) };
+        let tp1 = ThermalPrimitive::new(Value(1.0), Value(2.0), Value(1.5)).with_angle(Value(87.3));
+        let tp2 = ThermalPrimitive {
+            inner_diameter: Value(1.0),
+            outer_diameter: Value(2.0),
+            gap: Value(1.5),
+            angle: Value(87.3),
+            center: (Value(0.0), Value(0.0)),
+        };
         assert_eq!(tp1, tp2);
     }
 
     #[test]
     fn test_variabledefinition_new() {
         let vd1 = VariableDefinition::new(3, "Test!");
-        let vd2 = VariableDefinition { number: 3, expression: "Test!".into() };
+        let vd2 = VariableDefinition {
+            number: 3,
+            expression: "Test!".into(),
+        };
         assert_eq!(vd1, vd2);
     }
 }
