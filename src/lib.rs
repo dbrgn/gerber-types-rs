@@ -18,12 +18,8 @@
 //!   terminated with a newline character.
 //! - `PartialGerberCode` (internal only) generates Gerber representation of a
 //!   value, but does not represent a full line of code.
-
-extern crate chrono;
-extern crate conv;
-extern crate num;
 #[macro_use] extern crate quick_error;
-extern crate uuid;
+#[cfg(test)] #[macro_use] mod test_macros;
 
 mod attributes;
 mod codegen;
@@ -45,15 +41,12 @@ pub use crate::macros::*;
 pub use crate::traits::GerberCode;
 pub use crate::types::*;
 
-
 #[cfg(test)]
 mod test {
     use std::io::BufWriter;
 
     use super::*;
     use super::traits::PartialGerberCode;
-
-    include!("test_macros.rs");
 
     #[test]
     fn test_serialize() {

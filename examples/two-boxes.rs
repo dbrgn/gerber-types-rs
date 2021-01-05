@@ -1,17 +1,13 @@
 //! Example from spec chapter 2.12.1
 
-extern crate gerber_types;
-
 use std::io::stdout;
 
-use gerber_types::{Command};
-use gerber_types::{ExtendedCode, Unit, FileAttribute, GenerationSoftware, Part, Polarity,
-                   ApertureDefinition, Aperture, Circle, CoordinateFormat};
-use gerber_types::{FunctionCode};
-use gerber_types::{DCode, Operation, Coordinates};
-use gerber_types::{GCode, InterpolationMode};
-use gerber_types::{MCode};
-use gerber_types::GerberCode;
+use gerber_types::{
+    Aperture, ApertureDefinition, Circle, Command, CoordinateFormat,
+    Coordinates, DCode, ExtendedCode, FileAttribute, FunctionCode, GCode,
+    GenerationSoftware, GerberCode, InterpolationMode, MCode, Operation, Part,
+    Polarity, Unit,
+};
 
 const VERSION: &'static str = env!("CARGO_PKG_VERSION");
 

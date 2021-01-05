@@ -109,17 +109,13 @@ impl_command_fromfrom!(attributes::ApertureAttribute, ExtendedCode::from);
 
 #[cfg(test)]
 mod test {
-    extern crate conv;
+    use super::*;
 
     use std::io::BufWriter;
 
     use crate::extended_codes::Polarity;
     use crate::function_codes::GCode;
-
-    use super::*;
     use crate::traits::GerberCode;
-
-    include!("test_macros.rs");
 
     #[test]
     fn test_debug() {

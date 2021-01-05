@@ -1,9 +1,6 @@
 //! Example from spec chapter 2.12.2
-
-extern crate gerber_types;
-extern crate conv;
-
 use std::io::stdout;
+
 use conv::TryFrom;
 
 use gerber_types::*;

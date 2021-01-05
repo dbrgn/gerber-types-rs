@@ -195,16 +195,14 @@ impl_xy_partial_gerbercode!(CoordinateOffset, "I", "J");
 
 #[cfg(test)]
 mod test {
+    use super::*;
+
     use std::f64;
     use std::io::BufWriter;
 
     use conv::TryFrom;
 
     use crate::traits::PartialGerberCode;
-
-    use super::*;
-
-    include!("test_macros.rs");
 
     #[test]
     /// Test integer to coordinate number conversion
