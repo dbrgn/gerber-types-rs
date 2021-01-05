@@ -45,6 +45,17 @@ impl<W: Write> PartialGerberCode<W> for FileAttribute {
                             t.serialize_partial(writer)?;
                         }
                     },
+                    &FileFunction::Profile(ref plating) => {
+                        write!(writer, "Profile,")?;
+                        plating.serialize_partial(writer)?;
+                    },
+                    &FileFunction::Soldermask { ref pos, ref index } => {
+                        write!(writer, "Soldermask,")?;
+                        pos.serialize_partial(writer)?;
+                        if let Some(ref i) = index {
+                            write!(writer, ",{}", *i)?;
+                        }
+                    },
                     _ => unimplemented!(),
                 }
             },
@@ -193,6 +204,15 @@ pub enum Profile {
     NonPlated,
 }
 
+impl<W: Write> PartialGerberCode<W> for Profile {
+    fn serialize_partial(&self, writer: &mut W) -> GerberResult<()> {
+        match *self {
+            Profile::Plated => write!(writer, "P")?,
+            Profile::NonPlated => write!(writer, "NP")?,
+        };
+        Ok(())
+    }
+}
 
 // FileFunction
 
