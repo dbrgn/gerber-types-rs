@@ -1,10 +1,8 @@
 # Rust Gerber Library
 
-[![Travis CI][travis-ci-badge]][travis-ci]
-[![Coveralls][coveralls-badge]][coveralls]
+[![Build status][build-status-badge]][build-status]
 [![Crates.io][crates-io-badge]][crates-io]
 
-- [Docs (master)](https://dbrgn.github.io/gerber-types-rs/)
 - [Docs (released)](https://docs.rs/gerber-types/)
 
 This crate implements the basic building blocks of Gerber X2 (compatible with
@@ -45,9 +43,7 @@ Licensed under either of
 at your option.
 
 <!-- Badges -->
-[travis-ci]: https://travis-ci.org/dbrgn/gerber-types-rs
-[travis-ci-badge]: https://img.shields.io/travis/dbrgn/gerber-types-rs.svg
-[coveralls]: https://coveralls.io/github/dbrgn/gerber-types-rs
-[coveralls-badge]: https://img.shields.io/coveralls/dbrgn/gerber-types-rs.svg
+[build-status]: https://github.com/dbrgn/gerber-types-rs/actions?query=workflow%3ACI
+[build-status-badge]: https://img.shields.io/github/workflow/status/dbrgn/gerber-types-rs/CI/master
 [crates-io]: https://crates.io/crates/gerber-types
 [crates-io-badge]: https://img.shields.io/crates/v/gerber-types.svg
