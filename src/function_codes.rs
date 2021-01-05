@@ -2,9 +2,9 @@
 
 use std::io::Write;
 
-use errors::GerberResult;
-use traits::{GerberCode, PartialGerberCode};
-use coordinates::{Coordinates, CoordinateOffset};
+use crate::errors::GerberResult;
+use crate::traits::{GerberCode, PartialGerberCode};
+use crate::coordinates::{Coordinates, CoordinateOffset};
 
 
 // DCode

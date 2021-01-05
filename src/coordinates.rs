@@ -8,8 +8,8 @@ use std::num::FpCategory;
 use conv::TryFrom;
 use num::rational::Ratio;
 
-use errors::{GerberResult, GerberError};
-use traits::PartialGerberCode;
+use crate::errors::{GerberResult, GerberError};
+use crate::traits::PartialGerberCode;
 
 
 // Helper macros
@@ -195,16 +195,14 @@ impl_xy_partial_gerbercode!(CoordinateOffset, "I", "J");
 
 #[cfg(test)]
 mod test {
+    use super::*;
+
     use std::f64;
     use std::io::BufWriter;
 
     use conv::TryFrom;
 
-    use ::traits::PartialGerberCode;
-
-    use super::*;
-
-    include!("test_macros.rs");
+    use crate::traits::PartialGerberCode;
 
     #[test]
     /// Test integer to coordinate number conversion

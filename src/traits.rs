@@ -2,7 +2,7 @@
 
 use std::io::Write;
 
-use ::GerberResult;
+use crate::GerberResult;
 
 
 /// All types that implement this trait can be converted to a complete Gerber

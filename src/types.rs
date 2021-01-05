@@ -6,11 +6,11 @@
 
 use std::convert::From;
 
-use attributes;
-use coordinates;
-use extended_codes;
-use function_codes;
-use macros;
+use crate::attributes;
+use crate::coordinates;
+use crate::extended_codes;
+use crate::function_codes;
+use crate::macros;
 
 
 // Helper macros
@@ -109,17 +109,13 @@ impl_command_fromfrom!(attributes::ApertureAttribute, ExtendedCode::from);
 
 #[cfg(test)]
 mod test {
-    extern crate conv;
+    use super::*;
 
     use std::io::BufWriter;
 
-    use extended_codes::Polarity;
-    use function_codes::GCode;
-
-    use super::*;
-    use ::traits::GerberCode;
-
-    include!("test_macros.rs");
+    use crate::extended_codes::Polarity;
+    use crate::function_codes::GCode;
+    use crate::traits::GerberCode;
 
     #[test]
     fn test_debug() {

@@ -5,8 +5,8 @@ use std::io::Write;
 use chrono::{DateTime, UTC};
 use uuid::Uuid;
 
-use errors::GerberResult;
-use traits::PartialGerberCode;
+use crate::errors::GerberResult;
+use crate::traits::PartialGerberCode;
 
 
 // FileAttribute
