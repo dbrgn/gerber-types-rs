@@ -24,7 +24,7 @@ Current Gerber X2 spec: https://www.ucamco.com/files/downloads/file/81/the_gerbe
 ## Example
 
 You can find an example in the [`examples`
-directory](https://github.com/dbrgn/gerber-types-rs/blob/master/examples/polarities-apertures.rs).
+directory](https://github.com/dbrgn/gerber-types-rs/blob/main/examples/polarities-apertures.rs).
 It's still quite verbose, the goal is to make the API a bit more ergonomic in
 the future. (This library has a low-level focus though, so it will never get a
 high-level API. That is the task of other libraries.)
@@ -44,6 +44,6 @@ at your option.
 
 <!-- Badges -->
 [build-status]: https://github.com/dbrgn/gerber-types-rs/actions?query=workflow%3ACI
-[build-status-badge]: https://img.shields.io/github/workflow/status/dbrgn/gerber-types-rs/CI/master
+[build-status-badge]: https://img.shields.io/github/workflow/status/dbrgn/gerber-types-rs/CI/main
 [crates-io]: https://crates.io/crates/gerber-types
 [crates-io-badge]: https://img.shields.io/crates/v/gerber-types.svg
