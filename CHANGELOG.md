@@ -12,6 +12,25 @@ Possible log types:
 - `[security]` to invite users to upgrade in case of vulnerabilities.
 
 
+### v0.2.0 (2021-01-06)
+
+This release requires at least Rust 1.31 (2018 edition).
+
+- [added] Implement constructors for `Circle` and `Rectangular`
+- [added] Derive Clone for all structs and enums (#16)
+- [added] Derive PartialEq and Eq where possible
+- [added] Implement `From<FunctionCode>` and `From<ExtendedCode>` for Command
+- [added] Impl `From<>` for Command, FunctionCode and ExtendedCode
+- [added] New builder-style constructors (#22)
+- [added] Support for more FileFunction and FileAttribute variants (#26, #30)
+- [changed] Derive Copy for some trivial enums
+- [changed] Create new internal `PartialGerberCode` trait (#18)
+- [changed] Split up code into more modules
+- [changed] Upgraded all dependencies
+- [changed] Require Rust 1.31+
+
+Thanks @connorkuehl and @twitchyliquid64 for contributions!
+
 ### v0.1.1 (2017-06-10)
 
 - First crates.io release
