@@ -62,12 +62,23 @@ impl<W: Write> PartialGerberCode<W> for FileAttribute {
                             write!(writer, ",{}", *i)?;
                         }
                     }
+                    &FileFunction::Legend { ref pos, ref index } => {
+                        write!(writer, "Legend,")?;
+                        pos.serialize_partial(writer)?;
+                        if let Some(ref i) = index {
+                            write!(writer, ",{}", *i)?;
+                        }
+                    }
                     _ => unimplemented!(),
                 }
             }
             FileAttribute::GenerationSoftware(ref gs) => {
                 write!(writer, "GenerationSoftware,")?;
                 gs.serialize_partial(writer)?;
+            }
+            FileAttribute::FilePolarity(ref p) => {
+                write!(writer, "FilePolarity,")?;
+                p.serialize_partial(writer)?;
             }
             FileAttribute::Md5(ref hash) => write!(writer, "MD5,{}", hash)?,
             _ => unimplemented!(),
@@ -284,6 +295,16 @@ pub enum FileFunction {
 pub enum FilePolarity {
     Positive,
     Negative,
+}
+
+impl<W: Write> PartialGerberCode<W> for FilePolarity {
+    fn serialize_partial(&self, writer: &mut W) -> GerberResult<()> {
+        match *self {
+            FilePolarity::Positive => write!(writer, "Positive")?,
+            FilePolarity::Negative => write!(writer, "Negative")?,
+        };
+        Ok(())
+    }
 }
 
 // GenerationSoftware
