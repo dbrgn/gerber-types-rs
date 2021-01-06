@@ -2,7 +2,7 @@
 
 use std::io::Write;
 
-use chrono::{DateTime, UTC};
+use chrono::{DateTime, Utc};
 use uuid::Uuid;
 
 use crate::errors::GerberResult;
@@ -16,7 +16,7 @@ pub enum FileAttribute {
     FileFunction(FileFunction),
     FilePolarity(FilePolarity),
     GenerationSoftware(GenerationSoftware),
-    CreationDate(DateTime<UTC>),
+    CreationDate(DateTime<Utc>),
     ProjectId {
         id: String,
         guid: Uuid,
