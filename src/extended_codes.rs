@@ -33,10 +33,7 @@ pub struct ApertureDefinition {
 
 impl ApertureDefinition {
     pub fn new(code: i32, aperture: Aperture) -> Self {
-        ApertureDefinition {
-            code: code,
-            aperture: aperture,
-        }
+        ApertureDefinition { code, aperture }
     }
 }
 
@@ -95,14 +92,14 @@ pub struct Circle {
 impl Circle {
     pub fn new(diameter: f64) -> Self {
         Circle {
-            diameter: diameter,
+            diameter,
             hole_diameter: None,
         }
     }
 
     pub fn with_hole(diameter: f64, hole_diameter: f64) -> Self {
         Circle {
-            diameter: diameter,
+            diameter,
             hole_diameter: Some(hole_diameter),
         }
     }
@@ -132,16 +129,16 @@ pub struct Rectangular {
 impl Rectangular {
     pub fn new(x: f64, y: f64) -> Self {
         Rectangular {
-            x: x,
-            y: y,
+            x,
+            y,
             hole_diameter: None,
         }
     }
 
     pub fn with_hole(x: f64, y: f64, hole_diameter: f64) -> Self {
         Rectangular {
-            x: x,
-            y: y,
+            x,
+            y,
             hole_diameter: Some(hole_diameter),
         }
     }
@@ -170,8 +167,8 @@ pub struct Polygon {
 impl Polygon {
     pub fn new(diameter: f64, vertices: u8) -> Self {
         Polygon {
-            diameter: diameter,
-            vertices: vertices,
+            diameter,
+            vertices,
             rotation: None,
             hole_diameter: None,
         }
