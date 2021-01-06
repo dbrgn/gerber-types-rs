@@ -18,6 +18,8 @@
 //!   terminated with a newline character.
 //! - `PartialGerberCode` (internal only) generates Gerber representation of a
 //!   value, but does not represent a full line of code.
+#![allow(clippy::new_without_default)]
+
 #[cfg(test)]
 #[macro_use]
 mod test_macros;
