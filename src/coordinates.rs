@@ -6,7 +6,7 @@ use std::io::Write;
 use std::num::FpCategory;
 
 use conv::TryFrom;
-use num::rational::Ratio;
+use num_rational::Ratio;
 
 use crate::errors::{GerberError, GerberResult};
 use crate::traits::PartialGerberCode;
