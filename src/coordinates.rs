@@ -46,10 +46,7 @@ pub struct CoordinateFormat {
 
 impl CoordinateFormat {
     pub fn new(integer: u8, decimal: u8) -> Self {
-        CoordinateFormat {
-            integer: integer,
-            decimal: decimal,
-        }
+        CoordinateFormat { integer, decimal }
     }
 }
 
@@ -69,7 +66,7 @@ pub struct CoordinateNumber {
 
 impl CoordinateNumber {
     pub fn new(nano: i64) -> Self {
-        CoordinateNumber { nano: nano }
+        CoordinateNumber { nano }
     }
 }
 
@@ -164,7 +161,7 @@ impl Coordinates {
         Coordinates {
             x: Some(x.into()),
             y: Some(y.into()),
-            format: format,
+            format,
         }
     }
 
@@ -175,7 +172,7 @@ impl Coordinates {
         Coordinates {
             x: Some(x.into()),
             y: None,
-            format: format,
+            format,
         }
     }
 
@@ -186,7 +183,7 @@ impl Coordinates {
         Coordinates {
             x: None,
             y: Some(y.into()),
-            format: format,
+            format,
         }
     }
 }
@@ -211,7 +208,7 @@ impl CoordinateOffset {
         CoordinateOffset {
             x: Some(x.into()),
             y: Some(y.into()),
-            format: format,
+            format,
         }
     }
 
@@ -222,7 +219,7 @@ impl CoordinateOffset {
         CoordinateOffset {
             x: Some(x.into()),
             y: None,
-            format: format,
+            format,
         }
     }
 
@@ -233,7 +230,7 @@ impl CoordinateOffset {
         CoordinateOffset {
             x: None,
             y: Some(y.into()),
-            format: format,
+            format,
         }
     }
 }

@@ -187,7 +187,7 @@ impl CirclePrimitive {
     pub fn new(diameter: MacroDecimal) -> Self {
         CirclePrimitive {
             exposure: true,
-            diameter: diameter,
+            diameter,
             center: (MacroDecimal::Value(0.0), MacroDecimal::Value(0.0)),
             angle: None,
         }
@@ -255,8 +255,8 @@ impl VectorLinePrimitive {
         VectorLinePrimitive {
             exposure: true,
             width: MacroDecimal::Value(0.0),
-            start: start,
-            end: end,
+            start,
+            end,
             angle: MacroDecimal::Value(0.0),
         }
     }
@@ -321,7 +321,7 @@ impl CenterLinePrimitive {
     pub fn new(dimensions: (MacroDecimal, MacroDecimal)) -> Self {
         CenterLinePrimitive {
             exposure: true,
-            dimensions: dimensions,
+            dimensions,
             center: (MacroDecimal::Value(0.0), MacroDecimal::Value(0.0)),
             angle: MacroDecimal::Value(0.0),
         }
@@ -473,7 +473,7 @@ impl PolygonPrimitive {
     pub fn new(vertices: u8) -> Self {
         PolygonPrimitive {
             exposure: true,
-            vertices: vertices,
+            vertices,
             center: (MacroDecimal::Value(0.0), MacroDecimal::Value(0.0)),
             diameter: MacroDecimal::Value(0.0),
             angle: MacroDecimal::Value(0.0),
@@ -708,7 +708,7 @@ impl ThermalPrimitive {
             center: (MacroDecimal::Value(0.0), MacroDecimal::Value(0.0)),
             outer_diameter: outer,
             inner_diameter: inner,
-            gap: gap,
+            gap,
             angle: MacroDecimal::Value(0.0),
         }
     }
@@ -758,7 +758,7 @@ pub struct VariableDefinition {
 impl VariableDefinition {
     pub fn new(number: u32, expr: &str) -> Self {
         VariableDefinition {
-            number: number,
+            number,
             expression: expr.into(),
         }
     }
