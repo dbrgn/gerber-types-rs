@@ -39,7 +39,7 @@ impl<W: Write> PartialGerberCode<W> for FileAttribute {
             FileAttribute::FileFunction(ref function) => {
                 write!(writer, "FileFunction,")?;
                 match function {
-                    &FileFunction::Copper {
+                    FileFunction::Copper {
                         ref layer,
                         ref pos,
                         ref copper_type,
@@ -51,18 +51,18 @@ impl<W: Write> PartialGerberCode<W> for FileAttribute {
                             t.serialize_partial(writer)?;
                         }
                     }
-                    &FileFunction::Profile(ref plating) => {
+                    FileFunction::Profile(ref plating) => {
                         write!(writer, "Profile,")?;
                         plating.serialize_partial(writer)?;
                     }
-                    &FileFunction::Soldermask { ref pos, ref index } => {
+                    FileFunction::Soldermask { ref pos, ref index } => {
                         write!(writer, "Soldermask,")?;
                         pos.serialize_partial(writer)?;
                         if let Some(ref i) = index {
                             write!(writer, ",{}", *i)?;
                         }
                     }
-                    &FileFunction::Legend { ref pos, ref index } => {
+                    FileFunction::Legend { ref pos, ref index } => {
                         write!(writer, "Legend,")?;
                         pos.serialize_partial(writer)?;
                         if let Some(ref i) = index {
