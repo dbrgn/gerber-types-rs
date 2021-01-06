@@ -64,40 +64,40 @@ impl<W: Write> GerberCode<W> for ExtendedCode {
     fn serialize(&self, writer: &mut W) -> GerberResult<()> {
         match *self {
             ExtendedCode::CoordinateFormat(ref cf) => {
-                write!(writer, "%FSLAX{0}{1}Y{0}{1}*%\n", cf.integer, cf.decimal)?;
+                writeln!(writer, "%FSLAX{0}{1}Y{0}{1}*%", cf.integer, cf.decimal)?;
             }
             ExtendedCode::Unit(ref unit) => {
                 write!(writer, "%MO")?;
                 unit.serialize_partial(writer)?;
-                write!(writer, "*%\n")?;
+                writeln!(writer, "*%")?;
             }
             ExtendedCode::ApertureDefinition(ref def) => {
                 write!(writer, "%ADD")?;
                 def.serialize_partial(writer)?;
-                write!(writer, "*%\n")?;
+                writeln!(writer, "*%")?;
             }
             ExtendedCode::ApertureMacro(ref am) => {
                 write!(writer, "%")?;
                 am.serialize_partial(writer)?;
-                write!(writer, "%\n")?;
+                writeln!(writer, "%")?;
             }
             ExtendedCode::LoadPolarity(ref polarity) => {
                 write!(writer, "%LP")?;
                 polarity.serialize_partial(writer)?;
-                write!(writer, "*%\n")?;
+                writeln!(writer, "*%")?;
             }
             ExtendedCode::StepAndRepeat(ref sar) => {
                 write!(writer, "%SR")?;
                 sar.serialize_partial(writer)?;
-                write!(writer, "*%\n")?;
+                writeln!(writer, "*%")?;
             }
             ExtendedCode::FileAttribute(ref attr) => {
                 write!(writer, "%TF.")?;
                 attr.serialize_partial(writer)?;
-                write!(writer, "*%\n")?;
+                writeln!(writer, "*%")?;
             }
             ExtendedCode::DeleteAttribute(ref attr) => {
-                write!(writer, "%TD{}*%\n", attr)?;
+                writeln!(writer, "%TD{}*%", attr)?;
             }
             _ => unimplemented!(),
         };

@@ -18,7 +18,7 @@ impl<W: Write> GerberCode<W> for DCode {
     fn serialize(&self, writer: &mut W) -> GerberResult<()> {
         match *self {
             DCode::Operation(ref operation) => operation.serialize(writer)?,
-            DCode::SelectAperture(code) => write!(writer, "D{}*\n", code)?,
+            DCode::SelectAperture(code) => writeln!(writer, "D{}*", code)?,
         };
         Ok(())
     }
@@ -40,13 +40,13 @@ impl<W: Write> GerberCode<W> for GCode {
             GCode::InterpolationMode(ref mode) => mode.serialize(writer)?,
             GCode::RegionMode(enabled) => {
                 if enabled {
-                    write!(writer, "G36*\n")?;
+                    writeln!(writer, "G36*")?;
                 } else {
-                    write!(writer, "G37*\n")?;
+                    writeln!(writer, "G37*")?;
                 }
             }
             GCode::QuadrantMode(ref mode) => mode.serialize(writer)?,
-            GCode::Comment(ref comment) => write!(writer, "G04 {} *\n", comment)?,
+            GCode::Comment(ref comment) => writeln!(writer, "G04 {} *", comment)?,
         };
         Ok(())
     }
@@ -62,7 +62,7 @@ pub enum MCode {
 impl<W: Write> GerberCode<W> for MCode {
     fn serialize(&self, writer: &mut W) -> GerberResult<()> {
         match *self {
-            MCode::EndOfFile => write!(writer, "M02*\n")?,
+            MCode::EndOfFile => writeln!(writer, "M02*")?,
         };
         Ok(())
     }
@@ -86,15 +86,15 @@ impl<W: Write> GerberCode<W> for Operation {
             Operation::Interpolate(ref coords, ref offset) => {
                 coords.serialize_partial(writer)?;
                 offset.serialize_partial(writer)?;
-                write!(writer, "D01*\n")?;
+                writeln!(writer, "D01*")?;
             }
             Operation::Move(ref coords) => {
                 coords.serialize_partial(writer)?;
-                write!(writer, "D02*\n")?;
+                writeln!(writer, "D02*")?;
             }
             Operation::Flash(ref coords) => {
                 coords.serialize_partial(writer)?;
-                write!(writer, "D03*\n")?;
+                writeln!(writer, "D03*")?;
             }
         };
         Ok(())
@@ -113,9 +113,9 @@ pub enum InterpolationMode {
 impl<W: Write> GerberCode<W> for InterpolationMode {
     fn serialize(&self, writer: &mut W) -> GerberResult<()> {
         match *self {
-            InterpolationMode::Linear => write!(writer, "G01*\n")?,
-            InterpolationMode::ClockwiseCircular => write!(writer, "G02*\n")?,
-            InterpolationMode::CounterclockwiseCircular => write!(writer, "G03*\n")?,
+            InterpolationMode::Linear => writeln!(writer, "G01*")?,
+            InterpolationMode::ClockwiseCircular => writeln!(writer, "G02*")?,
+            InterpolationMode::CounterclockwiseCircular => writeln!(writer, "G03*")?,
         };
         Ok(())
     }
@@ -132,8 +132,8 @@ pub enum QuadrantMode {
 impl<W: Write> GerberCode<W> for QuadrantMode {
     fn serialize(&self, writer: &mut W) -> GerberResult<()> {
         match *self {
-            QuadrantMode::Single => write!(writer, "G74*\n")?,
-            QuadrantMode::Multi => write!(writer, "G75*\n")?,
+            QuadrantMode::Single => writeln!(writer, "G74*")?,
+            QuadrantMode::Multi => writeln!(writer, "G75*")?,
         };
         Ok(())
     }

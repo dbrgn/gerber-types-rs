@@ -49,7 +49,7 @@ impl<W: Write> PartialGerberCode<W> for ApertureMacro {
             if first {
                 first = false;
             } else {
-                write!(writer, "\n")?;
+                writeln!(writer)?;
             }
             content.serialize_partial(writer)?;
         }
