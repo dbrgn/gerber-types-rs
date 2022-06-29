@@ -152,7 +152,7 @@ mod test {
     fn test_function_code_serialize() {
         //! A `FunctionCode` should implement `GerberCode`
         let c = FunctionCode::GCode(GCode::Comment("comment".to_string()));
-        assert_code!(c, "G04 comment *\n");
+        assert_code!(c, "G04 comment*\n");
     }
 
     #[test]
