@@ -46,7 +46,7 @@ impl<W: Write> GerberCode<W> for GCode {
                 }
             }
             GCode::QuadrantMode(ref mode) => mode.serialize(writer)?,
-            GCode::Comment(ref comment) => writeln!(writer, "G04 {} *", comment)?,
+            GCode::Comment(ref comment) => writeln!(writer, "G04 {}*", comment)?,
         };
         Ok(())
     }
