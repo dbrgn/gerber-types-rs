@@ -12,6 +12,14 @@ Possible log types:
 - `[security]` to invite users to upgrade in case of vulnerabilities.
 
 
+### v0.3.0 (2022-07-05)
+
+- [fixed] Fix whitespace in G04 comment serialization (#33)
+- [changed] Updated dependencies
+- [changed] A fixed MSRV was dropped
+
+Thanks @NemoAndrea for contributions!
+
 ### v0.2.0 (2021-01-06)
 
 This release requires at least Rust 1.31 (2018 edition).
