@@ -55,7 +55,7 @@ mod test {
     fn test_serialize() {
         //! The serialize method of the GerberCode trait should generate strings.
         let comment = GCode::Comment("testcomment".to_string());
-        assert_code!(comment, "G04 testcomment *\n");
+        assert_code!(comment, "G04 testcomment*\n");
     }
 
     #[test]
@@ -64,14 +64,14 @@ mod test {
         let mut v = Vec::new();
         v.push(GCode::Comment("comment 1".to_string()));
         v.push(GCode::Comment("another one".to_string()));
-        assert_code!(v, "G04 comment 1 *\nG04 another one *\n");
+        assert_code!(v, "G04 comment 1*\nG04 another one*\n");
     }
 
     #[test]
     fn test_command_serialize() {
         //! A `Command` should implement `GerberCode`
         let c = Command::FunctionCode(FunctionCode::GCode(GCode::Comment("comment".to_string())));
-        assert_code!(c, "G04 comment *\n");
+        assert_code!(c, "G04 comment*\n");
     }
 
     #[test]
