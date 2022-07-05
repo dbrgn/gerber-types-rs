@@ -8,8 +8,6 @@
 //! generate syntactically valid but semantially invalid Gerber code, but this
 //! module won't complain.
 //!
-//! Minimal required Rust version: 1.31.
-//!
 //! ## Traits: GerberCode and PartialGerberCode
 //!
 //! There are two main traits that are used for code generation:
